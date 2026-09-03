@@ -59,7 +59,12 @@ class MaintenanceStatusNotifier
     final sortedForPriority = List<ComponentHealthResult>.from(results)
       ..sort((a, b) => a.healthPercentage.compareTo(b.healthPercentage));
 
-    final priority = sortedForPriority.take(2).toList();
+    // Only surface components that actually need user attention (critical, warning, or health < 75%)
+    // Prevents 100% optimal components from cluttering the home dashboard.
+    final priority = sortedForPriority
+        .where((r) => r.isCritical || r.isWarning || r.healthPercentage < 75.0)
+        .take(3)
+        .toList();
     final aggregate = HealthCalculationService.calculateVehicleAggregateScore(results);
 
     int critical = 0;

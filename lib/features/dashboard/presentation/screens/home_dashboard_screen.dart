@@ -63,11 +63,20 @@ class HomeDashboardScreen extends ConsumerWidget {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.space16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: RefreshIndicator(
+          color: AppColors.primaryBlue,
+          onRefresh: () async {
+            ref.invalidate(maintenanceStatusProvider);
+            ref.invalidate(recentRideProvider);
+            ref.invalidate(activeVehicleProvider);
+            await Future.delayed(const Duration(milliseconds: 300));
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(AppSpacing.space16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               // 1. Vehicle Header Card
               const VehicleHeaderCard(),
               const SizedBox(height: AppSpacing.space16),
@@ -205,6 +214,7 @@ class HomeDashboardScreen extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

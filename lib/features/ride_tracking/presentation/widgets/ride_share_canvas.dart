@@ -246,19 +246,6 @@ class RideShareCanvas extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 8),
-
-            // 5. Subtle Modern Tagline
-            Text(
-              'RIDECARE • PELACAKAN MANDIRI 100% OFFLINE',
-              textAlign: TextAlign.center,
-              style: AppTypography.captionSubtle.copyWith(
-                fontWeight: FontWeight.w700,
-                fontSize: 9,
-                letterSpacing: 0.8,
-                color: AppColors.textMuted,
-              ),
-            ),
           ],
         ),
       ),
