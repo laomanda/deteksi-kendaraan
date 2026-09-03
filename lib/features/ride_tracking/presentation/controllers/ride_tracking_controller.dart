@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -27,6 +28,7 @@ class RideTrackingState {
   final double averageSpeedKmh;
   final double maxSpeedKmh;
   final double gpsAccuracy;
+  final double heading;
   final bool isGpsLocked;
   final String? errorMessage;
   final DateTime? startTime;
@@ -40,6 +42,7 @@ class RideTrackingState {
     this.averageSpeedKmh = 0.0,
     this.maxSpeedKmh = 0.0,
     this.gpsAccuracy = 0.0,
+    this.heading = 0.0,
     this.isGpsLocked = false,
     this.errorMessage,
     this.startTime,
@@ -56,6 +59,7 @@ class RideTrackingState {
     double? averageSpeedKmh,
     double? maxSpeedKmh,
     double? gpsAccuracy,
+    double? heading,
     bool? isGpsLocked,
     String? errorMessage,
     DateTime? startTime,
@@ -69,6 +73,7 @@ class RideTrackingState {
       averageSpeedKmh: averageSpeedKmh ?? this.averageSpeedKmh,
       maxSpeedKmh: maxSpeedKmh ?? this.maxSpeedKmh,
       gpsAccuracy: gpsAccuracy ?? this.gpsAccuracy,
+      heading: heading ?? this.heading,
       isGpsLocked: isGpsLocked ?? this.isGpsLocked,
       errorMessage: errorMessage,
       startTime: startTime ?? this.startTime,
@@ -351,11 +356,15 @@ class RideTrackingNotifier extends StateNotifier<RideTrackingState> {
     final newTotalDistance = state.totalDistanceKm + addedKm;
     final updatedPoints = [...state.points, newPoint];
     final newMaxSpeed = speedKmh > state.maxSpeedKmh ? speedKmh : state.maxSpeedKmh;
+    final newHeading = (position.heading >= 0 && position.heading <= 360)
+        ? position.heading
+        : state.heading;
 
     state = state.copyWith(
       status: RideTrackingStatus.recording,
       isGpsLocked: isAccurate,
       gpsAccuracy: position.accuracy,
+      heading: newHeading,
       currentSpeedKmh: speedKmh,
       maxSpeedKmh: newMaxSpeed,
       totalDistanceKm: newTotalDistance,
@@ -469,10 +478,20 @@ class RideTrackingNotifier extends StateNotifier<RideTrackingState> {
     final updatedPoints = [...state.points, newPoint];
     final newMax = speedKmh > state.maxSpeedKmh ? speedKmh : state.maxSpeedKmh;
 
+    double newHeading = state.heading;
+    if (state.points.isNotEmpty) {
+      final last = state.points.last;
+      final dLat = latitude - last.latitude;
+      final dLon = longitude - last.longitude;
+      newHeading = (math.atan2(dLon, dLat) * 180.0 / math.pi) % 360.0;
+      if (newHeading < 0) newHeading += 360.0;
+    }
+
     state = state.copyWith(
       status: RideTrackingStatus.recording,
       isGpsLocked: true,
       gpsAccuracy: 5.0,
+      heading: newHeading,
       currentSpeedKmh: speedKmh,
       maxSpeedKmh: newMax,
       totalDistanceKm: newTotalDistance,

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/database/hive_registrar.dart';
@@ -28,9 +29,24 @@ class BackupService {
     };
 
     final jsonString = const JsonEncoder.withIndent('  ').convert(exportData);
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+
+    if (kIsWeb) {
+      await Share.shareXFiles(
+        [
+          XFile.fromData(
+            utf8.encode(jsonString),
+            mimeType: 'application/json',
+            name: 'ridecare_backup_$timestamp.json',
+          ),
+        ],
+        subject: 'RideCare Local Backup ($timestamp)',
+        text: 'Berkas cadangan data lokal RideCare Anda.',
+      );
+      return;
+    }
 
     final dir = await getTemporaryDirectory();
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
     final file = File('${dir.path}/ridecare_backup_$timestamp.json');
     await file.writeAsString(jsonString);
 

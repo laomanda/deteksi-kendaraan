@@ -1,10 +1,11 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/utils/image_helper.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../data/models/vehicle_model.dart';
 import '../controllers/active_vehicle_controller.dart';
@@ -45,10 +46,12 @@ class GarageScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
-                        Icons.garage_outlined,
-                        size: 48,
-                        color: AppColors.textMuted,
+                      SizedBox(
+                        height: 180,
+                        child: SvgPicture.asset(
+                          'assets/illustrations/empty_garage.svg',
+                          fit: BoxFit.contain,
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.space16),
                       Text('Garasi Masih Kosong', style: AppTypography.heading2),
@@ -116,28 +119,35 @@ class GarageScreen extends ConsumerWidget {
           Row(
             children: [
               // Vehicle Photo or Fallback Icon
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceSubtle,
-                  borderRadius: BorderRadius.circular(12),
-                  image: vehicle.photoPath != null && File(vehicle.photoPath!).existsSync()
-                      ? DecorationImage(
-                          image: FileImage(File(vehicle.photoPath!)),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: vehicle.photoPath == null || !File(vehicle.photoPath!).existsSync()
-                    ? Icon(
-                        vehicle.isMotorcycle
-                            ? Icons.two_wheeler_rounded
-                            : Icons.directions_car_rounded,
-                        color: AppColors.primaryBlue,
-                        size: 28,
-                      )
-                    : null,
+              Builder(
+                builder: (context) {
+                  final imageProvider = ImageHelper.getVehicleImageProvider(vehicle.photoPath);
+                  return Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceSubtle,
+                      borderRadius: BorderRadius.circular(12),
+                      image: imageProvider != null
+                          ? DecorationImage(
+                              image: imageProvider,
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: imageProvider == null
+                        ? Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SvgPicture.asset(
+                              vehicle.isMotorcycle
+                                  ? 'assets/illustrations/motorcycle.svg'
+                                  : 'assets/illustrations/car.svg',
+                              fit: BoxFit.contain,
+                            ),
+                          )
+                        : null,
+                  );
+                },
               ),
               const SizedBox(width: AppSpacing.space16),
 
@@ -247,31 +257,54 @@ class GarageScreen extends ConsumerWidget {
         shape: RoundedRectangleBorder(borderRadius: AppSpacing.cardBorderRadius),
         title: Text('Hapus Kendaraan?', style: AppTypography.heading2),
         content: Text(
-          'Seluruh data servis dan histori perjalanan terkait ${vehicle.displayName} akan dihapus secara permanen dari penyimpanan lokal.',
+          'Seluruh data servis dan riwayat perjalanan ${vehicle.displayName} akan dihapus permanen.',
           style: AppTypography.bodySmall,
         ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Batal', style: AppTypography.bodyMedium),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.healthCritical,
-              shape: RoundedRectangleBorder(borderRadius: AppSpacing.buttonBorderRadius),
-            ),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final vehicleRepo = ref.read(vehicleRepositoryProvider);
-              final maintenanceRepo = ref.read(maintenanceRepositoryProvider);
-              final rideRepo = ref.read(rideHistoryRepositoryProvider);
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    side: const BorderSide(color: AppColors.borderSubtle),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppSpacing.buttonBorderRadius,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Batal'),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.space12),
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.healthCritical,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppSpacing.buttonBorderRadius,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    final vehicleRepo = ref.read(vehicleRepositoryProvider);
+                    final maintenanceRepo = ref.read(maintenanceRepositoryProvider);
+                    final rideRepo = ref.read(rideHistoryRepositoryProvider);
 
-              await maintenanceRepo.deleteItemsForVehicle(vehicle.id);
-              await rideRepo.deleteRidesForVehicle(vehicle.id);
-              await vehicleRepo.deleteVehicle(vehicle.id);
-              ref.read(activeVehicleProvider.notifier).refresh();
-            },
-            child: const Text('Hapus', style: TextStyle(color: Colors.white)),
+                    await maintenanceRepo.deleteItemsForVehicle(vehicle.id);
+                    await rideRepo.deleteRidesForVehicle(vehicle.id);
+                    await vehicleRepo.deleteVehicle(vehicle.id);
+                    ref.read(activeVehicleProvider.notifier).refresh();
+                  },
+                  child: const Text('Hapus'),
+                ),
+              ),
+            ],
           ),
         ],
       ),

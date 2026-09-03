@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <!-- Outer Accuracy / Orientation Ripple -->
+  <circle cx="32" cy="32" r="30" fill="#2563EB" fill-opacity="0.12"/>
+  <circle cx="32" cy="32" r="23" stroke="#2563EB" stroke-opacity="0.25" stroke-width="1.5"/>
+
+  <!-- Compass / Heading Direction Wedge -->
+  <polygon points="32,2 26,16 38,16" fill="#2563EB"/>
+
+  <!-- High-Contrast Map Pin Base -->
+  <circle cx="32" cy="32" r="18" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="15" fill="#2563EB"/>
+
+  <!-- Top-Down Minimalist Motorcycle Silhouette -->
+  <!-- Front Wheel -->
+  <rect x="30.5" y="19" width="3" height="6.5" rx="1.5" fill="#0F172A"/>
+  <!-- Front Headlight / Windscreen -->
+  <path d="M 30 24 L 34 24 L 32 22 Z" fill="#93C5FD"/>
+  <!-- Handlebars & Mirrors -->
+  <path d="M 24 25.5 L 40 25.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="23.5" cy="24" r="1.2" fill="#E2E8F0"/>
+  <circle cx="40.5" cy="24" r="1.2" fill="#E2E8F0"/>
+  <!-- Fuel Tank Body -->
+  <rect x="29" y="26" width="6" height="7" rx="3" fill="#FFFFFF"/>
+  <!-- Driver Seat -->
+  <path d="M 29 33 C 28.5 35 28.5 37.5 29 39 L 35 39 C 35.5 37.5 35.5 35 35 33 Z" fill="#0F172A"/>
+  <!-- Rear Wheel -->
+  <rect x="30.5" y="38" width="3" height="6.5" rx="1.5" fill="#0F172A"/>
+</svg>

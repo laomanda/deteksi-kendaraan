@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -61,12 +62,15 @@ class VehicleHeaderCard extends ConsumerWidget {
               Expanded(
                 child: Row(
                   children: [
-                    Icon(
-                      activeVehicle.isMotorcycle
-                          ? Icons.two_wheeler_rounded
-                          : Icons.directions_car_rounded,
-                      size: 22,
-                      color: AppColors.primaryBlue,
+                    SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: SvgPicture.asset(
+                        activeVehicle.isMotorcycle
+                            ? 'assets/illustrations/motorcycle.svg'
+                            : 'assets/illustrations/car.svg',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.space8),
                     Expanded(

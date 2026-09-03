@@ -165,6 +165,7 @@ class HomeDashboardScreen extends ConsumerWidget {
                 RideSummaryCard(
                   session: recentRide,
                   vehicleName: activeVehicle.displayName,
+                  isMotorcycle: activeVehicle.isMotorcycle,
                 )
               else
                 Container(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -81,21 +82,32 @@ class RideHistoryScreen extends ConsumerWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Column(
+                        Row(
                           children: [
-                            Text(
-                              'TOTAL PERJALANAN',
-                              style: AppTypography.captionSubtle.copyWith(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                              ),
+                            SvgPicture.asset(
+                              'assets/share_card/badge_achievement.svg',
+                              width: 32,
+                              height: 32,
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '$totalRides',
-                              style: AppTypography.heading1.copyWith(
-                                color: AppColors.primaryBlue,
-                              ),
+                            const SizedBox(width: AppSpacing.space12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'TOTAL PERJALANAN',
+                                  style: AppTypography.captionSubtle.copyWith(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '$totalRides',
+                                  style: AppTypography.heading1.copyWith(
+                                    color: AppColors.primaryBlue,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -104,21 +116,32 @@ class RideHistoryScreen extends ConsumerWidget {
                           height: 36,
                           color: AppColors.borderSubtle,
                         ),
-                        Column(
+                        Row(
                           children: [
-                            Text(
-                              'TOTAL JARAK',
-                              style: AppTypography.captionSubtle.copyWith(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                              ),
+                            SvgPicture.asset(
+                              'assets/share_card/badge_distance.svg',
+                              width: 32,
+                              height: 32,
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${totalDistance.toStringAsFixed(1)} km',
-                              style: AppTypography.heading1.copyWith(
-                                color: AppColors.textPrimary,
-                              ),
+                            const SizedBox(width: AppSpacing.space12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'TOTAL JARAK',
+                                  style: AppTypography.captionSubtle.copyWith(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${totalDistance.toStringAsFixed(1)} km',
+                                  style: AppTypography.heading1.copyWith(
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -147,12 +170,14 @@ class RideHistoryScreen extends ConsumerWidget {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
-                                    Icons.calendar_today_outlined,
-                                    size: 14,
-                                    color: AppColors.textSecondary,
+                                  SvgPicture.asset(
+                                    activeVehicle.isMotorcycle
+                                        ? 'assets/share_card/badge_motorcycle.svg'
+                                        : 'assets/share_card/badge_vehicle.svg',
+                                    width: 16,
+                                    height: 16,
                                   ),
-                                  const SizedBox(width: 6),
+                                  const SizedBox(width: 8),
                                   Text(
                                     DateFormatter.formatDate(session.startTime),
                                     style: AppTypography.captionBadge.copyWith(
@@ -266,6 +291,7 @@ class RideHistoryScreen extends ConsumerWidget {
                                   context,
                                   session: session,
                                   vehicleName: activeVehicle.displayName,
+                                  isMotorcycle: activeVehicle.isMotorcycle,
                                 );
                               },
                               icon: const Icon(Icons.share_outlined, size: 16),
@@ -292,31 +318,56 @@ class RideHistoryScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceWhite,
         shape: RoundedRectangleBorder(
           borderRadius: AppSpacing.cardBorderRadius,
         ),
-        title: const Text('Hapus Catatan Perjalanan?'),
-        content: const Text(
-          'Catatan ini akan dihapus dari riwayat perjalanan perangkat Anda.',
+        title: Text('Hapus Perjalanan?', style: AppTypography.heading2),
+        content: Text(
+          'Catatan ini akan dihapus permanen dari riwayat.',
+          style: AppTypography.bodySmall,
         ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.healthCritical,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await ref
-                  .read(rideHistoryListProvider.notifier)
-                  .deleteRide(id);
-              ref.invalidate(recentRideProvider);
-            },
-            child: const Text('Hapus'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    side: const BorderSide(color: AppColors.borderSubtle),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppSpacing.buttonBorderRadius,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Batal'),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.space12),
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.healthCritical,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppSpacing.buttonBorderRadius,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    await ref
+                        .read(rideHistoryListProvider.notifier)
+                        .deleteRide(id);
+                    ref.invalidate(recentRideProvider);
+                  },
+                  child: const Text('Hapus'),
+                ),
+              ),
+            ],
           ),
         ],
       ),

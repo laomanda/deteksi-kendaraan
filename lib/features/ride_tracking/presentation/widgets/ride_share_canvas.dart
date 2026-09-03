@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
@@ -8,6 +9,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/utils/polyline_smoother.dart';
 import '../../data/models/ride_session_model.dart';
 
 /// RideShareCanvas (DSS Section 8.6, Table 10 & PRD Section 11)
@@ -15,17 +17,20 @@ import '../../data/models/ride_session_model.dart';
 class RideShareCanvas extends StatelessWidget {
   final RideSessionModel session;
   final String vehicleName;
+  final bool isMotorcycle;
 
   const RideShareCanvas({
     super.key,
     required this.session,
     required this.vehicleName,
+    this.isMotorcycle = true,
   });
 
   static Future<void> showModal(
     BuildContext context, {
     required RideSessionModel session,
     required String vehicleName,
+    bool isMotorcycle = true,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -34,16 +39,34 @@ class RideShareCanvas extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: AppSpacing.modalTopRadius,
       ),
-      builder: (_) => _RideShareModal(session: session, vehicleName: vehicleName),
+      builder: (_) => _RideShareModal(
+        session: session,
+        vehicleName: vehicleName,
+        isMotorcycle: isMotorcycle,
+      ),
     );
+  }
+
+  String _getActivityTitle(DateTime time) {
+    final hour = time.hour;
+    if (hour >= 4 && hour < 11) return 'Perjalanan Pagi';
+    if (hour >= 11 && hour < 15) return 'Perjalanan Siang';
+    if (hour >= 15 && hour < 18) return 'Perjalanan Sore';
+    return 'Perjalanan Malam';
   }
 
   @override
   Widget build(BuildContext context) {
+    final maxSpd = session.maxSpeedKmh > 0 ? session.maxSpeedKmh : session.averageSpeedKmh;
+    final rawAvg = session.averageSpeedKmh;
+    final avgSpd = (rawAvg > maxSpd && maxSpd > 0)
+        ? maxSpd
+        : (rawAvg > 199 ? 199.0 : rawAvg);
+
     return AspectRatio(
       aspectRatio: 4 / 5,
       child: Container(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 18.0),
         decoration: BoxDecoration(
           color: AppColors.surfaceWhite,
           borderRadius: AppSpacing.cardBorderRadius,
@@ -52,7 +75,54 @@ class RideShareCanvas extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 1. STATS HERO BANNER (Total Jarak & Durasi)
+            // 1. Header: Activity Title & Activity Timestamp (Strava Style)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _getActivityTitle(session.startTime),
+                      style: AppTypography.heading2.copyWith(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                        letterSpacing: -0.2,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      DateFormatter.formatDateTime(session.startTime),
+                      style: AppTypography.captionSubtle.copyWith(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'RIDECARE',
+                    style: AppTypography.captionBadge.copyWith(
+                      color: AppColors.primaryBlue,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 10,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // 2. STATS HERO BANNER (Jarak & Durasi)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -69,7 +139,7 @@ class RideShareCanvas extends StatelessWidget {
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.baseline,
                       textBaseline: TextBaseline.alphabetic,
@@ -85,11 +155,11 @@ class RideShareCanvas extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'KM',
+                          'km',
                           style: AppTypography.captionBadge.copyWith(
                             color: AppColors.primaryBlue,
                             fontWeight: FontWeight.w800,
-                            fontSize: 13,
+                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -108,11 +178,11 @@ class RideShareCanvas extends StatelessWidget {
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                     Text(
                       DateFormatter.formatDuration(session.durationSeconds),
                       style: AppTypography.heading1.copyWith(
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w900,
                         fontSize: 22,
                         color: AppColors.textPrimary,
                         letterSpacing: -0.5,
@@ -122,9 +192,9 @@ class RideShareCanvas extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.space16),
+            const SizedBox(height: 12),
 
-            // 2. Realistic OpenStreetMap Container
+            // 3. Realistic OpenStreetMap Container
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -138,13 +208,13 @@ class RideShareCanvas extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: AppSpacing.space16),
+            const SizedBox(height: 12),
 
-            // 3. Telemetry Block Container
+            // 4. Clean Telemetry Stats Bar (Zero Icon Clutter)
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.space16,
-                vertical: AppSpacing.space12,
+                horizontal: 16,
+                vertical: 11,
               ),
               decoration: BoxDecoration(
                 color: AppColors.surfaceSubtle,
@@ -155,49 +225,39 @@ class RideShareCanvas extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _buildStatItem(
-                      'KEC. MAKS',
-                      '${session.maxSpeedKmh.toStringAsFixed(1)} km/j',
+                      'KEC. RATA-RATA',
+                      '${avgSpd.toStringAsFixed(1)} km/j',
                     ),
                   ),
                   Expanded(
                     child: _buildStatItem(
-                      'RATA-RATA',
-                      '${session.averageSpeedKmh.toStringAsFixed(1)} km/j',
+                      'KEC. MAKSIMUM',
+                      '${maxSpd.toStringAsFixed(1)} km/j',
                       align: CrossAxisAlignment.center,
                     ),
                   ),
                   Expanded(
                     child: _buildStatItem(
-                      'TANGGAL',
-                      DateFormatter.formatDate(session.startTime),
+                      'KENDARAAN',
+                      vehicleName,
                       align: CrossAxisAlignment.end,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.space8),
+            const SizedBox(height: 8),
 
-            // 4. Subtle Watermark (discreet)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.shield_rounded,
-                  size: 13,
-                  color: AppColors.primaryBlue,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'RideCare Telemetry',
-                  style: AppTypography.captionSubtle.copyWith(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11,
-                    letterSpacing: 0.5,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
+            // 5. Subtle Modern Tagline
+            Text(
+              'RIDECARE • PELACAKAN MANDIRI 100% OFFLINE',
+              textAlign: TextAlign.center,
+              style: AppTypography.captionSubtle.copyWith(
+                fontWeight: FontWeight.w700,
+                fontSize: 9,
+                letterSpacing: 0.8,
+                color: AppColors.textMuted,
+              ),
             ),
           ],
         ),
@@ -217,19 +277,20 @@ class RideShareCanvas extends StatelessWidget {
         Text(
           label,
           style: AppTypography.captionSubtle.copyWith(
-            fontSize: 10,
-            letterSpacing: 0.5,
-            fontWeight: FontWeight.w600,
+            fontSize: 9,
+            letterSpacing: 0.6,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textSecondary,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 3),
         Text(
           value,
           style: AppTypography.captionBadge.copyWith(
             fontSize: 13,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             color: AppColors.textPrimary,
           ),
           maxLines: 1,
@@ -241,15 +302,16 @@ class RideShareCanvas extends StatelessWidget {
 
   Widget _buildRealisticMap(RideSessionModel session) {
     final hasPoints = session.points.isNotEmpty;
-    final polylinePoints = session.points
+    final rawPoints = session.points
         .map((p) => LatLng(p.latitude, p.longitude))
         .toList();
+    final polylinePoints = PolylineSmoother.smooth(rawPoints);
 
     CameraFit? cameraFit;
     LatLng initialCenter = const LatLng(-6.2088, 106.8456);
 
     if (hasPoints) {
-      initialCenter = polylinePoints.first;
+      initialCenter = rawPoints.first;
 
       double minLat = session.points.first.latitude;
       double maxLat = session.points.first.latitude;
@@ -301,20 +363,26 @@ class RideShareCanvas extends StatelessWidget {
                     // Outer glow
                     Polyline(
                       points: polylinePoints,
-                      strokeWidth: 9.0,
-                      color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                      strokeWidth: 8.5,
+                      color: AppColors.primaryBlue.withValues(alpha: 0.25),
+                      strokeCap: StrokeCap.round,
+                      strokeJoin: StrokeJoin.round,
                     ),
                     // High-contrast white border
                     Polyline(
                       points: polylinePoints,
-                      strokeWidth: 6.5,
+                      strokeWidth: 6.0,
                       color: Colors.white,
+                      strokeCap: StrokeCap.round,
+                      strokeJoin: StrokeJoin.round,
                     ),
                     // Primary blue polyline
                     Polyline(
                       points: polylinePoints,
-                      strokeWidth: 4.5,
+                      strokeWidth: 4.2,
                       color: AppColors.primaryBlue,
+                      strokeCap: StrokeCap.round,
+                      strokeJoin: StrokeJoin.round,
                     ),
                   ],
                 ),
@@ -325,31 +393,12 @@ class RideShareCanvas extends StatelessWidget {
                     // Titik A (Start Marker)
                     Marker(
                       point: polylinePoints.first,
-                      width: 32,
-                      height: 32,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.healthOptimal,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2.5),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 4,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'A',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
+                      width: 28,
+                      height: 35,
+                      alignment: Alignment.topCenter,
+                      child: SvgPicture.asset(
+                        'assets/markers/marker_start.svg',
+                        fit: BoxFit.contain,
                       ),
                     ),
                     // Titik B (Finish Marker)
@@ -357,31 +406,12 @@ class RideShareCanvas extends StatelessWidget {
                         (polylinePoints.first != polylinePoints.last))
                       Marker(
                         point: polylinePoints.last,
-                        width: 32,
-                        height: 32,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.healthCritical,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2.5),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black26,
-                                blurRadius: 4,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'B',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
+                        width: 28,
+                        height: 35,
+                        alignment: Alignment.topCenter,
+                        child: SvgPicture.asset(
+                          'assets/markers/marker_finish.svg',
+                          fit: BoxFit.contain,
                         ),
                       ),
                   ],
@@ -416,8 +446,13 @@ class RideShareCanvas extends StatelessWidget {
 class _RideShareModal extends StatefulWidget {
   final RideSessionModel session;
   final String vehicleName;
+  final bool isMotorcycle;
 
-  const _RideShareModal({required this.session, required this.vehicleName});
+  const _RideShareModal({
+    required this.session,
+    required this.vehicleName,
+    this.isMotorcycle = true,
+  });
 
   @override
   State<_RideShareModal> createState() => _RideShareModalState();
@@ -452,6 +487,7 @@ class _RideShareModalState extends State<_RideShareModal> {
               child: RideShareCanvas(
                 session: widget.session,
                 vehicleName: widget.vehicleName,
+                isMotorcycle: widget.isMotorcycle,
               ),
             ),
           ),
@@ -557,19 +593,14 @@ class _RideShareModalState extends State<_RideShareModal> {
             child: Container(
               width: 36,
               height: 4,
-              margin: const EdgeInsets.only(bottom: AppSpacing.space16),
+              margin: const EdgeInsets.only(bottom: AppSpacing.space12),
               decoration: BoxDecoration(
                 color: AppColors.borderSubtle,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-          Text('Kartu Perjalanan (4:5)', style: AppTypography.heading2),
-          const SizedBox(height: AppSpacing.space4),
-          Text(
-            'Format 4:5 optimal untuk Instagram Stories dan status media sosial',
-            style: AppTypography.bodySmall,
-          ),
+          Text('Bagikan Perjalanan', style: AppTypography.heading2),
           const SizedBox(height: AppSpacing.space16),
           ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 420),
@@ -583,6 +614,7 @@ class _RideShareModalState extends State<_RideShareModal> {
                   child: RideShareCanvas(
                     session: widget.session,
                     vehicleName: widget.vehicleName,
+                    isMotorcycle: widget.isMotorcycle,
                   ),
                 ),
               ),

@@ -1,12 +1,15 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/utils/image_helper.dart';
 import '../../../../core/constants/component_catalog.dart';
 import '../../../maintenance/data/models/maintenance_item_model.dart';
 import '../../../shared/providers/repository_providers.dart';
@@ -64,15 +67,23 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
     if (picked != null) {
-      final appDir = await getApplicationDocumentsDirectory();
-      final targetDir = Directory('${appDir.path}/vehicles');
-      if (!await targetDir.exists()) {
-        await targetDir.create(recursive: true);
+      if (kIsWeb) {
+        setState(() => _photoPath = picked.path);
+        return;
       }
-      final saved = await File(picked.path).copy(
-        '${targetDir.path}/vehicle_${DateTime.now().millisecondsSinceEpoch}.jpg',
-      );
-      setState(() => _photoPath = saved.path);
+      try {
+        final appDir = await getApplicationDocumentsDirectory();
+        final targetDir = Directory('${appDir.path}/vehicles');
+        if (!await targetDir.exists()) {
+          await targetDir.create(recursive: true);
+        }
+        final saved = await File(picked.path).copy(
+          '${targetDir.path}/vehicle_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        );
+        setState(() => _photoPath = saved.path);
+      } catch (_) {
+        setState(() => _photoPath = picked.path);
+      }
     }
   }
 
@@ -166,11 +177,11 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildTypeOption('motorcycle', 'Sepeda Motor', Icons.two_wheeler_rounded),
+                      child: _buildTypeOption('motorcycle', 'Sepeda Motor', 'assets/illustrations/motorcycle.svg'),
                     ),
                     const SizedBox(width: AppSpacing.space12),
                     Expanded(
-                      child: _buildTypeOption('car', 'Mobil', Icons.directions_car_rounded),
+                      child: _buildTypeOption('car', 'Mobil', 'assets/illustrations/car.svg'),
                     ),
                   ],
                 ),
@@ -180,34 +191,39 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
                 Center(
                   child: GestureDetector(
                     onTap: _pickImage,
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceSubtle,
-                        borderRadius: AppSpacing.cardBorderRadius,
-                        border: Border.all(color: AppColors.borderSubtle, width: 1),
-                        image: _photoPath != null
-                            ? DecorationImage(
-                                image: FileImage(File(_photoPath!)),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: _photoPath == null
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.add_a_photo_outlined,
-                                  size: 24,
-                                  color: AppColors.textSecondary,
-                                ),
-                                const SizedBox(height: 4),
-                                Text('Ganti Foto', style: AppTypography.captionSubtle),
-                              ],
-                            )
-                          : null,
+                    child: Builder(
+                      builder: (context) {
+                        final imageProvider = ImageHelper.getVehicleImageProvider(_photoPath);
+                        return Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceSubtle,
+                            borderRadius: AppSpacing.cardBorderRadius,
+                            border: Border.all(color: AppColors.borderSubtle, width: 1),
+                            image: imageProvider != null
+                                ? DecorationImage(
+                                    image: imageProvider,
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: imageProvider == null
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.add_a_photo_outlined,
+                                      size: 24,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text('Ganti Foto', style: AppTypography.captionSubtle),
+                                  ],
+                                )
+                              : null,
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -328,7 +344,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     );
   }
 
-  Widget _buildTypeOption(String type, String title, IconData icon) {
+  Widget _buildTypeOption(String type, String title, String svgAsset) {
     final isSelected = _selectedType == type;
     return GestureDetector(
       onTap: () => setState(() => _selectedType = type),
@@ -342,15 +358,17 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
-        child: Row(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 20,
-              color: isSelected ? AppColors.primaryBlue : AppColors.textSecondary,
+            SizedBox(
+              height: 44,
+              child: SvgPicture.asset(
+                svgAsset,
+                fit: BoxFit.contain,
+              ),
             ),
-            const SizedBox(width: AppSpacing.space8),
+            const SizedBox(height: AppSpacing.space8),
             Text(
               title,
               style: AppTypography.bodyMedium.copyWith(

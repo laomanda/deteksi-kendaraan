@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/utils/polyline_smoother.dart';
 import '../../data/models/ride_session_model.dart';
 import 'ride_share_canvas.dart';
 
@@ -12,11 +14,13 @@ import 'ride_share_canvas.dart';
 class RideSummaryCard extends StatelessWidget {
   final RideSessionModel session;
   final String vehicleName;
+  final bool isMotorcycle;
 
   const RideSummaryCard({
     super.key,
     required this.session,
     required this.vehicleName,
+    this.isMotorcycle = true,
   });
 
   @override
@@ -26,9 +30,10 @@ class RideSummaryCard extends StatelessWidget {
         ? LatLng(session.points.first.latitude, session.points.first.longitude)
         : const LatLng(-6.2088, 106.8456); // Default Jakarta fallback
 
-    final polylinePoints = session.points
+    final rawPoints = session.points
         .map((p) => LatLng(p.latitude, p.longitude))
         .toList();
+    final polylinePoints = PolylineSmoother.smooth(rawPoints);
 
     return Container(
       decoration: BoxDecoration(
@@ -62,42 +67,48 @@ class RideSummaryCard extends StatelessWidget {
                           userAgentPackageName: 'com.ridecare.ridecare',
                           maxZoom: 19,
                         ),
-                        PolylineLayer(
-                          polylines: [
-                            Polyline(
-                              points: polylinePoints,
-                              strokeWidth: 4.5,
-                              color: AppColors.primaryBlue,
-                            ),
-                          ],
-                        ),
+                        if (polylinePoints.length > 1)
+                          PolylineLayer(
+                            polylines: [
+                              Polyline(
+                                points: polylinePoints,
+                                strokeWidth: 6.0,
+                                color: Colors.white,
+                                strokeCap: StrokeCap.round,
+                                strokeJoin: StrokeJoin.round,
+                              ),
+                              Polyline(
+                                points: polylinePoints,
+                                strokeWidth: 4.0,
+                                color: AppColors.primaryBlue,
+                                strokeCap: StrokeCap.round,
+                                strokeJoin: StrokeJoin.round,
+                              ),
+                            ],
+                          ),
                         MarkerLayer(
                           markers: [
-                            // Start marker (green)
+                            // Start marker
                             Marker(
                               point: polylinePoints.first,
-                              width: 14,
-                              height: 14,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.healthOptimal,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 2),
-                                ),
+                              width: 20,
+                              height: 25,
+                              alignment: Alignment.topCenter,
+                              child: SvgPicture.asset(
+                                'assets/markers/marker_start.svg',
+                                fit: BoxFit.contain,
                               ),
                             ),
-                            // Finish marker (dark)
+                            // Finish marker
                             if (polylinePoints.length > 1)
                               Marker(
                                 point: polylinePoints.last,
-                                width: 14,
-                                height: 14,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: AppColors.textPrimary,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white, width: 2),
-                                  ),
+                                width: 20,
+                                height: 25,
+                                alignment: Alignment.topCenter,
+                                child: SvgPicture.asset(
+                                  'assets/markers/marker_finish.svg',
+                                  fit: BoxFit.contain,
                                 ),
                               ),
                           ],
@@ -195,6 +206,7 @@ class RideSummaryCard extends StatelessWidget {
                         context,
                         session: session,
                         vehicleName: vehicleName,
+                        isMotorcycle: isMotorcycle,
                       ),
                       icon: const Icon(Icons.share_outlined, size: 16),
                       label: Text(

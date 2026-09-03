@@ -22,19 +22,32 @@ class DateFormatter {
     return _currencyFormat.format(amount);
   }
 
-  /// Formats duration in seconds to "34m 12d" or "1j 15m"
+  /// Formats duration in seconds to "16 dtk", "34 mnt 12 dtk", or "1 jam 15 mnt"
   static String formatDuration(int seconds) {
     if (seconds < 60) {
-      return '${seconds}d';
+      return '$seconds dtk';
     }
     final minutes = seconds ~/ 60;
     final remainingSecs = seconds % 60;
     if (minutes < 60) {
-      return '${minutes}m ${remainingSecs}d';
+      if (remainingSecs == 0) return '$minutes mnt';
+      return '$minutes mnt $remainingSecs dtk';
     }
     final hours = minutes ~/ 60;
     final remainingMins = minutes % 60;
-    return '${hours}j ${remainingMins}m';
+    if (remainingMins == 0) return '$hours jam';
+    return '$hours jam $remainingMins mnt';
+  }
+
+  /// Digital stopwatch format e.g. "00:16", "34:12", "01:15:30"
+  static String formatStopwatch(int seconds) {
+    final h = seconds ~/ 3600;
+    final m = (seconds % 3600) ~/ 60;
+    final s = seconds % 60;
+    if (h > 0) {
+      return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    }
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
   /// Formats date e.g. "2 Sep 2026"

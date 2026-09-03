@@ -173,12 +173,12 @@ class _InitialConditionSetupScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Tentukan Status Servis Awal',
+                'Kondisi Awal Servis',
                 style: AppTypography.heading1,
               ),
               const SizedBox(height: AppSpacing.space4),
               Text(
-                'Pilih skenario yang sesuai dengan kondisi fisik kendaraan Anda saat ini.',
+                'Pilih status awal untuk memulai pemantauan komponen.',
                 style: AppTypography.bodySmall,
               ),
               const SizedBox(height: AppSpacing.space24),
@@ -186,10 +186,10 @@ class _InitialConditionSetupScreenState
               // Option A: Brand New Vehicle
               _buildOptionCard(
                 option: InitialConditionOption.brandNew,
-                title: 'Kendaraan Baru (Brand New)',
+                title: 'Kendaraan Baru',
                 subtitle:
-                    'Kondisi seluruh suku cadang 100% prima. Cocok jika baru dibeli dari dealer atau baru selesai servis besar.',
-                badge: '100% Kondisi Prima',
+                    'Semua komponen 100% prima, baru dari dealer atau baru servis besar.',
+                badge: '100% Prima',
                 badgeColor: AppColors.healthOptimal,
               ),
               const SizedBox(height: AppSpacing.space16),
@@ -197,10 +197,10 @@ class _InitialConditionSetupScreenState
               // Option B: Existing Vehicle (Heuristic Default)
               _buildOptionCard(
                 option: InitialConditionOption.existingHeuristic,
-                title: 'Kendaraan Sedang Berjalan (Estimasi Heuristik)',
+                title: 'Estimasi Otomatis',
                 subtitle:
-                    'Riwayat servis lalu tidak diketahui secara pasti. Sistem akan menetapkan peringatan 25% agar Anda melakukan inspeksi fisik.',
-                badge: '25% Zona Waspada',
+                    'Riwayat servis belum dicatat. Sistem akan mulai memantau komponen Anda.',
+                badge: 'Rekomendasi',
                 badgeColor: AppColors.healthWarning,
               ),
               const SizedBox(height: AppSpacing.space16),
@@ -208,10 +208,10 @@ class _InitialConditionSetupScreenState
               // Option C: Manual Entry per component
               _buildOptionCard(
                 option: InitialConditionOption.existingManual,
-                title: 'Catat Riwayat Manual',
+                title: 'Catat Manual',
                 subtitle:
-                    'Saya mengingat kilometer terakhir saat oli atau suku cadang diganti.',
-                badge: 'Kustom Mandiri',
+                    'Tentukan kilometer terakhir servis masing-masing komponen.',
+                badge: 'Manual',
                 badgeColor: AppColors.primaryBlue,
               ),
 

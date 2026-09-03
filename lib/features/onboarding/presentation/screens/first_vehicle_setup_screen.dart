@@ -1,10 +1,13 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/utils/image_helper.dart';
 import 'initial_condition_setup_screen.dart';
 
 /// First Vehicle Setup Screen (PRD Section 7.1 & DSS Section 10.1)
@@ -37,16 +40,24 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
     if (picked != null) {
-      // Copy to private app directory (PRD 7.1)
-      final appDir = await getApplicationDocumentsDirectory();
-      final targetDir = Directory('${appDir.path}/vehicles');
-      if (!await targetDir.exists()) {
-        await targetDir.create(recursive: true);
+      if (kIsWeb) {
+        setState(() => _selectedPhotoPath = picked.path);
+        return;
       }
-      final savedImage = await File(picked.path).copy(
-        '${targetDir.path}/vehicle_${DateTime.now().millisecondsSinceEpoch}.jpg',
-      );
-      setState(() => _selectedPhotoPath = savedImage.path);
+      try {
+        // Copy to private app directory (PRD 7.1)
+        final appDir = await getApplicationDocumentsDirectory();
+        final targetDir = Directory('${appDir.path}/vehicles');
+        if (!await targetDir.exists()) {
+          await targetDir.create(recursive: true);
+        }
+        final savedImage = await File(picked.path).copy(
+          '${targetDir.path}/vehicle_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        );
+        setState(() => _selectedPhotoPath = savedImage.path);
+      } catch (_) {
+        setState(() => _selectedPhotoPath = picked.path);
+      }
     }
   }
 
@@ -109,7 +120,7 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
                       child: _buildTypeSelector(
                         type: 'motorcycle',
                         title: 'Sepeda Motor',
-                        icon: Icons.two_wheeler_rounded,
+                        svgAsset: 'assets/illustrations/motorcycle.svg',
                       ),
                     ),
                     const SizedBox(width: AppSpacing.space12),
@@ -117,7 +128,7 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
                       child: _buildTypeSelector(
                         type: 'car',
                         title: 'Mobil',
-                        icon: Icons.directions_car_rounded,
+                        svgAsset: 'assets/illustrations/car.svg',
                       ),
                     ),
                   ],
@@ -128,37 +139,42 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
                 Center(
                   child: GestureDetector(
                     onTap: _pickImage,
-                    child: Container(
-                      width: 110,
-                      height: 110,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceSubtle,
-                        borderRadius: AppSpacing.cardBorderRadius,
-                        border: Border.all(color: AppColors.borderSubtle, width: 1),
-                        image: _selectedPhotoPath != null
-                            ? DecorationImage(
-                                image: FileImage(File(_selectedPhotoPath!)),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: _selectedPhotoPath == null
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.add_a_photo_outlined,
-                                  size: 28,
-                                  color: AppColors.textSecondary,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Foto (Opsional)',
-                                  style: AppTypography.captionSubtle,
-                                ),
-                              ],
-                            )
-                          : null,
+                    child: Builder(
+                      builder: (context) {
+                        final imageProvider = ImageHelper.getVehicleImageProvider(_selectedPhotoPath);
+                        return Container(
+                          width: 110,
+                          height: 110,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceSubtle,
+                            borderRadius: AppSpacing.cardBorderRadius,
+                            border: Border.all(color: AppColors.borderSubtle, width: 1),
+                            image: imageProvider != null
+                                ? DecorationImage(
+                                    image: imageProvider,
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: imageProvider == null
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.add_a_photo_outlined,
+                                      size: 28,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Foto (Opsional)',
+                                      style: AppTypography.captionSubtle,
+                                    ),
+                                  ],
+                                )
+                              : null,
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -289,7 +305,7 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
   Widget _buildTypeSelector({
     required String type,
     required String title,
-    required IconData icon,
+    required String svgAsset,
   }) {
     final isSelected = _selectedType == type;
     return GestureDetector(
@@ -304,15 +320,17 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
-        child: Row(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 22,
-              color: isSelected ? AppColors.primaryBlue : AppColors.textSecondary,
+            SizedBox(
+              height: 48,
+              child: SvgPicture.asset(
+                svgAsset,
+                fit: BoxFit.contain,
+              ),
             ),
-            const SizedBox(width: AppSpacing.space8),
+            const SizedBox(height: AppSpacing.space8),
             Text(
               title,
               style: AppTypography.bodyMedium.copyWith(

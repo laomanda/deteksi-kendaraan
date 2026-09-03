@@ -10,6 +10,6 @@ void main() {
 
     // Verify Onboarding / Branding is presented
     expect(find.text('RideCare'), findsOneWidget);
-    expect(find.text('Kedaulatan Data 100% Offline'), findsOneWidget);
+    expect(find.text('Privat & 100% Offline'), findsOneWidget);
   });
 }

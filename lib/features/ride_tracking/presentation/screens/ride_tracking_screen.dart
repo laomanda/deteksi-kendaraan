@@ -1,12 +1,15 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/utils/polyline_smoother.dart';
 import '../controllers/ride_tracking_controller.dart';
 import '../widgets/ride_share_canvas.dart';
 import '../widgets/start_ride_button.dart';
@@ -67,8 +70,9 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
         ? LatLng(last.latitude, last.longitude)
         : (_userRealLocation ?? const LatLng(-6.2088, 106.8456));
 
-    final polylinePoints =
+    final rawPoints =
         trackingState.points.map((p) => LatLng(p.latitude, p.longitude)).toList();
+    final polylinePoints = PolylineSmoother.smooth(rawPoints);
 
     // Auto center map if enabled
     if (_autoCentering && hasPoints) {
@@ -90,12 +94,18 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
               tooltip: 'Simulasi Pergerakan (Uji Coba)',
               onPressed: () {
                 final last = trackingState.lastPoint;
-                final lat = (last?.latitude ?? currentLatLng.latitude) + 0.001;
-                final lon = (last?.longitude ?? currentLatLng.longitude) + 0.001;
+                final baseLat = last?.latitude ?? currentLatLng.latitude;
+                final baseLon = last?.longitude ?? currentLatLng.longitude;
+                final count = trackingState.points.length;
+                // Realistic city street curve trajectory simulation (winding street contour)
+                final angle = count * 0.28;
+                final step = 0.00035; // ~35 meters
+                final lat = baseLat + (math.cos(angle) * step);
+                final lon = baseLon + (math.sin(angle) * step);
                 ref.read(rideTrackingProvider.notifier).addSimulatedPoint(
                       latitude: lat,
                       longitude: lon,
-                      speedKmh: 42.0,
+                      speedKmh: 28.0 + (math.sin(count * 0.5) * 6.0),
                     );
               },
             ),
@@ -156,53 +166,31 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                       ],
                       MarkerLayer(
                         markers: [
-                          // Start pin (green with 3px white border)
+                          // Start pin
                           if (polylinePoints.isNotEmpty)
                             Marker(
                               point: polylinePoints.first,
-                              width: 16,
-                              height: 16,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.healthOptimal,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 3),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 4,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
+                              width: 32,
+                              height: 40,
+                              alignment: Alignment.topCenter,
+                              child: SvgPicture.asset(
+                                'assets/markers/marker_start.svg',
+                                fit: BoxFit.contain,
                               ),
                             ),
-                          // Live current location pulsing marker (DSS 12.2)
+                          // Live current location vehicle marker (DSS 12.2)
                           Marker(
                             point: currentLatLng,
-                            width: 28,
-                            height: 28,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Container(
-                                  width: 26,
-                                  height: 26,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryBlue.withValues(alpha: 0.25),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                Container(
-                                  width: 16,
-                                  height: 16,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryBlue,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white, width: 2.5),
-                                  ),
-                                ),
-                              ],
+                            width: 38,
+                            height: 38,
+                            child: Transform.rotate(
+                              angle: trackingState.heading * (math.pi / 180.0),
+                              child: SvgPicture.asset(
+                                (activeVehicle?.isMotorcycle ?? true)
+                                    ? 'assets/markers/marker_motorcycle.svg'
+                                    : 'assets/markers/marker_vehicle.svg',
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
                         ],
@@ -360,6 +348,7 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                             context,
                             session: session,
                             vehicleName: activeVehicle.displayName,
+                            isMotorcycle: activeVehicle.isMotorcycle,
                           );
                         }
                       },

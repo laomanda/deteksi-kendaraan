@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import 'first_vehicle_setup_screen.dart';
 
 class OnboardingSlide {
-  final IconData icon;
+  final String svgPath;
   final String title;
   final String description;
 
   const OnboardingSlide({
-    required this.icon,
+    required this.svgPath,
     required this.title,
     required this.description,
   });
@@ -30,22 +31,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   static const List<OnboardingSlide> _slides = [
     OnboardingSlide(
-      icon: Icons.offline_pin_outlined,
-      title: 'Kedaulatan Data 100% Offline',
+      svgPath: 'assets/illustrations/onboarding_maintenance.svg',
+      title: 'Privat & 100% Offline',
       description:
-          'Seluruh data kendaraan dan riwayat perjalanan tersimpan privat di perangkat Anda. Tanpa login akun, tanpa cloud, dan tanpa iklan.',
+          'Data kendaraan dan riwayat perjalanan tersimpan aman di perangkat. Tanpa akun, tanpa cloud, dan tanpa iklan.',
     ),
     OnboardingSlide(
-      icon: Icons.health_and_safety_outlined,
-      title: 'Kesehatan Kendaraan Presisi',
+      svgPath: 'assets/illustrations/onboarding_health.svg',
+      title: 'Pantau Kondisi Kendaraan',
       description:
-          'Kalkulasi degradasi suku cadang mekanis berdasarkan kilometer dan waktu. Pantau sisa umur oli, rem, aki, dan ban dalam sekilas pandang.',
+          'Pantau sisa usia oli, rem, aki, dan ban dengan kalkulasi kilometer dan waktu yang akurat.',
     ),
     OnboardingSlide(
-      icon: Icons.route_outlined,
-      title: 'Pelacakan Rute & Berbagi',
+      svgPath: 'assets/illustrations/onboarding_tracking.svg',
+      title: 'Catat Rute & Perjalanan',
       description:
-          'Rekam rute GPS mandiri dengan peta OpenStreetMap. Bagikan pencapaian perjalanan Anda dengan kartu infografis elegan.',
+          'Rekam rute perjalanan GPS secara mandiri dan bagikan ringkasan pencapaian dengan mudah.',
     ),
   ];
 
@@ -83,16 +84,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBlue,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.shield_outlined, color: Colors.white, size: 20),
+                  SvgPicture.asset(
+                    'assets/icons/app_logo.svg',
+                    width: 36,
+                    height: 36,
                   ),
-                  const SizedBox(width: AppSpacing.space8),
+                  const SizedBox(width: AppSpacing.space12),
                   Text(
                     'RideCare',
                     style: AppTypography.heading1.copyWith(
@@ -115,18 +112,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceSubtle,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.borderSubtle, width: 1.5),
-                          ),
-                          child: Icon(
-                            slide.icon,
-                            size: 56,
-                            color: AppColors.primaryBlue,
+                        SizedBox(
+                          height: 200,
+                          child: SvgPicture.asset(
+                            slide.svgPath,
+                            fit: BoxFit.contain,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.space32),
