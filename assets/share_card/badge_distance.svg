@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <!-- Rounded Squircle Badge Base -->
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="2"/>
+  <rect x="8" y="8" width="48" height="48" rx="14" fill="#F0FDFA"/>
+
+  <!-- Converging Road Geometry (Distance & Journey) -->
+  <g transform="translate(16, 16)">
+    <!-- Road Bed -->
+    <polygon points="16,4 4,28 28,28" fill="#E2E8F0"/>
+    <!-- Road Surface Core -->
+    <polygon points="16,6 8,26 24,26" fill="#14B8A6" fill-opacity="0.2"/>
+    <!-- Center Dashed Line -->
+    <line x1="16" y1="10" x2="16" y2="14" stroke="#14B8A6" stroke-width="2" stroke-linecap="round"/>
+    <line x1="16" y1="18" x2="16" y2="24" stroke="#14B8A6" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- Horizon Sun / Milestone Dot -->
+    <circle cx="16" cy="4" r="4" fill="#10B981"/>
+  </g>
+
+  <!-- Distance Mileage Symbol Accent (Top Right) -->
+  <circle cx="48" cy="16" r="6" fill="#2563EB" stroke="#FFFFFF" stroke-width="2"/>
+  <path d="M 46 16 L 50 16 M 48 14 L 48 18" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round"/>
+</svg>

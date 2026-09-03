@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 48" width="240" height="48" fill="none">
+  <defs>
+    <linearGradient id="routeLineGrad" x1="16" y1="24" x2="224" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#14B8A6"/>
+      <stop offset="50%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Soft Ambient Glow Line -->
+  <path d="M 24 24 C 64 6 104 42 144 24 C 174 10 194 30 216 24" 
+        stroke="url(#routeLineGrad)" stroke-opacity="0.25" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Main Precise Route Polyline -->
+  <path d="M 24 24 C 64 6 104 42 144 24 C 174 10 194 30 216 24" 
+        stroke="url(#routeLineGrad)" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Start Telemetry Node -->
+  <circle cx="24" cy="24" r="6" fill="#14B8A6" stroke="#FFFFFF" stroke-width="2"/>
+  
+  <!-- Waypoint Indicator Nodes -->
+  <circle cx="84" cy="21" r="2.5" fill="#2563EB"/>
+  <circle cx="144" cy="24" r="3.5" fill="#2563EB" stroke="#FFFFFF" stroke-width="1.5"/>
+  <circle cx="184" cy="20" r="2.5" fill="#10B981"/>
+
+  <!-- Finish Telemetry Node -->
+  <circle cx="216" cy="24" r="6" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+</svg>

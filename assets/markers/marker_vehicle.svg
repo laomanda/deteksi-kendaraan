@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <!-- Outer Accuracy / Orientation Ripple -->
+  <circle cx="32" cy="32" r="30" fill="#2563EB" fill-opacity="0.12"/>
+  <circle cx="32" cy="32" r="23" stroke="#2563EB" stroke-opacity="0.25" stroke-width="1.5"/>
+
+  <!-- Compass / Heading Direction Wedge -->
+  <polygon points="32,2 26,16 38,16" fill="#2563EB"/>
+
+  <!-- High-Contrast Map Pin Base -->
+  <circle cx="32" cy="32" r="18" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="15" fill="#2563EB"/>
+
+  <!-- Top-Down Minimalist Vehicle Glyph (Aerodynamic Rounded Geometry) -->
+  <!-- Windshield -->
+  <path d="M 27 28 C 28 25 36 25 37 28 L 36 34 L 28 34 Z" fill="#FFFFFF" fill-opacity="0.9"/>
+  <!-- Front Hood -->
+  <path d="M 28 24 C 29 22 35 22 36 24 L 37 27 L 27 27 Z" fill="#93C5FD"/>
+  <!-- Rear Window & Roof -->
+  <path d="M 28 35 L 36 35 L 35 39 L 29 39 Z" fill="#FFFFFF" fill-opacity="0.8"/>
+  <!-- Wheels Outline -->
+  <rect x="24" y="24" width="3" height="6" rx="1.5" fill="#0F172A"/>
+  <rect x="37" y="24" width="3" height="6" rx="1.5" fill="#0F172A"/>
+  <rect x="24" y="34" width="3" height="6" rx="1.5" fill="#0F172A"/>
+  <rect x="37" y="34" width="3" height="6" rx="1.5" fill="#0F172A"/>
+</svg>

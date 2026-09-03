@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <!-- Rounded Squircle Badge Base -->
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="2"/>
+  <rect x="8" y="8" width="48" height="48" rx="14" fill="#FFFBEB"/>
+
+  <!-- Minimalist Award Medal / Laurel Wreath Geometry -->
+  <g transform="translate(16, 14)">
+    <!-- Elegant Outer Medal Ring -->
+    <circle cx="16" cy="15" r="14" stroke="#F59E0B" stroke-width="2.5" fill="none"/>
+    <circle cx="16" cy="15" r="10" fill="#FEF3C7"/>
+
+    <!-- Subtle Centered Star / Spark Glyph -->
+    <path d="M 16 9 L 17.5 13 L 21.5 13.5 L 18.5 16.5 L 19.5 20.5 L 16 18.5 L 12.5 20.5 L 13.5 16.5 L 10.5 13.5 L 14.5 13 Z" 
+          fill="#F59E0B"/>
+
+    <!-- Clean Ribbon Tails Hanging Below (Apple Health / Strava Style) -->
+    <path d="M 12 28 L 8 36 L 13 34 L 16 29 Z" fill="#2563EB"/>
+    <path d="M 20 28 L 24 36 L 19 34 L 16 29 Z" fill="#1D4ED8"/>
+  </g>
+</svg>

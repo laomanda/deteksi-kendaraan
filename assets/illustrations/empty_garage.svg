@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320" width="400" height="320" fill="none">
+  <!-- Subtle Architectural Perspective (Calm, Modern Garage Space) -->
+  <ellipse cx="200" cy="245" rx="150" ry="18" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1.5"/>
+  <ellipse cx="200" cy="245" rx="100" ry="12" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="6 6"/>
+
+  <!-- Calm Geometric Halo Behind -->
+  <circle cx="200" cy="165" r="90" fill="#2563EB" fill-opacity="0.03"/>
+  <circle cx="200" cy="165" r="70" stroke="#2563EB" stroke-opacity="0.1" stroke-width="1.5" stroke-dasharray="8 8"/>
+
+  <!-- Soft Dashed Blueprint Outline of Vehicle (Ready to be Filled) -->
+  <g id="placeholder-vehicle-outline" opacity="0.65">
+    <!-- Cabin Glasshouse Outline -->
+    <path d="M 145 160 C 158 132 180 120 210 120 L 235 120 C 258 120 274 135 285 160 Z" 
+          stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="6 4" fill="none"/>
+    <!-- Main Body Outline -->
+    <path d="M 95 174 C 95 166 102 160 110 160 L 145 160 C 158 130 180 118 212 118 L 238 118 C 262 118 280 134 292 160 L 305 162 C 312 164 316 168 316 174 L 316 188 C 316 194 312 198 305 198 L 285 198 C 283 182 268 170 250 170 C 232 170 218 182 216 198 L 174 198 C 172 182 158 170 140 170 C 122 170 108 182 106 198 L 98 198 C 92 198 90 194 90 188 Z" 
+          stroke="#64748B" stroke-width="2.5" stroke-dasharray="6 4" fill="none"/>
+    <!-- Wheel Outlines -->
+    <circle cx="140" cy="198" r="22" stroke="#64748B" stroke-width="2.5" stroke-dasharray="4 4" fill="none"/>
+    <circle cx="140" cy="198" r="10" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
+
+    <circle cx="250" cy="198" r="22" stroke="#64748B" stroke-width="2.5" stroke-dasharray="4 4" fill="none"/>
+    <circle cx="250" cy="198" r="10" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
+  </g>
+
+  <!-- Friendly "Add Vehicle" Center Badge (Hero Action Indicator) -->
+  <g transform="translate(200, 165)">
+    <!-- Outer Soft Pulse Ring -->
+    <circle cx="0" cy="0" r="42" fill="#2563EB" fill-opacity="0.1"/>
+    <circle cx="0" cy="0" r="34" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
+    <circle cx="0" cy="0" r="26" fill="#2563EB"/>
+    
+    <!-- Clean Minimalist Plus Icon -->
+    <path d="M 0 -10 L 0 10 M -10 0 L 10 0" 
+          stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Spark / Discovery Accent Nodes (Inviting, Warm Atmosphere) -->
+  <g opacity="0.8">
+    <circle cx="120" cy="110" r="3" fill="#10B981"/>
+    <circle cx="280" cy="100" r="3" fill="#14B8A6"/>
+    <circle cx="315" cy="135" r="2" fill="#3B82F6"/>
+    <circle cx="85" cy="140" r="2" fill="#60A5FA"/>
+  </g>
+</svg>

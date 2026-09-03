@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300" fill="none">
+  <!-- Ambient Ground Shadow -->
+  <ellipse cx="200" cy="255" rx="160" ry="12" fill="#E2E8F0" fill-opacity="0.7"/>
+
+  <!-- Rear Wheel Well Cutout & Tire -->
+  <g id="car-rear-wheel">
+    <circle cx="112" cy="225" r="38" fill="#1E293B"/>
+    <circle cx="112" cy="225" r="26" fill="#F1F5F9" stroke="#94A3B8" stroke-width="2"/>
+    <circle cx="112" cy="225" r="14" fill="#CBD5E1"/>
+    <!-- Aero Inset Blades -->
+    <path d="M 112 199 L 112 251 M 86 225 L 138 225" stroke="#64748B" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="112" cy="225" r="7" fill="#2563EB"/>
+    <circle cx="112" cy="225" r="3" fill="#FFFFFF"/>
+    <!-- Brake Caliper Detail (Secondary Teal) -->
+    <path d="M 98 215 A 14 14 0 0 1 106 205" stroke="#14B8A6" stroke-width="4" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <!-- Front Wheel Well Cutout & Tire -->
+  <g id="car-front-wheel">
+    <circle cx="292" cy="225" r="38" fill="#1E293B"/>
+    <circle cx="292" cy="225" r="26" fill="#F1F5F9" stroke="#94A3B8" stroke-width="2"/>
+    <circle cx="292" cy="225" r="14" fill="#CBD5E1"/>
+    <path d="M 292 199 L 292 251 M 266 225 L 318 225" stroke="#64748B" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="292" cy="225" r="7" fill="#2563EB"/>
+    <circle cx="292" cy="225" r="3" fill="#FFFFFF"/>
+    <!-- Brake Caliper Detail -->
+    <path d="M 278 215 A 14 14 0 0 1 286 205" stroke="#14B8A6" stroke-width="4" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <!-- Aerodynamic Cabin Glasshouse (Dark Tinted Glass) -->
+  <path d="M 125 178 
+           C 142 135 176 112 225 110 
+           L 262 110 
+           C 298 112 322 138 335 178 
+           Z" 
+        fill="#1E293B"/>
+
+  <!-- Window Reflections -->
+  <!-- Front Quarter Window -->
+  <path d="M 235 120 L 260 120 C 285 122 305 140 316 172 L 235 172 Z" fill="#334155"/>
+  <!-- Rear Quarter Window -->
+  <path d="M 142 172 C 154 142 178 124 218 120 L 218 172 Z" fill="#334155"/>
+  <!-- Center B-Pillar -->
+  <rect x="222" y="116" width="9" height="60" fill="#0F172A"/>
+
+  <!-- Sleek Main Car Body (Primary Blue #2563EB) -->
+  <path d="M 52 196 
+           C 52 184 62 176 74 176 
+           L 124 176 
+           C 142 132 176 108 228 106 
+           L 266 106 
+           C 305 108 332 136 348 176 
+           L 362 178 
+           C 372 180 378 188 378 198 
+           L 378 216 
+           C 378 224 372 230 364 230 
+           L 336 230 
+           C 334 204 316 188 292 188 
+           C 268 188 250 204 248 230 
+           L 156 230 
+           C 154 204 136 188 112 188 
+           C 88 188 70 204 68 230 
+           L 58 230 
+           C 54 230 52 226 52 222 
+           Z" 
+        fill="#2563EB"/>
+
+  <!-- Dynamic Shoulder Line Highlight -->
+  <path d="M 58 182 C 115 178 285 176 368 184" stroke="#60A5FA" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Minimalist Flush Door Handles -->
+  <rect x="175" y="185" width="22" height="4" rx="2" fill="#1D4ED8"/>
+  <rect x="245" y="185" width="22" height="4" rx="2" fill="#1D4ED8"/>
+
+  <!-- Aerodynamic Side Mirror -->
+  <path d="M 264 165 C 274 165 282 170 282 174 C 282 178 274 180 264 180 Z" fill="#1D4ED8"/>
+
+  <!-- Sleek Modern LED Headlight Bar -->
+  <path d="M 358 186 L 376 190 C 378 190 378 196 376 196 L 354 196 Z" fill="#E0F2FE"/>
+  <line x1="360" y1="192" x2="376" y2="192" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Sleek Rear LED Tail Light Bar -->
+  <path d="M 52 186 L 68 186 C 70 186 70 194 68 194 L 52 192 Z" fill="#F87171"/>
+  <circle cx="56" cy="189" r="2.5" fill="#EF4444"/>
+
+  <!-- Lower Body Aero Skirt -->
+  <path d="M 154 228 L 250 228" stroke="#1E293B" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Floating Health Status Indicator (RideCare Companion Indicator) -->
+  <g transform="translate(320, 85)">
+    <circle cx="0" cy="0" r="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="6" fill="#10B981"/>
+    <circle cx="0" cy="0" r="10" stroke="#10B981" stroke-opacity="0.3" stroke-width="2"/>
+  </g>
+</svg>

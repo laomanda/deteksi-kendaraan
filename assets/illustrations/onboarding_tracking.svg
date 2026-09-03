@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320" width="400" height="320" fill="none">
+  <!-- Perspective Isometric Map Grid Plane -->
+  <g opacity="0.7">
+    <path d="M 40 240 L 200 130 L 360 240 L 200 310 Z" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5"/>
+    <!-- Grid Subdivisions -->
+    <line x1="80" y1="212" x2="240" y2="292" stroke="#E2E8F0" stroke-width="1"/>
+    <line x1="120" y1="185" x2="280" y2="275" stroke="#E2E8F0" stroke-width="1"/>
+    <line x1="160" y1="158" x2="320" y2="258" stroke="#E2E8F0" stroke-width="1"/>
+
+    <line x1="120" y1="275" x2="280" y2="185" stroke="#E2E8F0" stroke-width="1"/>
+    <line x1="160" y1="292" x2="320" y2="212" stroke="#E2E8F0" stroke-width="1"/>
+    <line x1="80" y1="258" x2="240" y2="158" stroke="#E2E8F0" stroke-width="1"/>
+  </g>
+
+  <!-- Journey Route Glow & Polyline -->
+  <!-- Outer Soft Shadow/Glow -->
+  <path d="M 90 235 C 130 190 170 260 220 200 C 260 150 290 170 325 150" 
+        stroke="#2563EB" stroke-opacity="0.16" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- White Casing for Sharp Contrast -->
+  <path d="M 90 235 C 130 190 170 260 220 200 C 260 150 290 170 325 150" 
+        stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Main Blue Journey Polyline -->
+  <path d="M 90 235 C 130 190 170 260 220 200 C 260 150 290 170 325 150" 
+        stroke="#2563EB" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Start Location Marker (Green Pin with Ripple) -->
+  <g transform="translate(90, 235)">
+    <!-- Radar Pulse Wave -->
+    <circle cx="0" cy="0" r="16" stroke="#10B981" stroke-opacity="0.25" stroke-width="2"/>
+    <circle cx="0" cy="0" r="10" fill="#10B981" fill-opacity="0.15"/>
+    <circle cx="0" cy="0" r="6" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+  </g>
+
+  <!-- Destination Marker (Finish Pin with Flag / Dark Cap) -->
+  <g transform="translate(325, 150)">
+    <!-- Shadow -->
+    <ellipse cx="0" cy="8" rx="8" ry="3" fill="#64748B" fill-opacity="0.25"/>
+    <!-- Pin Shape -->
+    <path d="M 0 -24 C -8 -24 -12 -18 -12 -12 C -12 -4 0 8 0 8 C 0 8 12 -4 12 -12 C 12 -18 8 -24 0 -24 Z" 
+          fill="#EF4444"/>
+    <circle cx="0" cy="-14" r="4.5" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Vehicle in Active Transit along Route (Center Wave) -->
+  <g transform="translate(205, 175)">
+    <!-- Vehicle Shadow -->
+    <ellipse cx="0" cy="22" rx="28" ry="6" fill="#1E293B" fill-opacity="0.2"/>
+
+    <!-- Mini Aerodynamic Car Profile (Top-Angle Angle) -->
+    <g transform="scale(0.75) translate(-35, -20)">
+      <path d="M 12 24 C 18 10 32 4 48 4 L 58 4 C 70 4 82 12 88 24 Z" fill="#1E293B"/>
+      <path d="M 0 28 C 0 24 4 22 8 22 L 18 22 C 22 10 36 2 52 2 L 62 2 C 78 2 88 12 94 22 L 100 24 C 104 26 106 28 106 32 L 106 38 C 106 42 102 44 98 44 L 88 44 C 86 34 78 28 68 28 C 58 28 50 34 48 44 L 28 44 C 26 34 18 28 8 28 Z" fill="#2563EB"/>
+      <circle cx="20" cy="44" r="10" fill="#0F172A"/>
+      <circle cx="20" cy="44" r="5" fill="#E2E8F0"/>
+      <circle cx="78" cy="44" r="10" fill="#0F172A"/>
+      <circle cx="78" cy="44" r="5" fill="#E2E8F0"/>
+    </g>
+
+    <!-- Floating Live Telemetry Badge (Speed / Signal Ripple) -->
+    <g transform="translate(25, -28)">
+      <rect x="-24" y="-12" width="48" height="24" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+      <!-- Pulse Line -->
+      <path d="M -14 0 L -8 0 L -5 -5 L -1 6 L 3 -2 L 7 0 L 14 0" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- Compass / North Indicator (Calm Navigation Cue) -->
+  <g transform="translate(330, 65)">
+    <circle cx="0" cy="0" r="18" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+    <polygon points="0,-12 4,-1 0,2 -4,-1" fill="#EF4444"/>
+    <polygon points="0,12 4,1 0,-2 -4,1" fill="#94A3B8"/>
+  </g>
+</svg>

@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320" width="400" height="320" fill="none">
+  <!-- Subtle Ambient Glow & Radiating Health Circles -->
+  <circle cx="200" cy="180" r="120" stroke="#10B981" stroke-opacity="0.08" stroke-width="2"/>
+  <circle cx="200" cy="180" r="95" stroke="#10B981" stroke-opacity="0.14" stroke-width="2" stroke-dasharray="6 6"/>
+  <circle cx="200" cy="180" r="70" stroke="#14B8A6" stroke-opacity="0.2" stroke-width="2"/>
+
+  <!-- Soft Base Ground Plane -->
+  <ellipse cx="200" cy="245" rx="140" ry="12" fill="#E2E8F0" fill-opacity="0.7"/>
+
+  <!-- Diagnostic Sensor Connection Rays -->
+  <!-- Left to Engine/Brakes -->
+  <path d="M 125 155 L 140 185" stroke="#10B981" stroke-width="2" stroke-dasharray="4 4"/>
+  <!-- Top to Vehicle Aggregate Health -->
+  <path d="M 200 80 L 200 135" stroke="#2563EB" stroke-width="2" stroke-dasharray="4 4"/>
+  <!-- Right to Battery/Tire -->
+  <path d="M 280 145 L 260 190" stroke="#14B8A6" stroke-width="2" stroke-dasharray="4 4"/>
+
+  <!-- Modern Vehicle Profile (Simplified Clean Vector) -->
+  <g id="vehicle-silhouette">
+    <!-- Cabin Glass -->
+    <path d="M 148 178 C 160 148 184 135 215 135 L 238 135 C 260 135 278 150 286 178 Z" fill="#1E293B"/>
+    <!-- Body -->
+    <path d="M 108 190 C 108 182 115 178 122 178 L 148 178 C 160 146 185 132 218 132 L 240 132 C 265 132 284 148 296 178 L 304 180 C 310 182 314 186 314 192 L 314 206 C 314 212 310 216 304 216 L 285 216 C 283 198 268 185 250 185 C 232 185 218 198 216 216 L 174 216 C 172 198 158 185 140 185 C 122 185 108 198 106 216 L 102 216 C 98 216 96 212 96 208 L 96 198 C 96 194 100 190 108 190 Z" fill="#2563EB"/>
+    <!-- Wheels -->
+    <circle cx="140" cy="216" r="22" fill="#0F172A"/>
+    <circle cx="140" cy="216" r="14" fill="#E2E8F0"/>
+    <circle cx="140" cy="216" r="6" fill="#2563EB"/>
+
+    <circle cx="250" cy="216" r="22" fill="#0F172A"/>
+    <circle cx="250" cy="216" r="14" fill="#E2E8F0"/>
+    <circle cx="250" cy="216" r="6" fill="#2563EB"/>
+  </g>
+
+  <!-- Diagnostic Node 1: Overall Health Shield (Top Center) -->
+  <g transform="translate(200, 60)">
+    <circle cx="0" cy="0" r="28" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
+    <!-- Health Circular Ring -->
+    <circle cx="0" cy="0" r="22" stroke="#E2E8F0" stroke-width="3" fill="none"/>
+    <circle cx="0" cy="0" r="22" stroke="#10B981" stroke-width="3" stroke-dasharray="110 30" stroke-linecap="round" fill="none"/>
+    <!-- Heartbeat / ECG Wave -->
+    <path d="M -10 0 L -4 0 L -1 -8 L 2 9 L 5 -2 L 10 -2" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Diagnostic Node 2: Engine / Oil Life Node (Left) -->
+  <g transform="translate(115, 140)">
+    <circle cx="0" cy="0" r="22" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="18" fill="#F0FDF4"/>
+    <!-- Oil Droplet / Vital Fluid -->
+    <path d="M 0 -7 C -4 -1 -6 2 -6 5 C -6 8 -3 10 0 10 C 3 10 6 8 6 5 C 6 2 4 -1 0 -7 Z" fill="#10B981"/>
+    <!-- Small Status Dot -->
+    <circle cx="14" cy="-14" r="5" fill="#10B981" stroke="#FFFFFF" stroke-width="1.5"/>
+  </g>
+
+  <!-- Diagnostic Node 3: Battery & Electrical Node (Right) -->
+  <g transform="translate(290, 130)">
+    <circle cx="0" cy="0" r="22" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="18" fill="#F0FDFA"/>
+    <!-- Clean Battery / Energy Symbol -->
+    <rect x="-6" y="-7" width="12" height="15" rx="2.5" stroke="#14B8A6" stroke-width="2" fill="none"/>
+    <rect x="-2" y="-10" width="4" height="2" rx="1" fill="#14B8A6"/>
+    <rect x="-4" y="-2" width="8" height="8" rx="1" fill="#14B8A6"/>
+    <!-- Small Status Dot -->
+    <circle cx="14" cy="-14" r="5" fill="#14B8A6" stroke="#FFFFFF" stroke-width="1.5"/>
+  </g>
+
+  <!-- Bottom Mini Diagnostic Checklist Card (Soft Floating Badge) -->
+  <g transform="translate(200, 275)">
+    <rect x="-65" y="-16" width="130" height="32" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+    <!-- 3 Mini Component Checkdots -->
+    <circle cx="-36" cy="0" r="5" fill="#10B981"/>
+    <path d="M -38 0 L -36 2 L -33 -2" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+    
+    <circle cx="0" cy="0" r="5" fill="#10B981"/>
+    <path d="M -2 0 L 0 2 L 3 -2" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+    
+    <circle cx="36" cy="0" r="5" fill="#10B981"/>
+    <path d="M 34 0 L 36 2 L 39 -2" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</svg>
