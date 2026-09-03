@@ -422,6 +422,10 @@ class RideTrackingNotifier extends StateNotifier<RideTrackingState> {
     final newOdometer = activeVehicle.currentKilometer + state.totalDistanceKm;
     await _ref.read(activeVehicleProvider.notifier).updateOdometer(newOdometer);
 
+    // Explicitly invalidate recent ride & history providers so UI updates immediately
+    _ref.invalidate(recentRideProvider);
+    _ref.invalidate(rideHistoryListProvider);
+
     // Reset state
     state = const RideTrackingState(status: RideTrackingStatus.idle);
     return session;
@@ -490,9 +494,62 @@ final rideTrackingProvider =
   return RideTrackingNotifier(ref);
 });
 
-final recentRideProvider = Provider<RideSessionModel?>((ref) {
-  final activeVehicle = ref.watch(activeVehicleProvider);
-  if (activeVehicle == null) return null;
-  final rideRepo = ref.watch(rideHistoryRepositoryProvider);
-  return rideRepo.getLatestRideForVehicle(activeVehicle.id);
+class RecentRideNotifier extends Notifier<RideSessionModel?> {
+  StreamSubscription? _boxSubscription;
+
+  @override
+  RideSessionModel? build() {
+    final activeVehicle = ref.watch(activeVehicleProvider);
+    if (activeVehicle == null) return null;
+
+    _boxSubscription?.cancel();
+    _boxSubscription = HiveRegistrar.ridesBox.watch().listen((_) {
+      ref.invalidateSelf();
+    });
+
+    ref.onDispose(() {
+      _boxSubscription?.cancel();
+    });
+
+    final rideRepo = ref.watch(rideHistoryRepositoryProvider);
+    return rideRepo.getLatestRideForVehicle(activeVehicle.id);
+  }
+}
+
+final recentRideProvider =
+    NotifierProvider<RecentRideNotifier, RideSessionModel?>(() {
+  return RecentRideNotifier();
+});
+
+class RideHistoryNotifier extends Notifier<List<RideSessionModel>> {
+  StreamSubscription? _boxSubscription;
+
+  @override
+  List<RideSessionModel> build() {
+    final activeVehicle = ref.watch(activeVehicleProvider);
+    if (activeVehicle == null) return [];
+
+    _boxSubscription?.cancel();
+    _boxSubscription = HiveRegistrar.ridesBox.watch().listen((_) {
+      ref.invalidateSelf();
+    });
+
+    ref.onDispose(() {
+      _boxSubscription?.cancel();
+    });
+
+    final rideRepo = ref.watch(rideHistoryRepositoryProvider);
+    return rideRepo.getRidesForVehicle(activeVehicle.id);
+  }
+
+  Future<void> deleteRide(String id) async {
+    final rideRepo = ref.read(rideHistoryRepositoryProvider);
+    await rideRepo.deleteRide(id);
+    ref.invalidateSelf();
+  }
+}
+
+final rideHistoryListProvider =
+    NotifierProvider<RideHistoryNotifier, List<RideSessionModel>>(() {
+  return RideHistoryNotifier();
 });

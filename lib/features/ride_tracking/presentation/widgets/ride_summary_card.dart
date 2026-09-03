@@ -57,7 +57,10 @@ class RideSummaryCard extends StatelessWidget {
                         TileLayer(
                           urlTemplate:
                               'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          fallbackUrl:
+                              'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
                           userAgentPackageName: 'com.ridecare.ridecare',
+                          maxZoom: 19,
                         ),
                         PolylineLayer(
                           polylines: [

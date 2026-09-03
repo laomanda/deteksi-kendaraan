@@ -124,7 +124,10 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                       TileLayer(
                         urlTemplate:
                             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'RideCareApp/1.0 (Android)',
+                        fallbackUrl:
+                            'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.ridecare.ridecare',
+                        maxZoom: 19,
                       ),
                       // Outer border polyline for sharp contrast (DSS 12.2)
                       if (polylinePoints.length > 1) ...[

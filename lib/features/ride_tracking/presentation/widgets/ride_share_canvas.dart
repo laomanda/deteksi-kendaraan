@@ -290,7 +290,10 @@ class RideShareCanvas extends StatelessWidget {
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                fallbackUrl:
+                    'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.ridecare.ridecare',
+                maxZoom: 19,
               ),
               if (polylinePoints.length > 1) ...[
                 PolylineLayer(

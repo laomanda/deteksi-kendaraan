@@ -7,6 +7,7 @@ import '../../../garage/presentation/controllers/active_vehicle_controller.dart'
 import '../../../maintenance/presentation/controllers/maintenance_status_controller.dart';
 import '../../../maintenance/presentation/widgets/maintenance_card.dart';
 import '../../../ride_tracking/presentation/controllers/ride_tracking_controller.dart';
+import '../../../ride_tracking/presentation/screens/ride_history_screen.dart';
 import '../../../ride_tracking/presentation/widgets/ride_summary_card.dart';
 import '../../../ride_tracking/presentation/widgets/start_ride_button.dart';
 import '../widgets/vehicle_header_card.dart';
@@ -47,36 +48,17 @@ class HomeDashboardScreen extends ConsumerWidget {
           ],
         ),
         actions: [
-          // Offline database status indicator (DSS Section 9.1)
-          Container(
-            margin: const EdgeInsets.only(right: AppSpacing.space16),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceSubtle,
-              borderRadius: AppSpacing.chipBorderRadius,
-              border: Border.all(color: AppColors.borderSubtle, width: 1),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: const BoxDecoration(
-                    color: AppColors.healthOptimal,
-                    shape: BoxShape.circle,
-                  ),
+          IconButton(
+            icon: const Icon(Icons.history_rounded, color: AppColors.textPrimary),
+            tooltip: 'Riwayat Perjalanan',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const RideHistoryScreen(),
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  'Offline DB',
-                  style: AppTypography.captionBadge.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ],
       ),
@@ -156,7 +138,28 @@ class HomeDashboardScreen extends ConsumerWidget {
               const SizedBox(height: AppSpacing.space24),
 
               // 4. Recent Ride Snapshot
-              Text('Perjalanan Terakhir', style: AppTypography.heading2),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Perjalanan Terakhir', style: AppTypography.heading2),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RideHistoryScreen(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'Lihat Semua',
+                      style: AppTypography.captionBadge.copyWith(
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: AppSpacing.space8),
               if (recentRide != null && activeVehicle != null)
                 RideSummaryCard(
