@@ -31,7 +31,7 @@ void main() {
 
   group('SupabaseConfig & Constants Tests', () {
     test('Default URL and anonKey fallback are correctly configured', () {
-      expect(SupabaseConfig.fallbackUrl, 'https://cmueermihksabkdqkup.supabase.co');
+      expect(SupabaseConfig.fallbackUrl, 'https://cmueermihksabkdkqpup.supabase.co');
       expect(SupabaseConfig.fallbackAnonKey, 'sb_publishable_NxXWu7hSOj5tCQoH9rmOhw_n3Rn88wz');
       expect(SupabaseConfig.url, isNotEmpty);
       expect(SupabaseConfig.anonKey, isNotEmpty);

@@ -3,7 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseConfig {
-  static const String fallbackUrl = 'https://cmueermihksabkdqkup.supabase.co';
+  static const String fallbackUrl = 'https://cmueermihksabkdkqpup.supabase.co';
   static const String fallbackAnonKey = 'sb_publishable_NxXWu7hSOj5tCQoH9rmOhw_n3Rn88wz';
 
   static String get url =>
