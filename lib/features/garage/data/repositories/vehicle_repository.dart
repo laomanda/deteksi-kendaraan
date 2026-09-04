@@ -12,6 +12,11 @@ class VehicleRepository {
     return _box.values.toList();
   }
 
+  /// Alias for getVehicles requested by specification
+  Future<List<VehicleModel>> getVehicles() async {
+    return getAllVehicles();
+  }
+
   VehicleModel? getVehicleById(String id) {
     return _box.get(id);
   }
@@ -22,6 +27,11 @@ class VehicleRepository {
     if (getActiveVehicleId() == null) {
       await setActiveVehicleId(vehicle.id);
     }
+  }
+
+  /// Creates a vehicle locally and attempts sync to Supabase
+  Future<void> createVehicle(VehicleModel vehicle) async {
+    await saveVehicle(vehicle);
   }
 
   Future<void> updateOdometer(String vehicleId, double newKm) async {

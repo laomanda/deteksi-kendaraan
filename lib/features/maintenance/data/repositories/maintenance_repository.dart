@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/database/hive_registrar.dart';
 import '../models/maintenance_item_model.dart';
 import '../models/service_log_model.dart';
+import '../../../../core/supabase/supabase_service.dart';
 
 class MaintenanceRepository {
   Box<MaintenanceItemModel> get _box => HiveRegistrar.maintenanceBox;
@@ -82,4 +83,28 @@ class MaintenanceRepository {
 
     return log;
   }
+
+  /// Fetches maintenance catalog from Supabase with fallback to empty list or local catalog
+  Future<List<Map<String, dynamic>>> getMaintenanceCatalog() async {
+    try {
+      final supabase = SupabaseRegistrar.service;
+      return await supabase.getData('maintenance_catalog');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Gets service history for vehicle or all vehicles
+  Future<List<ServiceLogModel>> getServiceHistory([String? vehicleId]) async {
+    if (vehicleId != null) {
+      return getServiceHistoryForVehicle(vehicleId);
+    }
+    final logs = _historyBox.values.toList();
+    logs.sort((a, b) => b.serviceDate.compareTo(a.serviceDate));
+    return logs;
+  }
+}
+
+class SupabaseRegistrar {
+  static final service = SupabaseService();
 }

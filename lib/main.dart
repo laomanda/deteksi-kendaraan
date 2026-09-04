@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/database/hive_registrar.dart';
+import 'core/supabase/supabase_config.dart';
 import 'core/theme/app_theme.dart';
 import 'features/navigation/main_navigation_screen.dart';
 import 'features/onboarding/presentation/screens/onboarding_screen.dart';
@@ -14,6 +15,13 @@ void main() async {
 
   // Initialize local notifications
   await NotificationService.init();
+
+  // Initialize Supabase client
+  try {
+    await SupabaseConfig.init();
+  } catch (e) {
+    debugPrint('Supabase init failed: $e');
+  }
 
   // Check if any vehicle exists in local storage
   final hasVehicles = HiveRegistrar.vehiclesBox.isNotEmpty;

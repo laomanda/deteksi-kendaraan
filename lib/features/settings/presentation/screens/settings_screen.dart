@@ -8,6 +8,9 @@ import '../../../../core/database/hive_registrar.dart';
 import '../../../../shared/services/backup_service.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../../onboarding/presentation/screens/onboarding_screen.dart';
+import '../../../shared/presentation/screens/supabase_connection_test_page.dart';
+import '../../../shared/presentation/screens/ridecare_database_test_page.dart';
+import '../../../../core/sync/sync_manager.dart';
 
 /// Layar 5: Settings Screen (DSS Section 9.5 & PRD Section 6)
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -187,6 +190,65 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           )
                         : const Icon(Icons.chevron_right_rounded),
                     onTap: _isExporting ? null : _exportBackup,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.space24),
+
+            // Section: Supabase & Cloud Sync
+            Text('SUPABASE & CLOUD SYNC', style: AppTypography.captionBadge),
+            const SizedBox(height: AppSpacing.space8),
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.surfaceWhite,
+                borderRadius: AppSpacing.cardBorderRadius,
+                border: AppSpacing.cardBorder,
+              ),
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.cloud_sync_outlined, color: AppColors.primaryBlue),
+                    title: Text('Test Koneksi Supabase', style: AppTypography.bodyMedium),
+                    subtitle: Text('Cek status koneksi backend', style: AppTypography.captionSubtle),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SupabaseConnectionTestPage()),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.storage_rounded, color: AppColors.secondaryTeal),
+                    title: Text('Test CRUD Database', style: AppTypography.bodyMedium),
+                    subtitle: Text('Testing Create, Read, Update, Delete', style: AppTypography.captionSubtle),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RideCareDatabaseTestPage()),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.sync_rounded, color: Colors.indigo),
+                    title: Text('Sinkronisasi Data (Hive -> Supabase)', style: AppTypography.bodyMedium),
+                    subtitle: Text('Upload data lokal ke Supabase', style: AppTypography.captionSubtle),
+                    trailing: const Icon(Icons.cloud_upload_outlined),
+                    onTap: () async {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Memulai sinkronisasi ke Supabase...')),
+                      );
+                      final result = await SyncManager().uploadPendingChanges();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(result.message)),
+                        );
+                      }
+                    },
                   ),
                 ],
               ),
