@@ -34,8 +34,8 @@ class SyncManager {
             'model': vehicle.model,
             'year': vehicle.year,
             'vehicle_type': vehicle.vehicleType,
-            'current_kilometer': vehicle.currentKilometer,
-            'photo_path': vehicle.photoPath,
+            'current_odometer': vehicle.currentKilometer.round(),
+            'photo_url': vehicle.photoPath,
             'created_at': vehicle.createdAt.toIso8601String(),
           }, onConflict: 'id');
           syncedCount++;
@@ -51,11 +51,10 @@ class SyncManager {
           await _supabaseService.client.from('service_records').upsert({
             'id': log.id,
             'vehicle_id': log.vehicleId,
-            'component_type': log.componentType,
-            'service_km': log.serviceKm,
-            'service_date': log.serviceDate.toIso8601String(),
-            'cost': log.cost,
-            'notes': log.notes,
+            'odometer': log.serviceKm.round(),
+            'service_date': log.serviceDate.toIso8601String().split('T')[0],
+            'cost': log.cost.round(),
+            'notes': log.notes.isNotEmpty ? log.notes : log.componentType,
           }, onConflict: 'id');
           syncedCount++;
         } catch (e) {
@@ -72,10 +71,10 @@ class SyncManager {
             'vehicle_id': ride.vehicleId,
             'start_time': ride.startTime.toIso8601String(),
             'end_time': ride.endTime.toIso8601String(),
-            'total_distance_km': ride.totalDistanceKm,
-            'total_duration_seconds': ride.durationSeconds,
-            'avg_speed_kmh': ride.averageSpeedKmh,
-            'max_speed_kmh': ride.maxSpeedKmh,
+            'distance': ride.totalDistanceKm,
+            'duration': ride.durationSeconds,
+            'avg_speed': ride.averageSpeedKmh,
+            'max_speed': ride.maxSpeedKmh,
           }, onConflict: 'id');
           syncedCount++;
         } catch (e) {
@@ -124,8 +123,8 @@ class SyncManager {
               brand: item['brand']?.toString() ?? '',
               model: item['model']?.toString() ?? '',
               year: int.tryParse(item['year']?.toString() ?? '2024') ?? 2024,
-              currentKilometer: double.tryParse(item['current_kilometer']?.toString() ?? '0') ?? 0.0,
-              photoPath: item['photo_path']?.toString(),
+              currentKilometer: double.tryParse((item['current_odometer'] ?? item['current_kilometer'] ?? '0').toString()) ?? 0.0,
+              photoPath: (item['photo_url'] ?? item['photo_path'])?.toString(),
               createdAt: DateTime.tryParse(item['created_at']?.toString() ?? '') ?? DateTime.now(),
             );
             await vehiclesBox.put(vehicle.id, vehicle);
@@ -147,8 +146,8 @@ class SyncManager {
             final log = ServiceLogModel(
               id: id,
               vehicleId: item['vehicle_id']?.toString() ?? '',
-              componentType: item['component_type']?.toString() ?? '',
-              serviceKm: double.tryParse(item['service_km']?.toString() ?? '0') ?? 0.0,
+              componentType: item['component_type']?.toString() ?? item['notes']?.toString() ?? 'General Service',
+              serviceKm: double.tryParse((item['odometer'] ?? item['service_km'] ?? '0').toString()) ?? 0.0,
               serviceDate: DateTime.tryParse(item['service_date']?.toString() ?? '') ?? DateTime.now(),
               cost: double.tryParse(item['cost']?.toString() ?? '0') ?? 0.0,
               notes: item['notes']?.toString() ?? '',

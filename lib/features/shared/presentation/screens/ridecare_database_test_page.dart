@@ -34,13 +34,33 @@ class _RideCareDatabaseTestPageState extends State<RideCareDatabaseTestPage> {
         'model': 'Beat',
         'year': 2024,
         'vehicle_type': 'motorcycle',
-        'current_kilometer': 0.0,
+        'current_odometer': 0,
       };
 
-      final res = await _supabaseService.insertData('vehicles', payload);
-      _testVehicleId = newId;
-      _log('CREATE Berhasil! Data tersimpan: $res');
-      await _readVehicles();
+      try {
+        final res = await _supabaseService.insertData('vehicles', payload);
+        _testVehicleId = newId;
+        _log('CREATE Berhasil! Data tersimpan: $res');
+        await _readVehicles();
+      } catch (e) {
+        if (e.toString().contains('current_odometer')) {
+          _log('Pemberitahuan: Mencoba fallback ke current_kilometer...');
+          final fallbackPayload = {
+            'id': newId,
+            'brand': 'Honda',
+            'model': 'Beat',
+            'year': 2024,
+            'vehicle_type': 'motorcycle',
+            'current_kilometer': 0.0,
+          };
+          final res = await _supabaseService.insertData('vehicles', fallbackPayload);
+          _testVehicleId = newId;
+          _log('CREATE Berhasil (current_kilometer)! Data tersimpan: $res');
+          await _readVehicles();
+        } else {
+          rethrow;
+        }
+      }
     } catch (e) {
       _log('CREATE Gagal: $e');
     } finally {
@@ -81,17 +101,36 @@ class _RideCareDatabaseTestPageState extends State<RideCareDatabaseTestPage> {
     try {
       final updatePayload = {
         'model': 'Beat Street (Updated)',
-        'current_kilometer': 1250.0,
+        'current_odometer': 1250,
       };
 
-      final res = await _supabaseService.updateData(
-        'vehicles',
-        updatePayload,
-        matchColumn: 'id',
-        matchValue: _testVehicleId!,
-      );
-      _log('UPDATE Berhasil! Hasil: $res');
-      await _readVehicles();
+      try {
+        final res = await _supabaseService.updateData(
+          'vehicles',
+          updatePayload,
+          matchColumn: 'id',
+          matchValue: _testVehicleId!,
+        );
+        _log('UPDATE Berhasil! Hasil: $res');
+        await _readVehicles();
+      } catch (e) {
+        if (e.toString().contains('current_odometer')) {
+          final fallbackPayload = {
+            'model': 'Beat Street (Updated)',
+            'current_kilometer': 1250.0,
+          };
+          final res = await _supabaseService.updateData(
+            'vehicles',
+            fallbackPayload,
+            matchColumn: 'id',
+            matchValue: _testVehicleId!,
+          );
+          _log('UPDATE Berhasil (current_kilometer)! Hasil: $res');
+          await _readVehicles();
+        } else {
+          rethrow;
+        }
+      }
     } catch (e) {
       _log('UPDATE Gagal: $e');
     } finally {
@@ -209,7 +248,7 @@ class _RideCareDatabaseTestPageState extends State<RideCareDatabaseTestPage> {
                             return ListTile(
                               leading: const Icon(Icons.two_wheeler),
                               title: Text('${item['brand']} ${item['model']} (${item['year']})'),
-                              subtitle: Text('ID: ${item['id']}\nKM: ${item['current_kilometer'] ?? 0}'),
+                              subtitle: Text('ID: ${item['id']}\nKM: ${item['current_kilometer'] ?? item['current_odometer'] ?? 0}'),
                               isThreeLine: true,
                             );
                           },

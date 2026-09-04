@@ -24,9 +24,10 @@ class RideRepository {
         'vehicle_id': session.vehicleId,
         'start_time': session.startTime.toIso8601String(),
         'end_time': session.endTime.toIso8601String(),
-        'total_distance_km': session.totalDistanceKm,
-        'duration_seconds': session.durationSeconds,
-        'average_speed_kmh': session.averageSpeedKmh,
+        'distance': session.totalDistanceKm,
+        'duration': session.durationSeconds,
+        'avg_speed': session.averageSpeedKmh,
+        'max_speed': session.maxSpeedKmh,
       });
 
       // Also save points if any
@@ -46,9 +47,8 @@ class RideRepository {
         'ride_session_id': sessionId,
         'latitude': p.latitude,
         'longitude': p.longitude,
-        'altitude': p.altitude,
         'speed': p.speed,
-        'timestamp': p.timestamp.toIso8601String(),
+        'recorded_at': p.timestamp.toIso8601String(),
       }).toList();
 
       await _supabaseService.insertData('ride_points', payload);
