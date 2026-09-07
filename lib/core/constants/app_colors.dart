@@ -21,6 +21,7 @@ class AppColors {
 
   // Health Status Tokens (DSS Table 4)
   static const Color healthOptimal = Color(0xFF10B981); // 80% - 100%
+  static const Color successGreen = healthOptimal;
   static const Color healthModerate = Color(0xFFF59E0B); // 50% - 79%
   static const Color healthWarning = Color(0xFFF97316); // 20% - 49%
   static const Color healthCritical = Color(0xFFEF4444); // 0% - 19%

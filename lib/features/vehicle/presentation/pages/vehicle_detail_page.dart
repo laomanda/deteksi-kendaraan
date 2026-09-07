@@ -6,7 +6,8 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../data/models/vehicle_model.dart';
 import '../../providers/vehicle_provider.dart';
-import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
+import '../../../maintenance/presentation/pages/maintenance_page.dart';
+import '../../../maintenance/providers/maintenance_intelligence_providers.dart';
 import 'add_vehicle_page.dart';
 
 /// Page displaying detailed information, specifications, and actions for a vehicle
@@ -428,6 +429,8 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
   }
 
   Widget _buildMaintenancePreviewCard() {
+    final healthSummaryAsync = ref.watch(maintenanceHealthProvider(_vehicle.id));
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space16),
       decoration: BoxDecoration(
@@ -442,29 +445,65 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
             children: [
               const Icon(Icons.build_circle_outlined, size: 18, color: AppColors.primaryBlue),
               const SizedBox(width: 8),
-              Text('MAINTENANCE PREVIEW', style: AppTypography.captionBadge),
+              Text('MAINTENANCE INTELLIGENCE', style: AppTypography.captionBadge),
               const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceSubtle,
-                  borderRadius: BorderRadius.circular(4),
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MaintenancePage(initialVehicleId: _vehicle.id),
+                    ),
+                  );
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Buka Detail',
+                      style: AppTypography.captionBadge.copyWith(
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.primaryBlue),
+                  ],
                 ),
-                child: Text('Coming soon', style: AppTypography.captionSubtle.copyWith(fontSize: 10)),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.space12),
-          Row(
-            children: [
-              const Icon(Icons.health_and_safety_rounded, color: AppColors.healthOptimal, size: 20),
-              const SizedBox(width: 8),
-              Text('Health Status: 100% (Baik)', style: AppTypography.bodyMedium),
-            ],
+          healthSummaryAsync.when(
+            loading: () => const LinearProgressIndicator(),
+            error: (_, __) => Row(
+              children: [
+                const Icon(Icons.health_and_safety_rounded, color: AppColors.healthOptimal, size: 20),
+                const SizedBox(width: 8),
+                Text('Health Status: 100% (Baik)', style: AppTypography.bodyMedium),
+              ],
+            ),
+            data: (summary) {
+              final score = summary.overallScore.round();
+              final isGood = score >= 80;
+              final scoreColor = isGood
+                  ? AppColors.healthOptimal
+                  : (score >= 50 ? Colors.orangeAccent : Colors.redAccent);
+
+              return Row(
+                children: [
+                  Icon(Icons.health_and_safety_rounded, color: scoreColor, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Overall Health: $score% (${isGood ? 'Kondisi Baik' : 'Perlu Perhatian'})',
+                    style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
-            'Servis berkala dan riwayat penggantian part akan otomatis terintegrasi dengan modul pemeliharaan.',
+            'Pantau interval servis, estimasi biaya suku cadang & jasa, serta riwayat servis berkala.',
             style: AppTypography.captionSubtle,
           ),
         ],

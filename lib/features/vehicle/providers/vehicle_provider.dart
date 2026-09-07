@@ -4,6 +4,9 @@ import '../data/repositories/vehicle_repository.dart';
 import '../../shared/providers/repository_providers.dart';
 import '../../garage/presentation/controllers/active_vehicle_controller.dart';
 
+export '../../shared/providers/repository_providers.dart';
+export '../../garage/presentation/controllers/active_vehicle_controller.dart';
+
 /// StateNotifier managing vehicle list state (Loading, Data, Error)
 class VehicleNotifier extends StateNotifier<AsyncValue<List<VehicleModel>>> {
   final VehicleRepository _repository;
@@ -34,6 +37,9 @@ class VehicleNotifier extends StateNotifier<AsyncValue<List<VehicleModel>>> {
       }
     }
   }
+
+  /// Refreshes vehicle list
+  Future<void> refresh() async => loadVehicles();
 
   /// Adds a new vehicle and automatically updates the state
   Future<VehicleModel> addVehicle(VehicleModel vehicle) async {
@@ -86,3 +92,6 @@ final vehicleProvider =
   final repo = ref.watch(vehicleRepositoryProvider);
   return VehicleNotifier(repo, ref);
 });
+
+/// Alias for vehicleProvider
+final vehicleListProvider = vehicleProvider;

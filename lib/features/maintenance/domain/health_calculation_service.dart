@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 import '../data/models/maintenance_item_model.dart';
+import '../data/models/maintenance_price_model.dart';
+import '../data/models/vehicle_maintenance_model.dart';
 
 /// Health calculation status wrapper containing computed metrics
 class ComponentHealthResult {
@@ -111,4 +113,71 @@ class HealthCalculationService {
 
     return (lastServiceKm: lastKm, lastServiceDate: lastDate);
   }
+
+  /// Kalkulasi Maintenance Health berdasarkan current_odometer, last_service_odometer, dan default_interval_km
+  static VehicleMaintenanceHealth calculateItemHealth({
+    required VehicleMaintenanceModel item,
+    required int currentOdometer,
+    required int defaultIntervalKm,
+    MaintenancePriceModel? priceEstimate,
+  }) {
+    final usedKm = math.max(0, currentOdometer - item.lastServiceOdometer);
+    final remainingKm = math.max(0, defaultIntervalKm - usedKm);
+    final healthPercentage = defaultIntervalKm > 0
+        ? ((remainingKm / defaultIntervalKm) * 100.0).clamp(0.0, 100.0)
+        : 100.0;
+
+    String status;
+    if (remainingKm == 0 || healthPercentage <= 0) {
+      status = 'OVERDUE';
+    } else if (remainingKm <= (0.25 * defaultIntervalKm) || healthPercentage <= 25.0) {
+      status = 'DUE SOON';
+    } else {
+      status = 'GOOD';
+    }
+
+    final nextServiceOdo = item.lastServiceOdometer + defaultIntervalKm;
+
+    return VehicleMaintenanceHealth(
+      item: item,
+      usedKm: usedKm,
+      remainingKm: remainingKm,
+      healthPercentage: healthPercentage,
+      status: status,
+      nextServiceOdometer: nextServiceOdo,
+      priceEstimate: priceEstimate,
+    );
+  }
+
+  /// Menghitung skor kesehatan keseluruhan (Overall Health) kendaraan
+  static double calculateOverallScore(List<VehicleMaintenanceHealth> items) {
+    if (items.isEmpty) return 100.0;
+    final sum = items.fold<double>(0.0, (acc, e) => acc + e.healthPercentage);
+    return (sum / items.length).clamp(0.0, 100.0);
+  }
+}
+
+/// DTO representasi hasil kalkulasi kesehatan satu item maintenance
+class VehicleMaintenanceHealth {
+  final VehicleMaintenanceModel item;
+  final int usedKm;
+  final int remainingKm;
+  final double healthPercentage; // 0.0 to 100.0
+  final String status; // 'GOOD' | 'DUE SOON' | 'OVERDUE'
+  final int nextServiceOdometer;
+  final MaintenancePriceModel? priceEstimate;
+
+  const VehicleMaintenanceHealth({
+    required this.item,
+    required this.usedKm,
+    required this.remainingKm,
+    required this.healthPercentage,
+    required this.status,
+    required this.nextServiceOdometer,
+    this.priceEstimate,
+  });
+
+  bool get isGood => status == 'GOOD';
+  bool get isDueSoon => status == 'DUE SOON';
+  bool get isOverdue => status == 'OVERDUE';
 }

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
-import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../providers/vehicle_provider.dart';
 import '../widgets/vehicle_card.dart';
 import 'add_vehicle_page.dart';
