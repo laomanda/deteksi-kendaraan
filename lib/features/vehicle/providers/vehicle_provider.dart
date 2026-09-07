@@ -12,7 +12,10 @@ class VehicleNotifier extends StateNotifier<AsyncValue<List<VehicleModel>>> {
   final VehicleRepository _repository;
   final Ref _ref;
 
-  VehicleNotifier(this._repository, this._ref) : super(const AsyncValue.loading()) {
+  VehicleNotifier(this._repository, this._ref)
+      : super(_repository.getAllVehicles().isNotEmpty
+            ? AsyncValue.data(_repository.getAllVehicles())
+            : const AsyncValue.loading()) {
     loadVehicles();
   }
 
@@ -27,9 +30,11 @@ class VehicleNotifier extends StateNotifier<AsyncValue<List<VehicleModel>>> {
 
     try {
       final remoteList = await _repository.getVehicles(forceRemote: forceRemote);
+      if (!mounted) return;
       state = AsyncValue.data(remoteList);
       _ref.read(activeVehicleProvider.notifier).refresh();
     } catch (e, st) {
+      if (!mounted) return;
       if (localList.isNotEmpty) {
         state = AsyncValue.data(localList);
       } else {

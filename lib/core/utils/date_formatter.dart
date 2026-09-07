@@ -70,9 +70,13 @@ class DateFormatter {
     return '${date.day} ${months[date.month]} ${date.year}';
   }
 
+  /// Formats time e.g. "08:30"
+  static String formatTime(DateTime date) {
+    return DateFormat('HH:mm').format(date);
+  }
+
   /// Formats date and time e.g. "2 Sep 2026, 08:30"
   static String formatDateTime(DateTime date) {
-    final timeStr = DateFormat('HH:mm').format(date);
-    return '${formatDate(date)}, $timeStr';
+    return '${formatDate(date)}, ${formatTime(date)}';
   }
 }

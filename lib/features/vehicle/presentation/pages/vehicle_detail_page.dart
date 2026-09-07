@@ -8,6 +8,8 @@ import '../../data/models/vehicle_model.dart';
 import '../../providers/vehicle_provider.dart';
 import '../../../maintenance/presentation/pages/maintenance_page.dart';
 import '../../../maintenance/providers/maintenance_intelligence_providers.dart';
+import '../../../maintenance/presentation/widgets/maintenance_detail_bottom_sheet.dart';
+import '../../../maintenance/providers/maintenance_prediction_providers.dart';
 import 'add_vehicle_page.dart';
 
 /// Page displaying detailed information, specifications, and actions for a vehicle
@@ -153,7 +155,12 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
 
               const SizedBox(height: AppSpacing.space16),
 
-              // 4. Maintenance Preview (Coming Soon)
+              // 4. Next Maintenance Card (Most Urgent Service)
+              _buildNextMaintenanceCard(),
+
+              const SizedBox(height: AppSpacing.space16),
+
+              // 5. Maintenance Preview (Health Status)
               _buildMaintenancePreviewCard(),
 
               const SizedBox(height: AppSpacing.space16),
@@ -425,6 +432,139 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildNextMaintenanceCard() {
+    final upcomingAsync = ref.watch(upcomingMaintenanceProvider(_vehicle.id));
+
+    return upcomingAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (items) {
+        if (items.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final nextItem = items.first;
+
+        final Color badgeColor;
+        final Color badgeBgColor;
+        if (nextItem.isOverdue) {
+          badgeColor = AppColors.healthCritical;
+          badgeBgColor = Colors.red.withValues(alpha: 0.1);
+        } else if (nextItem.isDueSoon) {
+          badgeColor = AppColors.healthWarning;
+          badgeBgColor = Colors.orange.withValues(alpha: 0.1);
+        } else {
+          badgeColor = AppColors.healthOptimal;
+          badgeBgColor = Colors.green.withValues(alpha: 0.1);
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceWhite,
+            borderRadius: AppSpacing.cardBorderRadius,
+            border: Border.all(
+              color: nextItem.isOverdue
+                  ? AppColors.healthCritical.withValues(alpha: 0.4)
+                  : (nextItem.isDueSoon
+                      ? AppColors.healthWarning.withValues(alpha: 0.4)
+                      : AppColors.borderSubtle),
+              width: nextItem.isOverdue || nextItem.isDueSoon ? 1.5 : 1.0,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x06000000),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: InkWell(
+            onTap: () => MaintenanceDetailBottomSheet.show(
+              context,
+              prediction: nextItem,
+              vehicleId: _vehicle.id,
+            ),
+            borderRadius: AppSpacing.cardBorderRadius,
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.space16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.build_circle_rounded,
+                            size: 18,
+                            color: AppColors.primaryBlue,
+                          ),
+                          const SizedBox(width: 8),
+                          Text('NEXT MAINTENANCE', style: AppTypography.captionBadge),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: badgeBgColor,
+                          borderRadius: AppSpacing.chipBorderRadius,
+                        ),
+                        child: Text(
+                          nextItem.status,
+                          style: AppTypography.captionBadge.copyWith(
+                            color: badgeColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.space12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              nextItem.componentName,
+                              style: AppTypography.heading3.copyWith(fontSize: 16),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Sisa: ${nextItem.remainingKm > 0 ? DateFormatter.formatKm(nextItem.remainingKm.toDouble()) : '0 KM'} (${nextItem.remainingDays > 0 ? '${nextItem.remainingDays} hari' : 'Hari ini'})',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Perkiraan: ${nextItem.formattedTotalRange}',
+                              style: AppTypography.captionBadge.copyWith(
+                                color: AppColors.primaryBlue,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: AppColors.textSecondary,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

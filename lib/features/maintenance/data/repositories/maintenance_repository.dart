@@ -151,6 +151,22 @@ class MaintenanceRepository {
   // 3. VEHICLE MAINTENANCE (Supabase 'vehicle_maintenance')
   // -------------------------------------------------------------
 
+  /// Mengambil data maintenance tersimpan di Hive secara sinkron
+  List<VehicleMaintenanceModel>? getCachedVehicleMaintenance(String vehicleId) {
+    final storageKey = 'vehicle_maintenance_$vehicleId';
+    final cached = _settingsBox.get(storageKey);
+    if (cached != null && cached is List) {
+      try {
+        return cached
+            .map((e) => VehicleMaintenanceModel.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      } catch (e) {
+        debugPrint('Error parsing vehicle maintenance cache: $e');
+      }
+    }
+    return null;
+  }
+
   /// Mengambil data maintenance aktif untuk suatu kendaraan.
   /// Jika belum ada, otomatis di-generate berdasarkan katalog tipe kendaraan.
   Future<List<VehicleMaintenanceModel>> getVehicleMaintenance(

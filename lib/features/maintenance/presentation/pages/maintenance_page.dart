@@ -10,7 +10,10 @@ import '../../data/models/maintenance_price_model.dart';
 import '../../domain/health_calculation_service.dart';
 import '../../providers/maintenance_intelligence_providers.dart';
 import '../screens/service_history_screen.dart';
+import '../widgets/maintenance_cost_forecast_card.dart';
+import '../widgets/upcoming_maintenance_card.dart';
 import 'add_service_page.dart';
+
 
 enum MaintenanceViewFilter { all, needsAttention, good }
 
@@ -537,7 +540,16 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
           ),
           const SizedBox(height: AppSpacing.space16),
 
+          // 2B. Estimated Upcoming Cost & Budget Forecast Card
+          MaintenanceCostForecastCard(vehicleId: vehicle.id),
+          const SizedBox(height: AppSpacing.space16),
+
+          // 2C. UPCOMING MAINTENANCE Section
+          UpcomingMaintenanceCard(vehicleId: vehicle.id),
+          const SizedBox(height: AppSpacing.space16),
+
           // 3. Filter Chips
+
           Row(
             children: [
               _buildFilterChip('Semua Komponen', MaintenanceViewFilter.all),

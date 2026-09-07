@@ -35,6 +35,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       HomeDashboardScreen(
         onNavigateToTracking: () => _onTabSelected(1),
         onNavigateToMaintenance: () => _onTabSelected(2),
+        onNavigateToGarage: () => _onTabSelected(3),
       ),
       const RideTrackingScreen(),
       const MaintenanceScreen(),

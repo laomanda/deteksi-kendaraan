@@ -38,20 +38,28 @@ class VehicleMaintenanceNotifier
     required this.vehicleId,
     this.vehicleType = 'motorcycle',
   })  : _repository = repository,
-        super(const AsyncValue.loading()) {
+        super(repository.getCachedVehicleMaintenance(vehicleId) != null
+            ? AsyncValue.data(repository.getCachedVehicleMaintenance(vehicleId)!)
+            : const AsyncValue.loading()) {
     loadItems();
   }
 
   Future<void> loadItems() async {
     try {
-      state = const AsyncValue.loading();
+      if (state.value == null) {
+        state = const AsyncValue.loading();
+      }
       final items = await _repository.getVehicleMaintenance(
         vehicleId,
         vehicleType: vehicleType,
       );
+      if (!mounted) return;
       state = AsyncValue.data(items);
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (!mounted) return;
+      if (state.value == null) {
+        state = AsyncValue.error(e, st);
+      }
     }
   }
 
@@ -105,8 +113,10 @@ class ServiceRecordsNotifier
     try {
       state = const AsyncValue.loading();
       final records = await _repository.getServiceRecords(vehicleId);
+      if (!mounted) return;
       state = AsyncValue.data(records);
     } catch (e, st) {
+      if (!mounted) return;
       state = AsyncValue.error(e, st);
     }
   }
