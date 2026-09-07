@@ -489,23 +489,83 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                   ? AppColors.healthOptimal
                   : (score >= 50 ? Colors.orangeAccent : Colors.redAccent);
 
-              return Row(
+              final sortedItems = [...summary.healthItems];
+              sortedItems.sort((a, b) => a.remainingKm.compareTo(b.remainingKm));
+              final previewItems = sortedItems.take(2).toList();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.health_and_safety_rounded, color: scoreColor, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Overall Health: $score% (${isGood ? 'Kondisi Baik' : 'Perlu Perhatian'})',
-                    style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                  Row(
+                    children: [
+                      Icon(Icons.health_and_safety_rounded, color: scoreColor, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Overall Health: $score% (${isGood ? 'Kondisi Baik' : 'Perlu Perhatian'})',
+                        style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ],
                   ),
+                  if (previewItems.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    const Divider(height: 1, color: AppColors.borderSubtle),
+                    const SizedBox(height: 10),
+                    ...previewItems.map((item) {
+                      Color statusColor;
+                      if (item.isOverdue) {
+                        statusColor = AppColors.healthCritical;
+                      } else if (item.isDueSoon) {
+                        statusColor = AppColors.healthWarning;
+                      } else {
+                        statusColor = AppColors.healthOptimal;
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: statusColor,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  item.item.itemName ?? 'Komponen',
+                                  style: AppTypography.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              '${DateFormatter.formatKm(item.remainingKm.toDouble())} KM remaining',
+                              style: AppTypography.bodySmall.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: statusColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
                 ],
               );
             },
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             'Pantau interval servis, estimasi biaya suku cadang & jasa, serta riwayat servis berkala.',
             style: AppTypography.captionSubtle,
           ),
+
         ],
       ),
     );

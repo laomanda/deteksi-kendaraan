@@ -9,14 +9,36 @@ import '../../../../core/database/hive_registrar.dart';
 import '../../../../core/utils/haversine_calculator.dart';
 import '../../data/models/gps_point_model.dart';
 import '../../data/models/ride_session_model.dart';
-import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
-import '../../../shared/providers/repository_providers.dart';
+import '../../../vehicle/providers/vehicle_provider.dart';
+
+
 
 enum RideTrackingStatus {
   idle,
   acquiring,
   recording,
   paused,
+}
+
+/// DTO returned after a ride is finished and processed idempotently
+class RideCompletionResult {
+  final RideSessionModel session;
+  final int previousOdometer;
+  final int newOdometer;
+  final String vehicleName;
+  final String vehicleType;
+  final String vehicleId;
+  final bool wasAlreadyProcessed;
+
+  const RideCompletionResult({
+    required this.session,
+    required this.previousOdometer,
+    required this.newOdometer,
+    required this.vehicleName,
+    required this.vehicleType,
+    required this.vehicleId,
+    this.wasAlreadyProcessed = false,
+  });
 }
 
 class RideTrackingState {
@@ -32,6 +54,7 @@ class RideTrackingState {
   final bool isGpsLocked;
   final String? errorMessage;
   final DateTime? startTime;
+  final String? selectedVehicleId;
 
   const RideTrackingState({
     this.status = RideTrackingStatus.idle,
@@ -46,6 +69,7 @@ class RideTrackingState {
     this.isGpsLocked = false,
     this.errorMessage,
     this.startTime,
+    this.selectedVehicleId,
   });
 
   GpsPointModel? get lastPoint => points.isNotEmpty ? points.last : null;
@@ -63,6 +87,7 @@ class RideTrackingState {
     bool? isGpsLocked,
     String? errorMessage,
     DateTime? startTime,
+    String? selectedVehicleId,
   }) {
     return RideTrackingState(
       status: status ?? this.status,
@@ -77,9 +102,11 @@ class RideTrackingState {
       isGpsLocked: isGpsLocked ?? this.isGpsLocked,
       errorMessage: errorMessage,
       startTime: startTime ?? this.startTime,
+      selectedVehicleId: selectedVehicleId ?? this.selectedVehicleId,
     );
   }
 }
+
 
 class RideTrackingNotifier extends StateNotifier<RideTrackingState> {
   final Ref _ref;
@@ -108,6 +135,7 @@ class RideTrackingNotifier extends StateNotifier<RideTrackingState> {
         final maxSpeedKmh = (data['maxSpeedKmh'] as num?)?.toDouble() ?? 0.0;
 
         final isRecording = statusStr == 'recording';
+        final selectedVehicleId = data['selectedVehicleId'] as String?;
 
         state = RideTrackingState(
           status: isRecording ? RideTrackingStatus.recording : RideTrackingStatus.paused,
@@ -118,6 +146,7 @@ class RideTrackingNotifier extends StateNotifier<RideTrackingState> {
           maxSpeedKmh: maxSpeedKmh,
           startTime: startTime,
           isGpsLocked: points.isNotEmpty,
+          selectedVehicleId: selectedVehicleId,
         );
 
         if (isRecording) {
@@ -144,9 +173,18 @@ class RideTrackingNotifier extends StateNotifier<RideTrackingState> {
       'averageSpeedKmh': state.averageSpeedKmh,
       'maxSpeedKmh': state.maxSpeedKmh,
       'points': state.points.map((p) => p.toJson()).toList(),
+      'selectedVehicleId': state.selectedVehicleId,
     };
     HiveRegistrar.settingsBox.put('active_ride_session', data);
   }
+
+  /// Sets the active vehicle to track for this ride (when idle)
+  void setSelectedVehicle(String vehicleId) {
+    if (state.status == RideTrackingStatus.idle) {
+      state = state.copyWith(selectedVehicleId: vehicleId);
+    }
+  }
+
 
   void _startLocationStream() {
     LocationSettings locationSettings;
@@ -395,7 +433,7 @@ class RideTrackingNotifier extends StateNotifier<RideTrackingState> {
     }
   }
 
-  Future<RideSessionModel?> finishRide() async {
+  Future<RideCompletionResult?> finishRide() async {
     if (state.status == RideTrackingStatus.idle) return null;
 
     _durationTimer?.cancel();
@@ -406,15 +444,20 @@ class RideTrackingNotifier extends StateNotifier<RideTrackingState> {
       await HiveRegistrar.settingsBox.delete('active_ride_session');
     } catch (_) {}
 
+    final vehicleRepo = _ref.read(vehicleRepositoryProvider);
     final activeVehicle = _ref.read(activeVehicleProvider);
-    if (activeVehicle == null) return null;
+    final targetVehicleId = state.selectedVehicleId ?? activeVehicle?.id;
+    if (targetVehicleId == null) return null;
+
+    final vehicle = vehicleRepo.getVehicleById(targetVehicleId) ?? activeVehicle;
+    if (vehicle == null) return null;
 
     final endTime = DateTime.now();
     const uuid = Uuid();
 
     final session = RideSessionModel(
       id: uuid.v4(),
-      vehicleId: activeVehicle.id,
+      vehicleId: vehicle.id,
       startTime: state.startTime ?? endTime.subtract(Duration(seconds: state.durationSeconds)),
       endTime: endTime,
       totalDistanceKm: state.totalDistanceKm,
@@ -423,22 +466,32 @@ class RideTrackingNotifier extends StateNotifier<RideTrackingState> {
       points: state.points,
     );
 
-    // Save session to rides_box
-    final rideRepo = _ref.read(rideHistoryRepositoryProvider);
-    await rideRepo.saveRide(session);
+    // Save session & idempotently update vehicle odometer & sync
+    final rideRepo = _ref.read(rideRepositoryProvider);
+    final completion = await rideRepo.processRideCompletion(
+      session: session,
+      vehicleRepository: vehicleRepo,
+    );
 
-    // Automatically update vehicle odometer by adding distance (PRD 9.1 & 11)
-    final newOdometer = activeVehicle.currentKilometer + state.totalDistanceKm;
-    await _ref.read(activeVehicleProvider.notifier).updateOdometer(newOdometer);
-
-    // Explicitly invalidate recent ride & history providers so UI updates immediately
+    // Refresh Vehicle and Maintenance Providers
+    _ref.read(activeVehicleProvider.notifier).refresh();
+    _ref.read(vehicleListProvider.notifier).refresh();
     _ref.invalidate(recentRideProvider);
     _ref.invalidate(rideHistoryListProvider);
 
     // Reset state
     state = const RideTrackingState(status: RideTrackingStatus.idle);
-    return session;
+    return RideCompletionResult(
+      session: session,
+      previousOdometer: completion.previousOdometer,
+      newOdometer: completion.newOdometer,
+      vehicleName: vehicle.displayName,
+      vehicleType: vehicle.vehicleType,
+      vehicleId: vehicle.id,
+      wasAlreadyProcessed: completion.wasAlreadyProcessed,
+    );
   }
+
 
   Future<void> cancelRide() async {
     _durationTimer?.cancel();

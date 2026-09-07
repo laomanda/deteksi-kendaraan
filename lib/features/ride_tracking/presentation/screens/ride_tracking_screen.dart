@@ -11,11 +11,15 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/polyline_smoother.dart';
 import '../controllers/ride_tracking_controller.dart';
-import '../widgets/ride_share_canvas.dart';
+import '../widgets/ride_completion_summary_dialog.dart';
 import '../widgets/start_ride_button.dart';
-import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
+import '../../../vehicle/data/models/vehicle_model.dart';
+
+import '../../../vehicle/providers/vehicle_provider.dart';
+
 
 /// Layar 2: Ride Tracking Screen (Active Session) (DSS Section 9.2 & PRD Section 9, 10)
+
 class RideTrackingScreen extends ConsumerStatefulWidget {
   const RideTrackingScreen({super.key});
 
@@ -63,6 +67,18 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
   Widget build(BuildContext context) {
     final trackingState = ref.watch(rideTrackingProvider);
     final activeVehicle = ref.watch(activeVehicleProvider);
+    final vehiclesAsync = ref.watch(vehicleListProvider);
+
+    final vehiclesList = vehiclesAsync.maybeWhen(
+      data: (list) => list,
+      orElse: () => activeVehicle != null ? [activeVehicle] : <VehicleModel>[],
+    );
+
+    final selectedVehicle = vehiclesList
+            .where((v) =>
+                v.id == (trackingState.selectedVehicleId ?? activeVehicle?.id))
+            .firstOrNull ??
+        activeVehicle;
 
     final hasPoints = trackingState.points.isNotEmpty;
     final last = trackingState.lastPoint;
@@ -93,9 +109,9 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
               icon: const Icon(Icons.speed, size: 20),
               tooltip: 'Simulasi Pergerakan (Uji Coba)',
               onPressed: () {
-                final last = trackingState.lastPoint;
-                final baseLat = last?.latitude ?? currentLatLng.latitude;
-                final baseLon = last?.longitude ?? currentLatLng.longitude;
+                final lastPoint = trackingState.lastPoint;
+                final baseLat = lastPoint?.latitude ?? currentLatLng.latitude;
+                final baseLon = lastPoint?.longitude ?? currentLatLng.longitude;
                 final count = trackingState.points.length;
                 // Realistic city street curve trajectory simulation (winding street contour)
                 final angle = count * 0.28;
@@ -186,7 +202,7 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                             child: Transform.rotate(
                               angle: trackingState.heading * (math.pi / 180.0),
                               child: SvgPicture.asset(
-                                (activeVehicle?.isMotorcycle ?? true)
+                                (selectedVehicle?.isMotorcycle ?? true)
                                     ? 'assets/markers/marker_motorcycle.svg'
                                     : 'assets/markers/marker_vehicle.svg',
                                 fit: BoxFit.contain,
@@ -229,6 +245,20 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                     ),
                   ),
 
+                  // Vehicle Selector Pill when idle (allows picking vehicle before starting ride)
+                  if (trackingState.status == RideTrackingStatus.idle &&
+                      selectedVehicle != null)
+                    Positioned(
+                      top: AppSpacing.space12,
+                      left: AppSpacing.space16,
+                      right: AppSpacing.space16,
+                      child: _buildVehicleSelectorCard(
+                        context,
+                        vehiclesList,
+                        selectedVehicle,
+                      ),
+                    ),
+
                   // GPS Signal Status Banner if degraded
                   if (!trackingState.isGpsLocked &&
                       trackingState.status == RideTrackingStatus.recording)
@@ -237,19 +267,22 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                       left: AppSpacing.space16,
                       right: AppSpacing.space16,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
                           color: AppColors.healthWarning.withValues(alpha: 0.95),
                           borderRadius: AppSpacing.chipBorderRadius,
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.satellite_alt, color: Colors.white, size: 16),
+                            const Icon(Icons.satellite_alt,
+                                color: Colors.white, size: 16),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'Akurasi GPS rendah (${trackingState.gpsAccuracy.toInt()}m). Memfilter noise.',
-                                style: AppTypography.captionBadge.copyWith(color: Colors.white),
+                                style: AppTypography.captionBadge
+                                    .copyWith(color: Colors.white),
                               ),
                             ),
                           ],
@@ -271,7 +304,8 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                 decoration: const BoxDecoration(
                   color: AppColors.surfaceWhite,
                   borderRadius: AppSpacing.modalTopRadius,
-                  border: Border(top: BorderSide(color: AppColors.borderSubtle, width: 1)),
+                  border: Border(
+                      top: BorderSide(color: AppColors.borderSubtle, width: 1)),
                   boxShadow: AppSpacing.floatingShadow,
                 ),
                 child: Column(
@@ -316,7 +350,8 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                               textBaseline: TextBaseline.alphabetic,
                               children: [
                                 Text(
-                                  trackingState.totalDistanceKm.toStringAsFixed(2),
+                                  trackingState.totalDistanceKm
+                                      .toStringAsFixed(2),
                                   style: AppTypography.displayMedium,
                                 ),
                                 const SizedBox(width: 4),
@@ -332,7 +367,8 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                           children: [
                             Text('DURASI', style: AppTypography.captionBadge),
                             Text(
-                              DateFormatter.formatDuration(trackingState.durationSeconds),
+                              DateFormatter.formatDuration(
+                                  trackingState.durationSeconds),
                               style: AppTypography.displayMedium,
                             ),
                           ],
@@ -340,15 +376,13 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                       ],
                     ),
 
-                    // Controls row
+                    // Controls row with Ride Completion Summary Dialog
                     StartRideButton(
-                      onFinished: (session) {
-                        if (session != null && activeVehicle != null) {
-                          RideShareCanvas.showModal(
+                      onFinished: (result) {
+                        if (result != null) {
+                          RideCompletionSummaryDialog.show(
                             context,
-                            session: session,
-                            vehicleName: activeVehicle.displayName,
-                            isMotorcycle: activeVehicle.isMotorcycle,
+                            result: result,
                           );
                         }
                       },
@@ -362,4 +396,162 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
       ),
     );
   }
+
+  Widget _buildVehicleSelectorCard(
+    BuildContext context,
+    List<VehicleModel> vehicles,
+    VehicleModel currentVehicle,
+  ) {
+    final hasMultiple = vehicles.length > 1;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: hasMultiple
+            ? () => _showVehiclePickerModal(context, vehicles, currentVehicle)
+            : null,
+        borderRadius: AppSpacing.cardBorderRadius,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceWhite.withValues(alpha: 0.95),
+            borderRadius: AppSpacing.cardBorderRadius,
+            border: Border.all(color: AppColors.borderSubtle),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x14000000),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Icon(
+                currentVehicle.isMotorcycle
+                    ? Icons.two_wheeler_rounded
+                    : Icons.directions_car_rounded,
+                color: AppColors.primaryBlue,
+                size: 22,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('KENDARAAN PERJALANAN', style: AppTypography.captionBadge),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${currentVehicle.displayName} • ${DateFormatter.formatKm(currentVehicle.currentKilometer)} KM',
+                      style: AppTypography.bodySmall.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              if (hasMultiple) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceSubtle,
+                    borderRadius: AppSpacing.chipBorderRadius,
+                  ),
+                  child: Row(
+                    children: const [
+                      Text(
+                        'Ganti',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ),
+                      Icon(Icons.keyboard_arrow_down_rounded,
+                          size: 16, color: AppColors.primaryBlue),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showVehiclePickerModal(
+    BuildContext context,
+    List<VehicleModel> vehicles,
+    VehicleModel currentVehicle,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceWhite,
+      shape: const RoundedRectangleBorder(
+        borderRadius: AppSpacing.modalTopRadius,
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Text(
+                  'Pilih Kendaraan untuk Perjalanan',
+                  style: AppTypography.heading2,
+                ),
+              ),
+              const Divider(),
+              ...vehicles.map((v) {
+                final isSelected = v.id == currentVehicle.id;
+                return ListTile(
+                  leading: Icon(
+                    v.isMotorcycle
+                        ? Icons.two_wheeler_rounded
+                        : Icons.directions_car_rounded,
+                    color: isSelected
+                        ? AppColors.primaryBlue
+                        : AppColors.textSecondary,
+                  ),
+                  title: Text(
+                    v.displayName,
+                    style: TextStyle(
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${DateFormatter.formatKm(v.currentKilometer)} KM',
+                  ),
+                  trailing: isSelected
+                      ? const Icon(Icons.check_circle_rounded,
+                          color: AppColors.primaryBlue)
+                      : null,
+                  onTap: () {
+                    ref
+                        .read(rideTrackingProvider.notifier)
+                        .setSelectedVehicle(v.id);
+                    ref
+                        .read(activeVehicleProvider.notifier)
+                        .setActiveVehicle(v.id);
+                    Navigator.pop(ctx);
+                  },
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
+

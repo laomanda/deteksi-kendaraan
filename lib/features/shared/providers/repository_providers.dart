@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../vehicle/data/repositories/vehicle_repository.dart';
 import '../../maintenance/data/repositories/maintenance_repository.dart';
 import '../../ride_tracking/data/repositories/ride_history_repository.dart';
+import '../../ride_tracking/data/repositories/ride_repository.dart';
 
 final vehicleRepositoryProvider = Provider<VehicleRepository>((ref) {
   return VehicleRepository();
@@ -14,3 +15,8 @@ final maintenanceRepositoryProvider = Provider<MaintenanceRepository>((ref) {
 final rideHistoryRepositoryProvider = Provider<RideHistoryRepository>((ref) {
   return RideHistoryRepository();
 });
+
+final rideRepositoryProvider = Provider<RideRepository>((ref) {
+  return RideRepository();
+});
+

@@ -5,18 +5,19 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../controllers/ride_tracking_controller.dart';
-import '../../data/models/ride_session_model.dart';
 
 /// StartRideButton with hold-to-finish interaction (DSS Section 8.5)
+
 class StartRideButton extends ConsumerStatefulWidget {
   final VoidCallback? onStart;
-  final Function(RideSessionModel? session)? onFinished;
+  final Function(RideCompletionResult? result)? onFinished;
 
   const StartRideButton({
     super.key,
     this.onStart,
     this.onFinished,
   });
+
 
   @override
   ConsumerState<StartRideButton> createState() => _StartRideButtonState();
