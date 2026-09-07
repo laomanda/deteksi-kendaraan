@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../dashboard/presentation/screens/home_dashboard_screen.dart';
-import '../garage/presentation/screens/garage_screen.dart';
+import '../vehicle/presentation/pages/garage_page.dart';
 import '../maintenance/presentation/screens/maintenance_screen.dart';
 import '../ride_tracking/presentation/screens/ride_tracking_screen.dart';
 import '../settings/presentation/screens/settings_screen.dart';
@@ -38,7 +38,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
       const RideTrackingScreen(),
       const MaintenanceScreen(),
-      const GarageScreen(),
+      const GaragePage(),
       const SettingsScreen(),
     ];
 

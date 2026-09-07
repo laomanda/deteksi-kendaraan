@@ -36,7 +36,7 @@ class SyncManager {
             'vehicle_type': vehicle.vehicleType,
             'current_odometer': vehicle.currentKilometer.round(),
             'photo_url': vehicle.photoPath,
-            'created_at': vehicle.createdAt.toIso8601String(),
+            'created_at': vehicle.createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
           }, onConflict: 'id');
           syncedCount++;
         } catch (e) {

@@ -8,7 +8,6 @@ import '../../../../core/database/hive_registrar.dart';
 import '../../../../shared/services/backup_service.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../../onboarding/presentation/screens/onboarding_screen.dart';
-import '../../../shared/presentation/screens/supabase_connection_test_page.dart';
 import '../../../shared/presentation/screens/ridecare_database_test_page.dart';
 import '../../../../core/sync/sync_manager.dart';
 
@@ -207,19 +206,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               child: Column(
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.cloud_sync_outlined, color: AppColors.primaryBlue),
-                    title: Text('Test Koneksi Supabase', style: AppTypography.bodyMedium),
-                    subtitle: Text('Cek status koneksi backend', style: AppTypography.captionSubtle),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const SupabaseConnectionTestPage()),
-                      );
-                    },
-                  ),
-                  const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.storage_rounded, color: AppColors.secondaryTeal),
                     title: Text('Test CRUD Database', style: AppTypography.bodyMedium),

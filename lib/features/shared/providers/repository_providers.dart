@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../garage/data/repositories/vehicle_repository.dart';
+import '../../vehicle/data/repositories/vehicle_repository.dart';
 import '../../maintenance/data/repositories/maintenance_repository.dart';
 import '../../ride_tracking/data/repositories/ride_history_repository.dart';
 
