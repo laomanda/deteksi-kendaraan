@@ -5,17 +5,22 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../../maintenance/presentation/pages/add_service_page.dart';
-import '../../../vehicle/presentation/pages/add_vehicle_page.dart';
-import '../../../vehicle/presentation/pages/garage_page.dart';
+import '../../../maintenance/presentation/pages/maintenance_page.dart';
 
-/// Quick Actions Row/Grid on Dashboard
+/// Simplified Quick Actions for RideCare Dashboard
+/// Gives user 3 unambiguous choices:
+/// 1. [Mulai Perjalanan]
+/// 2. [Catat Servis]
+/// 3. [Lihat Kondisi]
 class DashboardQuickActions extends ConsumerWidget {
   final VoidCallback? onStartRide;
+  final VoidCallback? onNavigateToMaintenance;
   final VoidCallback? onNavigateToGarage;
 
   const DashboardQuickActions({
     super.key,
     this.onStartRide,
+    this.onNavigateToMaintenance,
     this.onNavigateToGarage,
   });
 
@@ -26,22 +31,22 @@ class DashboardQuickActions extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Primary Action: Large Start Ride Button
+        // 1. Aksi Utama: Mulai Perjalanan
         SizedBox(
           width: double.infinity,
-          height: 52,
+          height: 50,
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryBlue,
               foregroundColor: Colors.white,
-              elevation: 2,
+              elevation: 1,
               shape: RoundedRectangleBorder(
                 borderRadius: AppSpacing.buttonBorderRadius,
               ),
             ),
             icon: const Icon(Icons.play_arrow_rounded, size: 24),
             label: const Text(
-              'Start Ride',
+              'Mulai Perjalanan',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -54,15 +59,15 @@ class DashboardQuickActions extends ConsumerWidget {
 
         const SizedBox(height: AppSpacing.space12),
 
-        // 3 Secondary Quick Action Buttons
+        // 2 & 3: [Catat Servis] dan [Lihat Kondisi]
         Row(
           children: [
-            // 1. Add Service
+            // Catat Servis
             Expanded(
-              child: _buildActionButton(
+              child: _buildSecondaryButton(
                 context: context,
-                icon: Icons.build_outlined,
-                label: 'Add Service',
+                icon: Icons.build_circle_outlined,
+                label: 'Catat Servis',
                 onTap: () {
                   if (activeVehicle == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -81,41 +86,24 @@ class DashboardQuickActions extends ConsumerWidget {
                 },
               ),
             ),
-            const SizedBox(width: AppSpacing.space8),
-            // 2. View Garage
+            const SizedBox(width: AppSpacing.space12),
+            // Lihat Kondisi
             Expanded(
-              child: _buildActionButton(
+              child: _buildSecondaryButton(
                 context: context,
-                icon: Icons.garage_outlined,
-                label: 'View Garage',
+                icon: Icons.health_and_safety_outlined,
+                label: 'Lihat Kondisi',
                 onTap: () {
-                  if (onNavigateToGarage != null) {
-                    onNavigateToGarage!();
-                  } else {
+                  if (onNavigateToMaintenance != null) {
+                    onNavigateToMaintenance!();
+                  } else if (activeVehicle != null) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const GaragePage(),
+                        builder: (_) => MaintenancePage(initialVehicleId: activeVehicle.id),
                       ),
                     );
                   }
-                },
-              ),
-            ),
-            const SizedBox(width: AppSpacing.space8),
-            // 3. + Add Vehicle
-            Expanded(
-              child: _buildActionButton(
-                context: context,
-                icon: Icons.add_circle_outline_rounded,
-                label: '+ Vehicle',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const AddVehiclePage(),
-                    ),
-                  );
                 },
               ),
             ),
@@ -125,7 +113,7 @@ class DashboardQuickActions extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButton({
+  Widget _buildSecondaryButton({
     required BuildContext context,
     required IconData icon,
     required String label,
@@ -135,27 +123,30 @@ class DashboardQuickActions extends ConsumerWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
           color: AppColors.surfaceWhite,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: AppColors.borderSubtle),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x04000000),
+              blurRadius: 4,
+              offset: Offset(0, 1),
+            ),
+          ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 20, color: AppColors.primaryBlue),
-            const SizedBox(height: 4),
+            Icon(icon, size: 18, color: AppColors.primaryBlue),
+            const SizedBox(width: 8),
             Text(
               label,
-              style: AppTypography.captionBadge.copyWith(
-                color: AppColors.textPrimary,
+              style: AppTypography.bodySmall.copyWith(
                 fontWeight: FontWeight.w600,
-                fontSize: 11,
+                color: AppColors.textPrimary,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
             ),
           ],
         ),

@@ -170,7 +170,7 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
                     children: [
                       Expanded(
                         child: _buildTypeButton(
-                          title: 'Motorcycle',
+                          title: 'Motor',
                           icon: Icons.two_wheeler_rounded,
                           type: 'motorcycle',
                         ),
@@ -178,7 +178,7 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _buildTypeButton(
-                          title: 'Car',
+                          title: 'Mobil',
                           icon: Icons.directions_car_rounded,
                           type: 'car',
                         ),
@@ -187,10 +187,10 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
                   ),
                 ),
 
-                const SizedBox(height: AppSpacing.space24),
+                const SizedBox(height: AppSpacing.space16),
 
-                // Section: Basic Info
-                Text('INFORMASI UTAMA', style: AppTypography.captionBadge),
+                // Section: Essential Info
+                Text('INFORMASI KENDARAAN', style: AppTypography.captionBadge),
                 const SizedBox(height: AppSpacing.space8),
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.space16),
@@ -203,29 +203,22 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
                     children: [
                       _buildTextField(
                         controller: _brandController,
-                        label: 'Brand / Merek',
+                        label: 'Merek Kendaraan',
                         hint: 'Contoh: Honda, Yamaha, Toyota',
                         icon: Icons.business_rounded,
                         validator: (val) => val == null || val.trim().isEmpty
-                            ? 'Merek wajib diisi'
+                            ? 'Merek kendaraan wajib diisi'
                             : null,
                       ),
                       const SizedBox(height: AppSpacing.space12),
                       _buildTextField(
                         controller: _modelController,
                         label: 'Model Kendaraan',
-                        hint: 'Contoh: Beat, NMAX, Avanza',
+                        hint: 'Contoh: Vario 160, Beat, Avanza',
                         icon: Icons.directions_bike_rounded,
                         validator: (val) => val == null || val.trim().isEmpty
-                            ? 'Model wajib diisi'
+                            ? 'Model kendaraan wajib diisi'
                             : null,
-                      ),
-                      const SizedBox(height: AppSpacing.space12),
-                      _buildTextField(
-                        controller: _variantController,
-                        label: 'Varian / Tipe (Opsional)',
-                        hint: 'Contoh: Street, CBS-ISS, GR Sport',
-                        icon: Icons.style_rounded,
                       ),
                       const SizedBox(height: AppSpacing.space12),
                       Row(
@@ -233,8 +226,8 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
                           Expanded(
                             child: _buildTextField(
                               controller: _yearController,
-                              label: 'Tahun Pembuatan',
-                              hint: '2024',
+                              label: 'Tahun',
+                              hint: DateTime.now().year.toString(),
                               icon: Icons.calendar_today_rounded,
                               keyboardType: TextInputType.number,
                               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -251,12 +244,18 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
                           const SizedBox(width: AppSpacing.space12),
                           Expanded(
                             child: _buildTextField(
-                              controller: _engineCcController,
-                              label: 'Kapasitas Mesin (CC)',
-                              hint: '110',
+                              controller: _odometerController,
+                              label: 'Kilometer Saat Ini',
+                              hint: '0',
                               icon: Icons.speed_rounded,
                               keyboardType: TextInputType.number,
                               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty) return 'Wajib diisi';
+                                final num = int.tryParse(val);
+                                if (num == null || num < 0) return 'Odometer tidak valid';
+                                return null;
+                              },
                             ),
                           ),
                         ],
@@ -265,114 +264,128 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
                   ),
                 ),
 
-                const SizedBox(height: AppSpacing.space24),
+                const SizedBox(height: AppSpacing.space16),
 
-                // Section: Identitas & Odometer
-                Text('ODOMETER & PLAT NOMOR', style: AppTypography.captionBadge),
-                const SizedBox(height: AppSpacing.space8),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.space16),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceWhite,
-                    borderRadius: AppSpacing.cardBorderRadius,
-                    border: Border.all(color: AppColors.borderSubtle),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildTextField(
-                        controller: _odometerController,
-                        label: _isEditing ? 'Current Odometer (KM)' : 'Initial Odometer (KM)',
-                        hint: '0',
-                        icon: Icons.speed_outlined,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        validator: (val) {
-                          if (val == null || val.trim().isEmpty) return 'Wajib diisi';
-                          final num = int.tryParse(val);
-                          if (num == null || num < 0) return 'Odometer tidak valid';
-                          return null;
-                        },
+                // Section: Collapsible Optional Information
+                Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceWhite,
+                      borderRadius: AppSpacing.cardBorderRadius,
+                      border: Border.all(color: AppColors.borderSubtle),
+                    ),
+                    child: ExpansionTile(
+                      tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      title: Text(
+                        'Informasi Tambahan (Opsional)',
+                        style: AppTypography.heading3.copyWith(
+                          fontSize: 14,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                      const SizedBox(height: AppSpacing.space12),
-                      _buildTextField(
-                        controller: _licensePlateController,
-                        label: 'Nomor Plat (Opsional)',
-                        hint: 'Contoh: B 1234 XYZ',
-                        icon: Icons.credit_card_rounded,
-                        textCapitalization: TextCapitalization.characters,
+                      subtitle: Text(
+                        'Plat nomor, warna, transmisi, kapasitas mesin',
+                        style: AppTypography.captionBadge.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
-                    ],
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          child: Column(
+                            children: [
+                              _buildTextField(
+                                controller: _licensePlateController,
+                                label: 'Nomor Plat (Opsional)',
+                                hint: 'Contoh: B 1234 XYZ',
+                                icon: Icons.credit_card_rounded,
+                                textCapitalization: TextCapitalization.characters,
+                              ),
+                              const SizedBox(height: AppSpacing.space12),
+                              _buildTextField(
+                                controller: _variantController,
+                                label: 'Varian / Tipe (Opsional)',
+                                hint: 'Contoh: CBS-ISS, GR Sport, ABS',
+                                icon: Icons.style_rounded,
+                              ),
+                              const SizedBox(height: AppSpacing.space12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildTextField(
+                                      controller: _engineCcController,
+                                      label: 'Kapasitas Mesin (CC)',
+                                      hint: 'Contoh: 150',
+                                      icon: Icons.speed_rounded,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.space12),
+                                  Expanded(
+                                    child: _buildTextField(
+                                      controller: _colorController,
+                                      label: 'Warna Kendaraan',
+                                      hint: 'Contoh: Hitam',
+                                      icon: Icons.palette_outlined,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: AppSpacing.space12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: DropdownButtonFormField<String>(
+                                      initialValue: _selectedTransmission,
+                                      decoration: InputDecoration(
+                                        labelText: 'Transmisi',
+                                        prefixIcon: const Icon(Icons.tune_rounded, size: 20),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                          borderSide: const BorderSide(color: AppColors.borderSubtle),
+                                        ),
+                                      ),
+                                      items: const [
+                                        DropdownMenuItem(value: 'Automatic', child: Text('Otomatis (Matic)')),
+                                        DropdownMenuItem(value: 'Manual', child: Text('Manual')),
+                                      ],
+                                      onChanged: (val) => setState(() => _selectedTransmission = val),
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.space12),
+                                  Expanded(
+                                    child: DropdownButtonFormField<String>(
+                                      initialValue: _selectedFuelType,
+                                      decoration: InputDecoration(
+                                        labelText: 'Bahan Bakar',
+                                        prefixIcon: const Icon(Icons.local_gas_station_rounded, size: 20),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                          borderSide: const BorderSide(color: AppColors.borderSubtle),
+                                        ),
+                                      ),
+                                      items: const [
+                                        DropdownMenuItem(value: 'Gasoline', child: Text('Bensin')),
+                                        DropdownMenuItem(value: 'Diesel', child: Text('Diesel')),
+                                        DropdownMenuItem(value: 'Electric', child: Text('Listrik')),
+                                      ],
+                                      onChanged: (val) => setState(() => _selectedFuelType = val),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
                 const SizedBox(height: AppSpacing.space24),
-
-                // Section: Spesifikasi Tambahan
-                Text('SPESIFIKASI TAMBAHAN', style: AppTypography.captionBadge),
-                const SizedBox(height: AppSpacing.space8),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.space16),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceWhite,
-                    borderRadius: AppSpacing.cardBorderRadius,
-                    border: Border.all(color: AppColors.borderSubtle),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: DropdownButtonFormField<String>(
-                              initialValue: _selectedTransmission,
-                              decoration: InputDecoration(
-                                labelText: 'Transmisi',
-                                prefixIcon: const Icon(Icons.tune_rounded, size: 20),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: const BorderSide(color: AppColors.borderSubtle),
-                                ),
-                              ),
-                              items: const [
-                                DropdownMenuItem(value: 'Automatic', child: Text('Automatic')),
-                                DropdownMenuItem(value: 'Manual', child: Text('Manual')),
-                              ],
-                              onChanged: (val) => setState(() => _selectedTransmission = val),
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.space12),
-                          Expanded(
-                            child: DropdownButtonFormField<String>(
-                              initialValue: _selectedFuelType,
-                              decoration: InputDecoration(
-                                labelText: 'Bahan Bakar',
-                                prefixIcon: const Icon(Icons.local_gas_station_rounded, size: 20),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: const BorderSide(color: AppColors.borderSubtle),
-                                ),
-                              ),
-                              items: const [
-                                DropdownMenuItem(value: 'Gasoline', child: Text('Bensin')),
-                                DropdownMenuItem(value: 'Diesel', child: Text('Diesel')),
-                                DropdownMenuItem(value: 'Electric', child: Text('Listrik')),
-                              ],
-                              onChanged: (val) => setState(() => _selectedFuelType = val),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.space12),
-                      _buildTextField(
-                        controller: _colorController,
-                        label: 'Warna Kendaraan (Opsional)',
-                        hint: 'Contoh: Hitam Glossy, Merah',
-                        icon: Icons.palette_outlined,
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: AppSpacing.space32),
 
                 // Submit Button
                 SizedBox(

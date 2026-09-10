@@ -114,6 +114,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
 
     final activeVehicle = ref.watch(activeVehicleProvider);
     final isActive = activeVehicle?.id == _vehicle.id;
+    final healthSummaryAsync = ref.watch(maintenanceHealthProvider(_vehicle.id));
 
     return Scaffold(
       backgroundColor: AppColors.bgLight,
@@ -140,32 +141,27 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Vehicle Header Banner
-              _buildHeaderBanner(isActive),
-
-              const SizedBox(height: AppSpacing.space24),
-
-              // 2. Specifications Card
-              _buildSpecificationCard(),
+              // 1. Vehicle Header Banner (with Status & Total Jarak Kendaraan)
+              _buildHeaderBanner(isActive, healthSummaryAsync),
 
               const SizedBox(height: AppSpacing.space16),
 
-              // 3. Mileage & Odometer Card
-              _buildMileageCard(),
-
-              const SizedBox(height: AppSpacing.space16),
-
-              // 4. Next Maintenance Card (Most Urgent Service)
+              // 2. Next Maintenance Card (Most Urgent Service)
               _buildNextMaintenanceCard(),
 
               const SizedBox(height: AppSpacing.space16),
 
-              // 5. Maintenance Preview (Health Status)
-              _buildMaintenancePreviewCard(),
+              // 3. Maintenance Preview (Component Health)
+              _buildMaintenancePreviewCard(healthSummaryAsync),
 
               const SizedBox(height: AppSpacing.space16),
 
-              // 5. Ride History Preview (Coming Soon)
+              // 4. Specifications Card (Collapsible)
+              _buildSpecificationCard(),
+
+              const SizedBox(height: AppSpacing.space16),
+
+              // 5. Ride History Preview
               _buildRideHistoryPreviewCard(),
 
               const SizedBox(height: AppSpacing.space24),
@@ -184,7 +180,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                         side: const BorderSide(color: AppColors.primaryBlue),
                       ),
                       icon: const Icon(Icons.edit_rounded, color: AppColors.primaryBlue),
-                      label: const Text('Edit Vehicle', style: TextStyle(color: AppColors.primaryBlue)),
+                      label: const Text('Edit Kendaraan', style: TextStyle(color: AppColors.primaryBlue)),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.space12),
@@ -202,7 +198,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                         ),
                       ),
                       icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-                      label: const Text('Delete Vehicle'),
+                      label: const Text('Hapus Kendaraan'),
                     ),
                   ),
                 ],
@@ -215,12 +211,12 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
     );
   }
 
-  Widget _buildHeaderBanner(bool isActive) {
+  Widget _buildHeaderBanner(bool isActive, AsyncValue<VehicleHealthSummary> healthSummaryAsync) {
     final isMotor = _vehicle.isMotorcycle;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.space24),
+      padding: const EdgeInsets.all(AppSpacing.space16),
       decoration: BoxDecoration(
         color: AppColors.surfaceWhite,
         borderRadius: AppSpacing.cardBorderRadius,
@@ -238,63 +234,128 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
       ),
       child: Column(
         children: [
-          Container(
-            width: 68,
-            height: 68,
-            decoration: BoxDecoration(
-              color: isMotor
-                  ? AppColors.primaryBlue.withValues(alpha: 0.1)
-                  : AppColors.secondaryTeal.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              isMotor ? Icons.two_wheeler_rounded : Icons.directions_car_rounded,
-              color: isMotor ? AppColors.primaryBlue : AppColors.secondaryTeal,
-              size: 36,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.space12),
-          Text(
-            _vehicle.displayName,
-            style: AppTypography.heading1,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${_vehicle.year} • ${_vehicle.vehicleType.toUpperCase()}',
-            style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
-          ),
-          if (_vehicle.licensePlate != null && _vehicle.licensePlate!.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceSubtle,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: AppColors.borderSubtle),
-              ),
-              child: Text(
-                _vehicle.licensePlate!,
-                style: AppTypography.captionBadge.copyWith(
-                  letterSpacing: 1.0,
-                  fontWeight: FontWeight.w700,
+          Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: isMotor
+                      ? AppColors.primaryBlue.withValues(alpha: 0.1)
+                      : AppColors.secondaryTeal.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isMotor ? Icons.two_wheeler_rounded : Icons.directions_car_rounded,
+                  color: isMotor ? AppColors.primaryBlue : AppColors.secondaryTeal,
+                  size: 30,
                 ),
               ),
-            ),
-          ],
-          const SizedBox(height: AppSpacing.space16),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _vehicle.displayName,
+                      style: AppTypography.heading2,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${_vehicle.year} • ${_vehicle.isMotorcycle ? 'Sepeda Motor' : 'Mobil'}${_vehicle.licensePlate != null ? ' • ${_vehicle.licensePlate}' : ''}',
+                      style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(),
+          const SizedBox(height: 12),
+
+          // Total Jarak & Status Kendaraan
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('TOTAL JARAK KENDARAAN', style: AppTypography.captionBadge),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${DateFormatter.formatKm(_vehicle.currentKilometer)} KM',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ],
+              ),
+              healthSummaryAsync.when(
+                loading: () => const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                error: (_, __) => const SizedBox.shrink(),
+                data: (summary) {
+                  Color statusColor;
+                  String statusText;
+                  IconData statusIcon;
+
+                  if (summary.overdueCount > 0) {
+                    statusColor = AppColors.healthCritical;
+                    statusText = 'Perlu Servis';
+                    statusIcon = Icons.error_rounded;
+                  } else if (summary.dueSoonCount > 0) {
+                    statusColor = AppColors.healthWarning;
+                    statusText = 'Perlu Perhatian';
+                    statusIcon = Icons.warning_amber_rounded;
+                  } else {
+                    statusColor = AppColors.healthOptimal;
+                    statusText = 'Kondisi Aman';
+                    statusIcon = Icons.check_circle_rounded;
+                  }
+
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(statusIcon, size: 14, color: statusColor),
+                        const SizedBox(width: 4),
+                        Text(
+                          statusText,
+                          style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           // Active vehicle status / toggle
           if (isActive)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
+                color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.check_circle_rounded, color: AppColors.primaryBlue, size: 16),
+                  const Icon(Icons.check_circle_rounded, color: AppColors.primaryBlue, size: 14),
                   const SizedBox(width: 6),
                   Text(
                     'Kendaraan Aktif Utama',
@@ -307,20 +368,23 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
               ),
             )
           else
-            TextButton.icon(
-              onPressed: () async {
-                await ref.read(activeVehicleProvider.notifier).setActiveVehicle(_vehicle.id);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${_vehicle.displayName} disetel sebagai kendaraan aktif.'),
-                      backgroundColor: AppColors.primaryBlue,
-                    ),
-                  );
-                }
-              },
-              icon: const Icon(Icons.radio_button_unchecked, size: 16),
-              label: const Text('Jadikan Kendaraan Aktif'),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: () async {
+                  await ref.read(activeVehicleProvider.notifier).setActiveVehicle(_vehicle.id);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${_vehicle.displayName} disetel sebagai kendaraan aktif.'),
+                        backgroundColor: AppColors.primaryBlue,
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.radio_button_unchecked, size: 16),
+                label: const Text('Jadikan Kendaraan Aktif'),
+              ),
             ),
         ],
       ),
@@ -329,49 +393,62 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
 
   Widget _buildSpecificationCard() {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.space16),
       decoration: BoxDecoration(
         color: AppColors.surfaceWhite,
         borderRadius: AppSpacing.cardBorderRadius,
         border: Border.all(color: AppColors.borderSubtle),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.tune_rounded, size: 18, color: AppColors.primaryBlue),
-              const SizedBox(width: 8),
-              Text('SPECIFICATION', style: AppTypography.captionBadge),
-            ],
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: const Icon(Icons.tune_rounded, size: 20, color: AppColors.primaryBlue),
+          title: Text(
+            'Detail & Spesifikasi Kendaraan',
+            style: AppTypography.heading3.copyWith(fontSize: 14),
           ),
-          const SizedBox(height: AppSpacing.space16),
-          _buildSpecRow(
-            icon: Icons.speed_rounded,
-            label: 'Engine',
-            value: _vehicle.engineCc != null ? '${_vehicle.engineCc} CC' : '-',
+          subtitle: Text(
+            'Kapasitas mesin, transmisi, bahan bakar, warna',
+            style: AppTypography.captionBadge.copyWith(
+              fontWeight: FontWeight.normal,
+              color: AppColors.textSecondary,
+            ),
           ),
-          const Divider(height: 16, color: AppColors.borderSubtle),
-          _buildSpecRow(
-            icon: Icons.settings_suggest_rounded,
-            label: 'Transmission',
-            value: _vehicle.transmission ?? 'Automatic',
-          ),
-          const Divider(height: 16, color: AppColors.borderSubtle),
-          _buildSpecRow(
-            icon: Icons.local_gas_station_rounded,
-            label: 'Fuel',
-            value: _vehicle.fuelType ?? 'Gasoline',
-          ),
-          if (_vehicle.color != null && _vehicle.color!.isNotEmpty) ...[
-            const Divider(height: 16, color: AppColors.borderSubtle),
-            _buildSpecRow(
-              icon: Icons.palette_outlined,
-              label: 'Color',
-              value: _vehicle.color!,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                children: [
+                  _buildSpecRow(
+                    icon: Icons.speed_rounded,
+                    label: 'Kapasitas Mesin',
+                    value: _vehicle.engineCc != null ? '${_vehicle.engineCc} CC' : '-',
+                  ),
+                  const Divider(height: 16, color: AppColors.borderSubtle),
+                  _buildSpecRow(
+                    icon: Icons.settings_suggest_rounded,
+                    label: 'Transmisi',
+                    value: _vehicle.transmission ?? 'Automatic',
+                  ),
+                  const Divider(height: 16, color: AppColors.borderSubtle),
+                  _buildSpecRow(
+                    icon: Icons.local_gas_station_rounded,
+                    label: 'Bahan Bakar',
+                    value: _vehicle.fuelType ?? 'Gasoline',
+                  ),
+                  if (_vehicle.color != null && _vehicle.color!.isNotEmpty) ...[
+                    const Divider(height: 16, color: AppColors.borderSubtle),
+                    _buildSpecRow(
+                      icon: Icons.palette_outlined,
+                      label: 'Warna',
+                      value: _vehicle.color!,
+                    ),
+                  ],
+                ],
+              ),
             ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -395,46 +472,6 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
     );
   }
 
-  Widget _buildMileageCard() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.space16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
-        borderRadius: AppSpacing.cardBorderRadius,
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.secondaryTeal.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.add_road_rounded, color: AppColors.secondaryTeal, size: 24),
-          ),
-          const SizedBox(width: AppSpacing.space16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('MILEAGE / ODOMETER', style: AppTypography.captionBadge),
-                const SizedBox(height: 4),
-                Text(
-                  DateFormatter.formatKm(_vehicle.currentKilometer),
-                  style: AppTypography.heading1.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildNextMaintenanceCard() {
     final upcomingAsync = ref.watch(upcomingMaintenanceProvider(_vehicle.id));
 
@@ -450,15 +487,20 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
 
         final Color badgeColor;
         final Color badgeBgColor;
+        final String statusLabel;
+
         if (nextItem.isOverdue) {
           badgeColor = AppColors.healthCritical;
           badgeBgColor = Colors.red.withValues(alpha: 0.1);
+          statusLabel = 'Lewat Jadwal';
         } else if (nextItem.isDueSoon) {
           badgeColor = AppColors.healthWarning;
           badgeBgColor = Colors.orange.withValues(alpha: 0.1);
+          statusLabel = 'Segera Diganti';
         } else {
           badgeColor = AppColors.healthOptimal;
           badgeBgColor = Colors.green.withValues(alpha: 0.1);
+          statusLabel = 'Kondisi Baik';
         }
 
         return Container(
@@ -504,17 +546,17 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                             color: AppColors.primaryBlue,
                           ),
                           const SizedBox(width: 8),
-                          Text('NEXT MAINTENANCE', style: AppTypography.captionBadge),
+                          Text('PERKIRAAN SERVIS TERDEKAT', style: AppTypography.captionBadge),
                         ],
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color: badgeBgColor,
                           borderRadius: AppSpacing.chipBorderRadius,
                         ),
                         child: Text(
-                          nextItem.status,
+                          statusLabel,
                           style: AppTypography.captionBadge.copyWith(
                             color: badgeColor,
                             fontWeight: FontWeight.bold,
@@ -537,14 +579,14 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Sisa: ${nextItem.remainingKm > 0 ? DateFormatter.formatKm(nextItem.remainingKm.toDouble()) : '0 KM'} (${nextItem.remainingDays > 0 ? '${nextItem.remainingDays} hari' : 'Hari ini'})',
+                              'Perkiraan: ${nextItem.remainingKm > 0 ? DateFormatter.formatKm(nextItem.remainingKm.toDouble()) : '0'} KM lagi (${nextItem.remainingDays > 0 ? '${nextItem.remainingDays} hari' : 'Hari ini'})',
                               style: AppTypography.bodySmall.copyWith(
                                 color: AppColors.textSecondary,
                               ),
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Perkiraan: ${nextItem.formattedTotalRange}',
+                              'Perkiraan Biaya: ${nextItem.formattedTotalRange}',
                               style: AppTypography.captionBadge.copyWith(
                                 color: AppColors.primaryBlue,
                                 fontWeight: FontWeight.w700,
@@ -568,9 +610,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
     );
   }
 
-  Widget _buildMaintenancePreviewCard() {
-    final healthSummaryAsync = ref.watch(maintenanceHealthProvider(_vehicle.id));
-
+  Widget _buildMaintenancePreviewCard(AsyncValue<VehicleHealthSummary> healthSummaryAsync) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space16),
       decoration: BoxDecoration(
@@ -585,7 +625,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
             children: [
               const Icon(Icons.build_circle_outlined, size: 18, color: AppColors.primaryBlue),
               const SizedBox(width: 8),
-              Text('MAINTENANCE INTELLIGENCE', style: AppTypography.captionBadge),
+              Text('KONDISI PERAWATAN', style: AppTypography.captionBadge),
               const Spacer(),
               InkWell(
                 onTap: () {
@@ -600,7 +640,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Buka Detail',
+                      'Lihat Semua',
                       style: AppTypography.captionBadge.copyWith(
                         color: AppColors.primaryBlue,
                         fontWeight: FontWeight.bold,
@@ -619,30 +659,40 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
               children: [
                 const Icon(Icons.health_and_safety_rounded, color: AppColors.healthOptimal, size: 20),
                 const SizedBox(width: 8),
-                Text('Health Status: 100% (Baik)', style: AppTypography.bodyMedium),
+                Text('Kondisi Kendaraan: Baik', style: AppTypography.bodyMedium),
               ],
             ),
             data: (summary) {
-              final score = summary.overallScore.round();
-              final isGood = score >= 80;
-              final scoreColor = isGood
-                  ? AppColors.healthOptimal
-                  : (score >= 50 ? Colors.orangeAccent : Colors.redAccent);
-
               final sortedItems = [...summary.healthItems];
               sortedItems.sort((a, b) => a.remainingKm.compareTo(b.remainingKm));
-              final previewItems = sortedItems.take(2).toList();
+              final previewItems = sortedItems.take(3).toList();
+
+              Color statusColor;
+              String statusText;
+              if (summary.overdueCount > 0) {
+                statusColor = AppColors.healthCritical;
+                statusText = '${summary.overdueCount} komponen perlu servis segera';
+              } else if (summary.dueSoonCount > 0) {
+                statusColor = AppColors.healthWarning;
+                statusText = '${summary.dueSoonCount} komponen mendekati jadwal ganti';
+              } else {
+                statusColor = AppColors.healthOptimal;
+                statusText = 'Semua komponen dalam kondisi baik';
+              }
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.health_and_safety_rounded, color: scoreColor, size: 20),
+                      Icon(Icons.health_and_safety_rounded, color: statusColor, size: 20),
                       const SizedBox(width: 8),
                       Text(
-                        'Overall Health: $score% (${isGood ? 'Kondisi Baik' : 'Perlu Perhatian'})',
-                        style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                        statusText,
+                        style: AppTypography.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: statusColor,
+                        ),
                       ),
                     ],
                   ),
@@ -651,17 +701,21 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                     const Divider(height: 1, color: AppColors.borderSubtle),
                     const SizedBox(height: 10),
                     ...previewItems.map((item) {
-                      Color statusColor;
+                      Color itemColor;
+                      String itemStatusText;
                       if (item.isOverdue) {
-                        statusColor = AppColors.healthCritical;
+                        itemColor = AppColors.healthCritical;
+                        itemStatusText = 'Lewat Jadwal';
                       } else if (item.isDueSoon) {
-                        statusColor = AppColors.healthWarning;
+                        itemColor = AppColors.healthWarning;
+                        itemStatusText = 'Segera Diganti';
                       } else {
-                        statusColor = AppColors.healthOptimal;
+                        itemColor = AppColors.healthOptimal;
+                        itemStatusText = 'Baik';
                       }
 
                       return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        padding: const EdgeInsets.symmetric(vertical: 5),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -671,7 +725,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                                   width: 8,
                                   height: 8,
                                   decoration: BoxDecoration(
-                                    color: statusColor,
+                                    color: itemColor,
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -684,12 +738,34 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                                 ),
                               ],
                             ),
-                            Text(
-                              '${DateFormatter.formatKm(item.remainingKm.toDouble())} KM remaining',
-                              style: AppTypography.bodySmall.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: statusColor,
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  item.isOverdue
+                                      ? 'Lewat ${DateFormatter.formatKm(item.remainingKm.abs().toDouble())} KM'
+                                      : '${DateFormatter.formatKm(item.remainingKm.toDouble())} KM lagi',
+                                  style: AppTypography.bodySmall.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: itemColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: itemColor.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    itemStatusText,
+                                    style: TextStyle(
+                                      color: itemColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -700,12 +776,11 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
               );
             },
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
-            'Pantau interval servis, estimasi biaya suku cadang & jasa, serta riwayat servis berkala.',
+            'Pantau perkiraan jadwal servis, estimasi biaya komponen & riwayat pemakaian.',
             style: AppTypography.captionSubtle,
           ),
-
         ],
       ),
     );
@@ -726,7 +801,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
             children: [
               const Icon(Icons.route_rounded, size: 18, color: Colors.indigo),
               const SizedBox(width: 8),
-              Text('RIDE HISTORY', style: AppTypography.captionBadge),
+              Text('RIWAYAT PERJALANAN', style: AppTypography.captionBadge),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -734,7 +809,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                   color: AppColors.surfaceSubtle,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text('Coming soon', style: AppTypography.captionSubtle.copyWith(fontSize: 10)),
+                child: Text('Segera Hadir', style: AppTypography.captionSubtle.copyWith(fontSize: 10)),
               ),
             ],
           ),

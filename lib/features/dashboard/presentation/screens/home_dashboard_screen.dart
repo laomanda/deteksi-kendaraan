@@ -19,7 +19,7 @@ import '../widgets/dashboard_recent_rides_card.dart';
 import '../widgets/dashboard_vehicle_selector.dart';
 import '../widgets/dashboard_vehicle_summary_card.dart';
 
-/// Upgraded RideCare Home Dashboard Screen
+/// Simplified RideCare Home Dashboard Screen
 class HomeDashboardScreen extends ConsumerWidget {
   final VoidCallback? onNavigateToTracking;
   final VoidCallback? onNavigateToMaintenance;
@@ -58,7 +58,7 @@ class HomeDashboardScreen extends ConsumerWidget {
                   ),
                 ),
                 Text(
-                  'Smart Vehicle Intelligence',
+                  'Asisten Kendaraan Pribadi',
                   style: AppTypography.captionSubtle.copyWith(fontSize: 10),
                 ),
               ],
@@ -103,15 +103,33 @@ class HomeDashboardScreen extends ConsumerWidget {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(AppSpacing.space16),
             child: allVehicles.isEmpty || activeVehicle == null
-                ? _buildEmptyVehicleState(context)
+                ? _buildFriendlyOnboarding(context)
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 1. Vehicle Status Summary Card (Visual Anchor)
+                      // 1. Status Kendaraan (Visual Anchor Bahasa Manusia)
                       const DashboardVehicleSummaryCard(),
                       const SizedBox(height: AppSpacing.space16),
 
-                      // 2. Next Maintenance Card (Smart Priority: OVERDUE > DUE SOON > GOOD)
+                      // 2. Quick Actions ([Mulai Perjalanan], [Catat Servis], [Lihat Kondisi])
+                      DashboardQuickActions(
+                        onStartRide: onNavigateToTracking,
+                        onNavigateToMaintenance: onNavigateToMaintenance ??
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => MaintenancePage(
+                                    initialVehicleId: activeVehicle.id,
+                                  ),
+                                ),
+                              );
+                            },
+                        onNavigateToGarage: onNavigateToGarage,
+                      ),
+                      const SizedBox(height: AppSpacing.space16),
+
+                      // 3. Next Maintenance Card (Hanya jika perlu perhatian / servis)
                       DashboardNextMaintenanceCard(
                         onNavigateToMaintenance: onNavigateToMaintenance ??
                             () {
@@ -127,24 +145,17 @@ class HomeDashboardScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.space16),
 
-                      // 3. Quick Actions
-                      DashboardQuickActions(
-                        onStartRide: onNavigateToTracking,
-                        onNavigateToGarage: onNavigateToGarage,
-                      ),
-                      const SizedBox(height: AppSpacing.space24),
-
-                      // 4. Upcoming Cost & Budget Forecast
+                      // 4. Perkiraan Biaya & Anggaran Servis
                       DashboardCostBudgetCard(
                         onNavigateToMaintenance: onNavigateToMaintenance,
                       ),
                       const SizedBox(height: AppSpacing.space16),
 
-                      // 5. Monthly Activity Snapshot
+                      // 5. Aktivitas Bulanan Ringkas
                       const DashboardMonthlyActivityCard(),
                       const SizedBox(height: AppSpacing.space16),
 
-                      // 6. Recent Rides (Max 3 latest rides)
+                      // 6. Perjalanan Terbaru
                       DashboardRecentRidesCard(
                         onStartRide: onNavigateToTracking,
                       ),
@@ -157,48 +168,93 @@ class HomeDashboardScreen extends ConsumerWidget {
     );
   }
 
-  /// Empty state when no vehicles are registered
-  Widget _buildEmptyVehicleState(BuildContext context) {
+  /// 3-Step Friendly Onboarding for new users (No technical jargon)
+  Widget _buildFriendlyOnboarding(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space24,
-        vertical: AppSpacing.space48,
+        horizontal: AppSpacing.space16,
+        vertical: AppSpacing.space24,
       ),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 80,
-              height: 80,
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
                 color: AppColors.primaryBlue.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.two_wheeler_rounded,
-                size: 44,
+                size: 40,
                 color: AppColors.primaryBlue,
               ),
             ),
-            const SizedBox(height: AppSpacing.space24),
+            const SizedBox(height: AppSpacing.space16),
             Text(
-              'Belum Ada Kendaraan',
+              'Selamat Datang di RideCare',
               style: AppTypography.heading1.copyWith(fontSize: 22),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.space8),
             Text(
-              'Mulai dengan menambahkan kendaraan pertama Anda untuk memantau kesehatan dan perawatan berkala.',
+              'Asisten pribadi agar kendaraan Anda selalu aman dan terawat.',
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.space24),
+
+            // 3-Step Guide Card
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.space16),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceWhite,
+                borderRadius: AppSpacing.cardBorderRadius,
+                border: Border.all(color: AppColors.borderSubtle),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x04000000),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  _buildStepRow(
+                    stepNumber: '1',
+                    title: 'Tambah Kendaraan',
+                    desc: 'Cukup masukkan jenis, merek, model, dan tahun kendaraan Anda.',
+                    icon: Icons.add_circle_outline_rounded,
+                  ),
+                  const Divider(height: 24, color: AppColors.borderSubtle),
+                  _buildStepRow(
+                    stepNumber: '2',
+                    title: 'RideCare Membantu Mengingat',
+                    desc: 'Ketahui kapan ganti oli dan servis tanpa perlu mengingat jadwal manual.',
+                    icon: Icons.notifications_none_rounded,
+                  ),
+                  const Divider(height: 24, color: AppColors.borderSubtle),
+                  _buildStepRow(
+                    stepNumber: '3',
+                    title: 'Nikmati Kendaraan Lebih Terawat',
+                    desc: 'Berkendara tenang setiap hari dengan perkiraan biaya yang transparan.',
+                    icon: Icons.verified_outlined,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.space24),
+
+            // Primary CTA: Tambah Kendaraan Pertama
             SizedBox(
               width: double.infinity,
-              height: 48,
+              height: 50,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
@@ -207,10 +263,10 @@ class HomeDashboardScreen extends ConsumerWidget {
                     borderRadius: AppSpacing.buttonBorderRadius,
                   ),
                 ),
-                icon: const Icon(Icons.add_rounded, size: 20),
+                icon: const Icon(Icons.add_rounded, size: 22),
                 label: const Text(
-                  'Tambah Kendaraan',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  'Tambah Kendaraan Pertama',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 onPressed: () {
                   Navigator.push(
@@ -225,6 +281,59 @@ class HomeDashboardScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildStepRow({
+    required String stepNumber,
+    required String title,
+    required String desc,
+    required IconData icon,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: AppColors.primaryBlue.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              stepNumber,
+              style: const TextStyle(
+                color: AppColors.primaryBlue,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.space12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTypography.bodyMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                desc,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -81,7 +81,7 @@ class UpcomingMaintenanceCard extends ConsumerWidget {
                         color: AppColors.primaryBlue,
                       ),
                       const SizedBox(width: 8),
-                      Text('UPCOMING MAINTENANCE', style: AppTypography.captionBadge),
+                      Text('PERKIRAAN SERVIS TERDEKAT', style: AppTypography.captionBadge),
                     ],
                   ),
                   Container(
@@ -124,16 +124,20 @@ class UpcomingMaintenanceCard extends ConsumerWidget {
   Widget _buildItemRow(BuildContext context, MaintenancePrediction p) {
     Color statusColor;
     IconData statusIcon;
+    String statusLabel;
 
     if (p.isOverdue) {
       statusColor = AppColors.healthCritical;
       statusIcon = Icons.error_rounded;
+      statusLabel = 'LEWAT JADWAL';
     } else if (p.isDueSoon) {
       statusColor = AppColors.healthWarning;
       statusIcon = Icons.warning_rounded;
+      statusLabel = 'SEGERA DIGANTI';
     } else {
       statusColor = AppColors.healthOptimal;
       statusIcon = Icons.check_circle_rounded;
+      statusLabel = 'KONDISI BAIK';
     }
 
     return InkWell(
@@ -180,7 +184,7 @@ class UpcomingMaintenanceCard extends ConsumerWidget {
                           borderRadius: AppSpacing.chipBorderRadius,
                         ),
                         child: Text(
-                          p.status,
+                          statusLabel,
                           style: AppTypography.captionBadge.copyWith(
                             color: statusColor,
                             fontWeight: FontWeight.bold,
@@ -192,9 +196,11 @@ class UpcomingMaintenanceCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${DateFormatter.formatKm(p.remainingKm.toDouble())} KM / ${p.remainingDays > 0 ? p.remainingDays : 0} days remaining',
+                    p.isOverdue
+                        ? 'Sudah melewati batas jadwal servis'
+                        : 'Perkiraan: ${DateFormatter.formatKm(p.remainingKm.toDouble())} KM lagi (${p.remainingDays > 0 ? '${p.remainingDays} hari' : 'segera'})',
                     style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: p.isOverdue ? AppColors.healthCritical : AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -202,7 +208,7 @@ class UpcomingMaintenanceCard extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Estimated: ${p.formattedCompactRange}',
+                        'Biaya: ${p.formattedCompactRange}',
                         style: AppTypography.captionBadge.copyWith(
                           color: AppColors.primaryBlue,
                           fontWeight: FontWeight.bold,
@@ -211,7 +217,7 @@ class UpcomingMaintenanceCard extends ConsumerWidget {
                       Row(
                         children: [
                           Text(
-                            'View Details',
+                            'Lihat Detail',
                             style: AppTypography.captionBadge.copyWith(
                               color: AppColors.textSecondary,
                             ),

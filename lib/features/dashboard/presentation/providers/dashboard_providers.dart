@@ -33,6 +33,37 @@ class DashboardVehicleSummary {
   bool get isOverdue => status == 'OVERDUE';
   bool get isDueSoon => status == 'DUE SOON';
   bool get isGood => status == 'GOOD';
+
+  /// Human-friendly Indonesian status title (No technical jargon)
+  String get humanStatusTitle {
+    if (isOverdue) return 'Perlu Servis';
+    if (isDueSoon) return 'Perlu Perhatian';
+    return 'Kendaraan Aman';
+  }
+
+  /// Human-friendly Indonesian status explanation
+  String get humanStatusSubtitle {
+    if (isOverdue) {
+      if (mostUrgentPrediction != null) {
+        return '${mostUrgentPrediction!.componentName} sudah melewati jadwal servis.';
+      }
+      return 'Ada komponen yang sudah melewati jadwal servis.';
+    }
+    if (isDueSoon) {
+      if (mostUrgentPrediction != null) {
+        return '${mostUrgentPrediction!.componentName} diperkirakan perlu diganti dalam ${mostUrgentPrediction!.remainingKm} KM.';
+      }
+      return 'Ada komponen yang mendekati batas pemakaian.';
+    }
+    return 'Belum ada servis yang perlu dilakukan.';
+  }
+
+  /// Human-friendly short badge
+  String get humanStatusBadge {
+    if (isOverdue) return 'PERLU SERVIS';
+    if (isDueSoon) return 'PERHATIAN';
+    return 'AMAN';
+  }
 }
 
 /// Synthesizes vehicle summary for dashboard with Smart Priority rule:

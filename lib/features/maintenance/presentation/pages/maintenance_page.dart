@@ -58,6 +58,20 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
     final statusColor = _getStatusColor(itemHealth.status);
     final numberFormat = NumberFormat.decimalPattern('id_ID');
 
+    String statusText;
+    String reasonText;
+    if (itemHealth.isOverdue) {
+      statusText = 'Lewat Jadwal';
+      reasonText = 'Sudah melewati batas pemakaian yang disarankan.';
+    } else if (itemHealth.isDueSoon) {
+      statusText = 'Segera Diganti';
+      reasonText =
+          'Sudah mendekati batas pemakaian (${numberFormat.format(itemHealth.remainingKm)} KM lagi).';
+    } else {
+      statusText = 'Kondisi Baik';
+      reasonText = 'Masih dalam batas pemakaian yang aman.';
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -69,216 +83,244 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Handle bar
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle bar
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // Title & Status Badge
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
+                // Title & Status Badge
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            itemHealth.item.itemName ?? itemHealth.item.maintenanceId,
+                            style: AppTypography.heading2,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            itemHealth.item.itemCategory ?? 'Komponen Perawatan',
+                            style: AppTypography.captionBadge.copyWith(color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        statusText,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Penjelasan Singkat (Kenapa?)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: statusColor.withValues(alpha: 0.25)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        itemHealth.isOverdue
+                            ? Icons.error_outline_rounded
+                            : (itemHealth.isDueSoon
+                                ? Icons.warning_amber_rounded
+                                : Icons.check_circle_outline_rounded),
+                        color: statusColor,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          reasonText,
+                          style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // Estimated Cost Section
+                Text('PERKIRAAN BIAYA PERAWATAN', style: AppTypography.captionBadge),
+                const SizedBox(height: 8),
+                if (itemHealth.priceEstimate != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue.withValues(alpha: 0.05),
+                      borderRadius: AppSpacing.cardBorderRadius,
+                      border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.2)),
+                    ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          itemHealth.item.itemName ?? itemHealth.item.maintenanceId,
-                          style: AppTypography.heading2,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Total Perkiraan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                            Text(
+                              itemHealth.priceEstimate!.formattedTotalRange,
+                              style: const TextStyle(
+                                color: AppColors.primaryBlue,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Perkiraan Sparepart', style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary)),
+                            Text(itemHealth.priceEstimate!.formattedPartRange, style: AppTypography.bodySmall),
+                          ],
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          'Kategori: ${(itemHealth.item.itemCategory ?? 'General').toUpperCase()}',
-                          style: AppTypography.captionBadge.copyWith(color: AppColors.textSecondary),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Perkiraan Jasa Bengkel', style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary)),
+                            Text(itemHealth.priceEstimate!.formattedLaborRange, style: AppTypography.bodySmall),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
+                  const SizedBox(height: 8),
+                  Text(
+                    MaintenancePriceModel.priceDisclaimer,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade600,
+                      height: 1.3,
                     ),
-                    child: Text(
-                      itemHealth.status,
-                      style: TextStyle(
-                        color: statusColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
+                  ),
+                ] else ...[
+                  Text(
+                    'Perkiraan biaya belum tersedia untuk komponen ini.',
+                    style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
                   ),
                 ],
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Metrics Grid
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.bgLight,
-                  borderRadius: AppSpacing.cardBorderRadius,
-                  border: Border.all(color: AppColors.borderSubtle),
-                ),
-                child: Column(
-                  children: [
-                    _buildMetricRow(
-                      label: 'Current Health',
-                      value: '${itemHealth.healthPercentage.toStringAsFixed(0)}%',
-                      valueColor: statusColor,
-                      isBold: true,
+                // Button Catat Servis
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AddServicePage(
+                            vehicle: vehicle,
+                            preselectedItem: itemHealth.item,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.build_rounded, size: 18),
+                    label: const Text('Catat Servis Komponen Ini'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppSpacing.buttonBorderRadius,
+                      ),
                     ),
-                    const Divider(height: 16),
-                    _buildMetricRow(
-                      label: 'Remaining Odometer',
-                      value: '${numberFormat.format(itemHealth.remainingKm)} KM',
-                      valueColor: statusColor,
-                      isBold: true,
-                    ),
-                    const Divider(height: 16),
-                    _buildMetricRow(
-                      label: 'Current Odometer',
-                      value: '${numberFormat.format(vehicle.currentOdometer)} KM',
-                    ),
-                    const Divider(height: 16),
-                    _buildMetricRow(
-                      label: 'Last Service Odometer',
-                      value: '${numberFormat.format(itemHealth.item.lastServiceOdometer)} KM',
-                    ),
-                    const Divider(height: 16),
-                    _buildMetricRow(
-                      label: 'Next Recommended Service',
-                      value: '${numberFormat.format(itemHealth.nextServiceOdometer)} KM',
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Estimated Cost Section
-              Text('ESTIMASI BIAYA PERAWATAN', style: AppTypography.captionBadge),
-              const SizedBox(height: 8),
-              if (itemHealth.priceEstimate != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.05),
-                    borderRadius: AppSpacing.cardBorderRadius,
-                    border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.2)),
                   ),
-                  child: Column(
+                ),
+                const SizedBox(height: 12),
+
+                // Collapsible Technical Information
+                Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    tilePadding: EdgeInsets.zero,
+                    title: Text(
+                      'Detail Teknis & Interval',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Total Estimasi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                          Text(
-                            itemHealth.priceEstimate!.formattedTotalRange,
-                            style: const TextStyle(
-                              color: AppColors.primaryBlue,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 16,
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppColors.bgLight,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.borderSubtle),
+                        ),
+                        child: Column(
+                          children: [
+                            _buildMetricRow(
+                              label: 'Jarak Tempuh Saat Ini',
+                              value: '${numberFormat.format(vehicle.currentOdometer)} KM',
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Estimasi Sparepart', style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary)),
-                          Text(itemHealth.priceEstimate!.formattedPartRange, style: AppTypography.bodySmall),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Estimasi Jasa Bengkel', style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary)),
-                          Text(itemHealth.priceEstimate!.formattedLaborRange, style: AppTypography.bodySmall),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                // Price Disclaimer
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.amber.shade200),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.info_outline_rounded, color: Colors.amber.shade800, size: 18),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          MaintenancePriceModel.priceDisclaimer,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.amber.shade900,
-                            height: 1.35,
-                          ),
+                            const Divider(height: 14),
+                            _buildMetricRow(
+                              label: 'Servis Terakhir pada',
+                              value: '${numberFormat.format(itemHealth.item.lastServiceOdometer)} KM',
+                            ),
+                            const Divider(height: 14),
+                            _buildMetricRow(
+                              label: 'Jadwal Servis Berikutnya',
+                              value: '${numberFormat.format(itemHealth.nextServiceOdometer)} KM',
+                            ),
+                            const Divider(height: 14),
+                            _buildMetricRow(
+                              label: 'Sisa Jarak Rekomendasi',
+                              value: '${numberFormat.format(itemHealth.remainingKm)} KM',
+                              valueColor: statusColor,
+                              isBold: true,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              ] else ...[
-                Text(
-                  'Estimasi harga belum tersedia untuk komponen ini.',
-                  style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
-                ),
+                const SizedBox(height: 16),
               ],
-              const SizedBox(height: 24),
-
-              // Button Catat Servis
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => AddServicePage(
-                          vehicle: vehicle,
-                          preselectedItem: itemHealth.item,
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.build_rounded, size: 18),
-                  label: const Text('Catat Servis Komponen Ini'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppSpacing.buttonBorderRadius,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+            ),
           ),
         );
       },
@@ -315,7 +357,7 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
     return Scaffold(
       backgroundColor: AppColors.bgLight,
       appBar: AppBar(
-        title: const Text('Maintenance Intelligence'),
+        title: const Text('Perawatan Kendaraan'),
         elevation: 0,
         actions: [
           IconButton(
@@ -442,22 +484,48 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
           ),
           const SizedBox(height: AppSpacing.space16),
 
-          // 2. Overall Health Summary Card
+          // 2. Human-First Status Summary Card
           healthSummaryAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Text('Error: $e'),
             data: (summary) {
-              final score = summary.overallScore.round();
-              final Color scoreColor = score >= 80
-                  ? AppColors.successGreen
-                  : (score >= 50 ? Colors.orangeAccent : Colors.redAccent);
+              final numberFormat = NumberFormat.decimalPattern('id_ID');
+
+              // Status visual yang jelas
+              Color statusColor;
+              String statusTitle;
+              String statusDesc;
+              IconData statusIcon;
+
+              if (summary.overdueCount > 0) {
+                statusColor = AppColors.healthCritical;
+                statusTitle = 'Perlu Servis Segera';
+                statusDesc = '${summary.overdueCount} komponen sudah melewati batas pemakaian.';
+                statusIcon = Icons.error_rounded;
+              } else if (summary.dueSoonCount > 0) {
+                statusColor = AppColors.healthWarning;
+                statusTitle = 'Perlu Perhatian';
+                statusDesc = '${summary.dueSoonCount} komponen mendekati jadwal servis.';
+                statusIcon = Icons.warning_amber_rounded;
+              } else {
+                statusColor = AppColors.healthOptimal;
+                statusTitle = 'Kendaraan Aman';
+                statusDesc = 'Semua komponen masih dalam kondisi prima.';
+                statusIcon = Icons.check_circle_rounded;
+              }
 
               return Container(
-                padding: const EdgeInsets.all(AppSpacing.space24),
+                padding: const EdgeInsets.all(AppSpacing.space16),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceWhite,
                   borderRadius: AppSpacing.cardBorderRadius,
-                  border: Border.all(color: AppColors.borderSubtle),
+                  border: Border.all(
+                    color: summary.overdueCount > 0
+                        ? AppColors.healthCritical.withValues(alpha: 0.4)
+                        : (summary.dueSoonCount > 0
+                            ? AppColors.healthWarning.withValues(alpha: 0.4)
+                            : AppColors.borderSubtle),
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.03),
@@ -467,70 +535,71 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
                   ],
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Status Banner
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Circular Health Indicator
-                        SizedBox(
-                          width: 80,
-                          height: 80,
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              CircularProgressIndicator(
-                                value: (score / 100).clamp(0.0, 1.0),
-                                strokeWidth: 8,
-                                backgroundColor: Colors.grey.shade200,
-                                valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
-                              ),
-                              Center(
-                                child: Text(
-                                  '$score%',
-                                  style: AppTypography.heading2.copyWith(
-                                    color: scoreColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: statusColor.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
                           ),
+                          child: Icon(statusIcon, color: statusColor, size: 28),
                         ),
-                        const SizedBox(width: AppSpacing.space24),
+                        const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Overall Health', style: AppTypography.heading2),
-                              const SizedBox(height: 4),
                               Text(
-                                score >= 80
-                                    ? 'Kendaraan dalam kondisi prima 👍'
-                                    : (score >= 50
-                                        ? 'Perhatikan komponen yang mendekati servis ⚠️'
-                                        : 'Segera lakukan servis komponen kritis 🚨'),
-                                style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                                statusTitle,
+                                style: AppTypography.heading2.copyWith(color: statusColor),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 2),
                               Text(
-                                'Odometer: ${NumberFormat.decimalPattern('id_ID').format(vehicle.currentOdometer)} KM',
-                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                statusDesc,
+                                style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
                               ),
                             ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.space16),
+                    const SizedBox(height: 16),
                     const Divider(),
-                    const SizedBox(height: 8),
-                    // Summary status count chips
+                    const SizedBox(height: 12),
+
+                    // Total Jarak Kendaraan & Chips
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildStatusChip('GOOD', summary.goodCount, AppColors.successGreen),
-                        _buildStatusChip('DUE SOON', summary.dueSoonCount, Colors.orangeAccent),
-                        _buildStatusChip('OVERDUE', summary.overdueCount, Colors.redAccent),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('TOTAL JARAK KENDARAAN', style: AppTypography.captionBadge),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${numberFormat.format(vehicle.currentOdometer)} KM',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            _buildStatusChip('Aman', summary.goodCount, AppColors.successGreen),
+                            const SizedBox(width: 6),
+                            if (summary.dueSoonCount > 0) ...[
+                              _buildStatusChip('Perhatian', summary.dueSoonCount, Colors.orangeAccent),
+                              const SizedBox(width: 6),
+                            ],
+                            if (summary.overdueCount > 0)
+                              _buildStatusChip('Servis', summary.overdueCount, Colors.redAccent),
+                          ],
+                        ),
                       ],
                     ),
                   ],
@@ -661,7 +730,22 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
   Widget _buildMaintenanceCard(VehicleMaintenanceHealth itemHealth, VehicleModel vehicle) {
     final statusColor = _getStatusColor(itemHealth.status);
     final numberFormat = NumberFormat.decimalPattern('id_ID');
-    final healthScore = itemHealth.healthPercentage.round();
+
+    String statusBadgeText;
+    if (itemHealth.isOverdue) {
+      statusBadgeText = 'Lewat Jadwal';
+    } else if (itemHealth.isDueSoon) {
+      statusBadgeText = 'Segera Diganti';
+    } else {
+      statusBadgeText = 'Kondisi Baik';
+    }
+
+    final String timingText;
+    if (itemHealth.isOverdue) {
+      timingText = 'Perkiraan: Terlewat ${numberFormat.format(itemHealth.remainingKm.abs())} KM';
+    } else {
+      timingText = 'Perkiraan: ${numberFormat.format(itemHealth.remainingKm)} KM lagi';
+    }
 
     return InkWell(
       onTap: () => _showComponentDetail(context, itemHealth, vehicle),
@@ -673,9 +757,9 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
           borderRadius: AppSpacing.cardBorderRadius,
           border: Border.all(
             color: itemHealth.isOverdue
-                ? Colors.redAccent.withValues(alpha: 0.5)
+                ? AppColors.healthCritical.withValues(alpha: 0.5)
                 : (itemHealth.isDueSoon
-                    ? Colors.orangeAccent.withValues(alpha: 0.4)
+                    ? AppColors.healthWarning.withValues(alpha: 0.4)
                     : AppColors.borderSubtle),
             width: itemHealth.isDueSoon || itemHealth.isOverdue ? 1.5 : 1.0,
           ),
@@ -701,16 +785,16 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    itemHealth.status,
+                    statusBadgeText,
                     style: TextStyle(
                       color: statusColor,
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -719,42 +803,34 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
             ),
             const SizedBox(height: 10),
 
-            // Progress Bar Visual
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: (itemHealth.healthPercentage / 100.0).clamp(0.0, 1.0),
-                minHeight: 8,
-                backgroundColor: Colors.grey.shade200,
-                valueColor: AlwaysStoppedAnimation<Color>(statusColor),
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // Info Teks: % remaining & KM remaining
+            // Friendly Timing text
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '$healthScore% remaining',
-                  style: TextStyle(
-                    color: statusColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
+                Icon(
+                  Icons.schedule_rounded,
+                  size: 16,
+                  color: itemHealth.isOverdue
+                      ? AppColors.healthCritical
+                      : (itemHealth.isDueSoon ? AppColors.healthWarning : AppColors.textSecondary),
                 ),
+                const SizedBox(width: 6),
                 Text(
-                  '${numberFormat.format(itemHealth.remainingKm)} KM remaining',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w500,
+                  timingText,
+                  style: TextStyle(
+                    color: itemHealth.isOverdue
+                        ? AppColors.healthCritical
+                        : (itemHealth.isDueSoon ? AppColors.textPrimary : AppColors.textSecondary),
+                    fontWeight: itemHealth.isDueSoon || itemHealth.isOverdue
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                    fontSize: 13,
                   ),
                 ),
               ],
             ),
 
             // Estimasi Biaya ringkas jika ada
-            if (itemHealth.priceEstimate != null && (itemHealth.isDueSoon || itemHealth.isOverdue)) ...[
+            if (itemHealth.priceEstimate != null) ...[
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -766,9 +842,9 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.price_change_outlined, size: 14, color: AppColors.primaryBlue),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 6),
                     Text(
-                      'Estimasi: ${itemHealth.priceEstimate!.formattedTotalRange}',
+                      'Perkiraan Biaya: ${itemHealth.priceEstimate!.formattedTotalRange}',
                       style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.primaryBlue,

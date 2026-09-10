@@ -68,7 +68,7 @@ class DashboardCostBudgetCard extends ConsumerWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'ESTIMATED UPCOMING COST',
+                        'PERKIRAAN BIAYA PERAWATAN',
                         style: AppTypography.captionBadge.copyWith(
                           color: AppColors.primaryBlue,
                           letterSpacing: 0.5,
@@ -132,7 +132,7 @@ class DashboardCostBudgetCard extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: _buildHorizonBox(
-                        title: 'Next 30 Days',
+                        title: '30 Hari',
                         range: f30?.hasItems == true
                             ? f30!.formattedCompactRange
                             : 'Rp0',
@@ -142,7 +142,7 @@ class DashboardCostBudgetCard extends ConsumerWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: _buildHorizonBox(
-                        title: 'Next 90 Days',
+                        title: '90 Hari',
                         range: f90?.hasItems == true
                             ? f90!.formattedCompactRange
                             : 'Rp0',
@@ -153,7 +153,7 @@ class DashboardCostBudgetCard extends ConsumerWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: _buildHorizonBox(
-                        title: 'Next 180 Days',
+                        title: '180 Hari',
                         range: f180?.hasItems == true
                             ? f180!.formattedCompactRange
                             : 'Rp0',

@@ -7,7 +7,7 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../vehicle/presentation/pages/vehicle_detail_page.dart';
 import '../providers/dashboard_providers.dart';
 
-/// Visual Anchor Summary Card for RideCare Dashboard
+/// Simplified Human-Centric Vehicle Status Card for RideCare Dashboard
 class DashboardVehicleSummaryCard extends ConsumerWidget {
   const DashboardVehicleSummaryCard({super.key});
 
@@ -24,30 +24,24 @@ class DashboardVehicleSummaryCard extends ConsumerWidget {
         }
 
         final vehicle = summary.vehicle;
-        final healthScore = summary.healthScore.round();
 
-        // Color and badges based on Smart Priority Status
+        // Visual properties based on Smart Priority Status
         Color statusColor;
         Color statusBgColor;
-        String statusLabel;
+        IconData statusIcon;
 
-        switch (summary.status) {
-          case 'OVERDUE':
-            statusColor = AppColors.healthCritical;
-            statusBgColor = Colors.red.withValues(alpha: 0.12);
-            statusLabel = 'OVERDUE';
-            break;
-          case 'DUE SOON':
-            statusColor = AppColors.healthWarning;
-            statusBgColor = Colors.orange.withValues(alpha: 0.12);
-            statusLabel = 'DUE SOON';
-            break;
-          case 'GOOD':
-          default:
-            statusColor = AppColors.healthOptimal;
-            statusBgColor = Colors.green.withValues(alpha: 0.12);
-            statusLabel = 'GOOD';
-            break;
+        if (summary.isOverdue) {
+          statusColor = AppColors.healthCritical;
+          statusBgColor = Colors.red.withValues(alpha: 0.1);
+          statusIcon = Icons.error_rounded;
+        } else if (summary.isDueSoon) {
+          statusColor = AppColors.healthWarning;
+          statusBgColor = Colors.orange.withValues(alpha: 0.1);
+          statusIcon = Icons.warning_rounded;
+        } else {
+          statusColor = AppColors.healthOptimal;
+          statusBgColor = Colors.green.withValues(alpha: 0.1);
+          statusIcon = Icons.check_circle_rounded;
         }
 
         return Container(
@@ -55,11 +49,9 @@ class DashboardVehicleSummaryCard extends ConsumerWidget {
             color: AppColors.surfaceWhite,
             borderRadius: AppSpacing.cardBorderRadius,
             border: Border.all(
-              color: summary.isOverdue
-                  ? AppColors.healthCritical.withValues(alpha: 0.5)
-                  : (summary.isDueSoon
-                      ? AppColors.healthWarning.withValues(alpha: 0.5)
-                      : AppColors.borderSubtle),
+              color: summary.isOverdue || summary.isDueSoon
+                  ? statusColor.withValues(alpha: 0.4)
+                  : AppColors.borderSubtle,
               width: summary.isOverdue || summary.isDueSoon ? 1.5 : 1.0,
             ),
             boxShadow: const [
@@ -85,7 +77,7 @@ class DashboardVehicleSummaryCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Row 1: Vehicle Identity & Status Chip
+                  // 1. Header: Identitas Kendaraan & Navigasi ke Detail
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -107,7 +99,7 @@ class DashboardVehicleSummaryCard extends ConsumerWidget {
                                 color: vehicle.isMotorcycle
                                     ? AppColors.primaryBlue
                                     : AppColors.secondaryTeal,
-                                size: 20,
+                                size: 22,
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -117,7 +109,7 @@ class DashboardVehicleSummaryCard extends ConsumerWidget {
                                 children: [
                                   Text(
                                     vehicle.displayName,
-                                    style: AppTypography.heading2.copyWith(fontSize: 17),
+                                    style: AppTypography.heading2.copyWith(fontSize: 18),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -131,95 +123,50 @@ class DashboardVehicleSummaryCard extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: statusBgColor,
-                          borderRadius: AppSpacing.chipBorderRadius,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: statusColor,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              statusLabel,
-                              style: AppTypography.captionBadge.copyWith(
-                                color: statusColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: AppColors.textSecondary,
+                        size: 20,
                       ),
                     ],
                   ),
 
                   const SizedBox(height: AppSpacing.space16),
 
-                  // Section 3: VEHICLE HEALTH (Main Headline)
+                  // 2. STATUS KENDARAAN (Pesan Utama dalam Bahasa Manusia)
                   Container(
-                    padding: const EdgeInsets.all(AppSpacing.space12),
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppSpacing.space16),
                     decoration: BoxDecoration(
-                      color: AppColors.bgLight,
+                      color: statusBgColor,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: statusColor.withValues(alpha: 0.25)),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
                           children: [
+                            Icon(statusIcon, color: statusColor, size: 22),
+                            const SizedBox(width: 8),
                             Text(
-                              'VEHICLE HEALTH',
-                              style: AppTypography.captionBadge.copyWith(
-                                color: AppColors.textSecondary,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '$healthScore%',
-                              style: AppTypography.heading1.copyWith(
+                              summary.humanStatusTitle,
+                              style: AppTypography.heading2.copyWith(
                                 color: statusColor,
                                 fontWeight: FontWeight.w800,
-                                fontSize: 26,
+                                fontSize: 17,
                               ),
                             ),
                           ],
                         ),
-                        // Circular Health Indicator
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            SizedBox(
-                              width: 44,
-                              height: 44,
-                              child: CircularProgressIndicator(
-                                value: healthScore / 100.0,
-                                strokeWidth: 4.5,
-                                backgroundColor: statusColor.withValues(alpha: 0.15),
-                                valueColor: AlwaysStoppedAnimation<Color>(statusColor),
-                              ),
-                            ),
-                            Icon(
-                              summary.isOverdue
-                                  ? Icons.error_outline_rounded
-                                  : (summary.isDueSoon
-                                      ? Icons.warning_amber_rounded
-                                      : Icons.check_circle_outline_rounded),
-                              color: statusColor,
-                              size: 20,
-                            ),
-                          ],
+                        const SizedBox(height: 6),
+                        Text(
+                          summary.humanStatusSubtitle,
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w500,
+                            height: 1.35,
+                          ),
                         ),
                       ],
                     ),
@@ -227,59 +174,58 @@ class DashboardVehicleSummaryCard extends ConsumerWidget {
 
                   const SizedBox(height: AppSpacing.space16),
 
-                  // Section 4: QUICK STATUS (4-Item Grid)
+                  // 3. INFORMASI PENDUKUNG (Total Jarak Kendaraan & Aksi/Biaya)
                   Row(
                     children: [
-                      // 1. Current Odometer
+                      // Total Jarak Kendaraan
                       Expanded(
-                        child: _buildQuickStatusBox(
-                          label: 'Current Odometer',
-                          value: DateFormatter.formatKm(vehicle.currentKilometer),
-                          icon: Icons.speed_rounded,
-                          iconColor: AppColors.primaryBlue,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Total Jarak Kendaraan',
+                              style: AppTypography.captionSubtle.copyWith(fontSize: 11),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              DateFormatter.formatKm(vehicle.currentKilometer),
+                              style: AppTypography.bodyLarge.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.space8),
-                      // 2. Upcoming Maintenance
-                      Expanded(
-                        child: _buildQuickStatusBox(
-                          label: 'Upcoming',
-                          value: '${summary.totalUpcomingCount} item',
-                          icon: Icons.schedule_rounded,
-                          iconColor: summary.dueSoonCount > 0
-                              ? AppColors.healthWarning
-                              : AppColors.primaryBlue,
+                      // Estimasi Biaya jika ada servis yang perlu diperhatikan
+                      if (summary.isOverdue || summary.isDueSoon) ...[
+                        Container(
+                          height: 32,
+                          width: 1,
+                          color: AppColors.borderSubtle,
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.space8),
-                  Row(
-                    children: [
-                      // 3. Overdue Items
-                      Expanded(
-                        child: _buildQuickStatusBox(
-                          label: 'Overdue',
-                          value: '${summary.overdueCount} items',
-                          icon: Icons.error_outline_rounded,
-                          iconColor: summary.overdueCount > 0
-                              ? AppColors.healthCritical
-                              : AppColors.textSecondary,
-                          valueColor: summary.overdueCount > 0
-                              ? AppColors.healthCritical
-                              : AppColors.textPrimary,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Perkiraan Biaya',
+                                style: AppTypography.captionSubtle.copyWith(fontSize: 11),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                summary.formattedUpcomingCost,
+                                style: AppTypography.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primaryBlue,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: AppSpacing.space8),
-                      // 4. Estimated Upcoming Cost
-                      Expanded(
-                        child: _buildQuickStatusBox(
-                          label: 'Estimated Cost',
-                          value: summary.formattedUpcomingCost,
-                          icon: Icons.payments_outlined,
-                          iconColor: AppColors.primaryBlue,
-                        ),
-                      ),
+                      ],
                     ],
                   ),
                 ],
@@ -288,52 +234,6 @@ class DashboardVehicleSummaryCard extends ConsumerWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildQuickStatusBox({
-    required String label,
-    required String value,
-    required IconData icon,
-    required Color iconColor,
-    Color? valueColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.bgLight,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.borderSubtle.withValues(alpha: 0.6)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 14, color: iconColor),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  label,
-                  style: AppTypography.captionSubtle.copyWith(fontSize: 10),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: AppTypography.bodySmall.copyWith(
-              fontWeight: FontWeight.w700,
-              color: valueColor ?? AppColors.textPrimary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
     );
   }
 

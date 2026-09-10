@@ -52,14 +52,14 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Semua Komponen Optimal',
+                        'Semua Komponen Aman',
                         style: AppTypography.bodyMedium.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Belum ada jadwal servis yang mendesak.',
+                        'Belum ada jadwal servis yang perlu dilakukan.',
                         style: AppTypography.captionSubtle,
                       ),
                     ],
@@ -79,25 +79,29 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
         Color cardBorderColor;
         IconData headerIcon;
         String headerTitle;
+        String statusLabel;
 
         if (isOverdue) {
           badgeColor = AppColors.healthCritical;
           badgeBgColor = Colors.red.withValues(alpha: 0.12);
           cardBorderColor = AppColors.healthCritical.withValues(alpha: 0.6);
           headerIcon = Icons.warning_rounded;
-          headerTitle = 'MAINTENANCE REQUIRED';
+          headerTitle = 'PERAWATAN MENDESAK';
+          statusLabel = 'LEWAT JADWAL';
         } else if (isDueSoon) {
           badgeColor = AppColors.healthWarning;
           badgeBgColor = Colors.orange.withValues(alpha: 0.12);
           cardBorderColor = AppColors.healthWarning.withValues(alpha: 0.5);
           headerIcon = Icons.build_circle_rounded;
-          headerTitle = 'NEXT MAINTENANCE';
+          headerTitle = 'PERKIRAAN SERVIS TERDEKAT';
+          statusLabel = 'SEGERA DIGANTI';
         } else {
           badgeColor = AppColors.healthOptimal;
           badgeBgColor = Colors.green.withValues(alpha: 0.12);
           cardBorderColor = AppColors.borderSubtle;
           headerIcon = Icons.event_available_rounded;
-          headerTitle = 'SCHEDULED MAINTENANCE';
+          headerTitle = 'JADWAL SERVIS BERKALA';
+          statusLabel = 'KONDISI BAIK';
         }
 
         return Container(
@@ -166,7 +170,7 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                           borderRadius: AppSpacing.chipBorderRadius,
                         ),
                         child: Text(
-                          nextItem.status,
+                          statusLabel,
                           style: AppTypography.captionBadge.copyWith(
                             color: badgeColor,
                             fontWeight: FontWeight.bold,
@@ -186,11 +190,11 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
 
-                  // Sisa KM and Days
+                  // Sisa KM and Days in Indonesian
                   Text(
                     isOverdue
-                        ? 'Servis terlewat! Segera lakukan penggantian di bengkel.'
-                        : '${nextItem.remainingKm > 0 ? DateFormatter.formatKm(nextItem.remainingKm.toDouble()) : '0 KM'} remaining • ${nextItem.remainingDays > 0 ? '${nextItem.remainingDays} days' : 'Hari ini'}',
+                        ? 'Sudah melewati jadwal servis! Segera ganti di bengkel.'
+                        : 'Perkiraan: ${nextItem.remainingKm > 0 ? DateFormatter.formatKm(nextItem.remainingKm.toDouble()) : '0 KM'} lagi (${nextItem.remainingDays > 0 ? '${nextItem.remainingDays} hari' : 'segera'})',
                     style: AppTypography.bodySmall.copyWith(
                       color: isOverdue
                           ? AppColors.healthCritical
@@ -210,13 +214,13 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Estimated:', style: AppTypography.captionSubtle),
+                          Text('Perkiraan Biaya:', style: AppTypography.captionSubtle),
                           const SizedBox(height: 1),
                           Text(
                             nextItem.formattedCompactRange,
                             style: AppTypography.bodyMedium.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
+                              color: AppColors.primaryBlue,
                             ),
                           ),
                         ],
@@ -242,7 +246,7 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                             vertical: 6,
                           ),
                         ),
-                        icon: const Text('View Maintenance'),
+                        icon: const Text('Lihat Detail'),
                         label: const Icon(Icons.arrow_forward_rounded, size: 16),
                       ),
                     ],
