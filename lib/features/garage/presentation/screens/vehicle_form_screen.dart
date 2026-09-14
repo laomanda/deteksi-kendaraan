@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
@@ -31,7 +32,11 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
   late String _selectedType;
   late final TextEditingController _brandController;
   late final TextEditingController _modelController;
-  late final TextEditingController _yearController;
+  int? _selectedYear;
+  final List<int> _availableYears = List.generate(
+    DateTime.now().year - 1980 + 1,
+    (index) => DateTime.now().year - index,
+  );
   late final TextEditingController _kmController;
   String? _photoPath;
   bool _isSaving = false;
@@ -45,9 +50,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     _selectedType = v?.vehicleType ?? 'motorcycle';
     _brandController = TextEditingController(text: v?.brand ?? '');
     _modelController = TextEditingController(text: v?.model ?? '');
-    _yearController = TextEditingController(
-      text: v?.year.toString() ?? DateTime.now().year.toString(),
-    );
+    _selectedYear = v?.year;
     _kmController = TextEditingController(
       text: v != null ? v.currentKilometer.toInt().toString() : '',
     );
@@ -58,7 +61,6 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
   void dispose() {
     _brandController.dispose();
     _modelController.dispose();
-    _yearController.dispose();
     _kmController.dispose();
     super.dispose();
   }
@@ -89,12 +91,13 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
 
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (_selectedYear == null) return;
 
     setState(() => _isSaving = true);
     try {
       final brand = _brandController.text.trim();
       final model = _modelController.text.trim();
-      final year = int.parse(_yearController.text.trim());
+      final year = _selectedYear!;
       final currentKm = double.parse(_kmController.text.trim());
 
       final vehicleRepo = ref.read(vehicleRepositoryProvider);
@@ -261,17 +264,23 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
                         children: [
                           Text('Tahun', style: AppTypography.captionBadge),
                           const SizedBox(height: AppSpacing.space4),
-                          TextFormField(
-                            controller: _yearController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(hintText: '2023'),
-                            validator: (val) {
-                              final y = int.tryParse(val ?? '');
-                              if (y == null || y < 1980 || y > DateTime.now().year + 1) {
-                                return 'Tahun salah';
-                              }
-                              return null;
-                            },
+                          DropdownButtonFormField<int>(
+                            initialValue: _selectedYear,
+                            hint: const Text('Pilih', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                            isExpanded: true,
+                            menuMaxHeight: 300,
+                            icon: const Icon(Icons.arrow_drop_down, color: AppColors.primaryBlue),
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                            ),
+                            items: _availableYears.map((y) {
+                              return DropdownMenuItem<int>(
+                                value: y,
+                                child: Text(y.toString(), style: const TextStyle(fontSize: 14)),
+                              );
+                            }).toList(),
+                            onChanged: (val) => setState(() => _selectedYear = val),
+                            validator: (val) => val == null ? 'Pilih tahun' : null,
                           ),
                         ],
                       ),
@@ -282,14 +291,19 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Odometer Terkini', style: AppTypography.captionBadge),
+                          Text('Kilometer di Spidometer', style: AppTypography.captionBadge),
                           const SizedBox(height: AppSpacing.space4),
                           TextFormField(
                             controller: _kmController,
                             keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(7),
+                            ],
                             decoration: const InputDecoration(
                               hintText: '14250',
                               suffixText: 'km',
+                              helperText: 'Total km di layar spidometer kendaraan',
                             ),
                             validator: (val) {
                               final km = double.tryParse(val ?? '');
@@ -308,7 +322,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.space32),
+                const SizedBox(height: AppSpacing.space24),
 
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(

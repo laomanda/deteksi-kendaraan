@@ -24,7 +24,11 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
   late final TextEditingController _brandController;
   late final TextEditingController _modelController;
   late final TextEditingController _variantController;
-  late final TextEditingController _yearController;
+  int? _selectedYear;
+  final List<int> _availableYears = List.generate(
+    DateTime.now().year - 1980 + 1,
+    (index) => DateTime.now().year - index,
+  );
   late final TextEditingController _engineCcController;
   late final TextEditingController _licensePlateController;
   late final TextEditingController _odometerController;
@@ -46,7 +50,7 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
     _brandController = TextEditingController(text: v?.brand ?? '');
     _modelController = TextEditingController(text: v?.model ?? '');
     _variantController = TextEditingController(text: v?.variant ?? '');
-    _yearController = TextEditingController(text: v != null ? v.year.toString() : '2024');
+    _selectedYear = v?.year;
     _engineCcController = TextEditingController(text: v?.engineCc != null ? v!.engineCc.toString() : '');
     _licensePlateController = TextEditingController(text: v?.licensePlate ?? '');
     _odometerController = TextEditingController(text: v != null ? v.currentOdometer.toString() : '0');
@@ -62,7 +66,6 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
     _brandController.dispose();
     _modelController.dispose();
     _variantController.dispose();
-    _yearController.dispose();
     _engineCcController.dispose();
     _licensePlateController.dispose();
     _odometerController.dispose();
@@ -77,7 +80,7 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
 
     try {
       final odo = int.tryParse(_odometerController.text.trim()) ?? 0;
-      final year = int.tryParse(_yearController.text.trim()) ?? 2024;
+      final year = _selectedYear ?? DateTime.now().year;
       final cc = int.tryParse(_engineCcController.text.trim());
 
       final vehicle = VehicleModel(
@@ -224,21 +227,36 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
                       Row(
                         children: [
                           Expanded(
-                            child: _buildTextField(
-                              controller: _yearController,
-                              label: 'Tahun',
-                              hint: DateTime.now().year.toString(),
-                              icon: Icons.calendar_today_rounded,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                              validator: (val) {
-                                if (val == null || val.trim().isEmpty) return 'Wajib diisi';
-                                final y = int.tryParse(val);
-                                if (y == null || y < 1980 || y > DateTime.now().year + 1) {
-                                  return 'Tahun tidak valid';
-                                }
-                                return null;
-                              },
+                            child: DropdownButtonFormField<int>(
+                              initialValue: _selectedYear,
+                              isExpanded: true,
+                              menuMaxHeight: 300,
+                              decoration: InputDecoration(
+                                labelText: 'Tahun',
+                                hintText: 'Pilih',
+                                prefixIcon: const Icon(Icons.calendar_today_rounded, size: 20, color: AppColors.textMuted),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(color: AppColors.borderSubtle),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(color: AppColors.borderSubtle),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                              ),
+                              items: _availableYears.map((y) {
+                                return DropdownMenuItem<int>(
+                                  value: y,
+                                  child: Text(y.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (val) => setState(() => _selectedYear = val),
+                              validator: (val) => val == null ? 'Pilih tahun' : null,
                             ),
                           ),
                           const SizedBox(width: AppSpacing.space12),
@@ -247,6 +265,7 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
                               controller: _odometerController,
                               label: 'Kilometer Saat Ini',
                               hint: '0',
+                              helperText: 'Total km di spidometer',
                               icon: Icons.speed_rounded,
                               keyboardType: TextInputType.number,
                               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -466,6 +485,7 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
     required String label,
     required String hint,
     required IconData icon,
+    String? helperText,
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
     TextCapitalization textCapitalization = TextCapitalization.none,
@@ -480,6 +500,7 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
+        helperText: helperText,
         prefixIcon: Icon(icon, size: 20, color: AppColors.textMuted),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),

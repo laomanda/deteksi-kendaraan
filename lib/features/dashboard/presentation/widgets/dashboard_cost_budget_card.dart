@@ -4,11 +4,11 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
-import '../../../maintenance/data/models/maintenance_price_model.dart';
 import '../../../maintenance/presentation/pages/maintenance_page.dart';
 import '../../../maintenance/providers/maintenance_prediction_providers.dart';
 
 /// Card presenting Estimated Upcoming Cost & Maintenance Budget Forecast
+/// Clean, harmonious financial card without arbitrary highlights
 class DashboardCostBudgetCard extends ConsumerWidget {
   final VoidCallback? onNavigateToMaintenance;
 
@@ -42,12 +42,12 @@ class DashboardCostBudgetCard extends ConsumerWidget {
           padding: const EdgeInsets.all(AppSpacing.space16),
           decoration: BoxDecoration(
             color: AppColors.surfaceWhite,
-            borderRadius: AppSpacing.cardBorderRadius,
-            border: Border.all(color: AppColors.borderSubtle),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x06000000),
-                blurRadius: 8,
+                blurRadius: 10,
                 offset: Offset(0, 2),
               ),
             ],
@@ -55,23 +55,24 @@ class DashboardCostBudgetCard extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
+              // Header Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
+                  const Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.account_balance_wallet_outlined,
                         size: 18,
-                        color: AppColors.primaryBlue,
+                        color: Color(0xFF2563EB),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Text(
-                        'PERKIRAAN BIAYA PERAWATAN',
-                        style: AppTypography.captionBadge.copyWith(
-                          color: AppColors.primaryBlue,
-                          letterSpacing: 0.5,
+                        'Perkiraan Pengeluaran Servis',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -91,18 +92,33 @@ class DashboardCostBudgetCard extends ConsumerWidget {
                         );
                       }
                     },
-                    child: Text(
-                      'Rincian',
-                      style: AppTypography.captionBadge.copyWith(
-                        color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.bold,
+                    borderRadius: BorderRadius.circular(8),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Rincian',
+                            style: TextStyle(
+                              color: Color(0xFF2563EB),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(width: 2),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            size: 14,
+                            color: Color(0xFF2563EB),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: AppSpacing.space12),
+              const SizedBox(height: 14),
 
               if (!hasAnyCost)
                 Padding(
@@ -127,12 +143,13 @@ class DashboardCostBudgetCard extends ConsumerWidget {
                   ),
                 )
               else ...[
-                // 3-Column Horizon Grid
+                // 3-Column Horizon Grid - Harmonious balanced neutral style
                 Row(
                   children: [
                     Expanded(
                       child: _buildHorizonBox(
                         title: '30 Hari',
+                        sublabel: 'Jangka Dekat',
                         range: f30?.hasItems == true
                             ? f30!.formattedCompactRange
                             : 'Rp0',
@@ -143,17 +160,18 @@ class DashboardCostBudgetCard extends ConsumerWidget {
                     Expanded(
                       child: _buildHorizonBox(
                         title: '90 Hari',
+                        sublabel: '3 Bulan',
                         range: f90?.hasItems == true
                             ? f90!.formattedCompactRange
                             : 'Rp0',
                         itemCount: f90?.items.length ?? 0,
-                        isHighlighted: true,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: _buildHorizonBox(
                         title: '180 Hari',
+                        sublabel: '6 Bulan',
                         range: f180?.hasItems == true
                             ? f180!.formattedCompactRange
                             : 'Rp0',
@@ -164,14 +182,14 @@ class DashboardCostBudgetCard extends ConsumerWidget {
                 ),
               ],
 
-              const SizedBox(height: 10),
-              // Disclaimer note
-              Text(
-                MaintenancePriceModel.priceDisclaimer,
-                style: AppTypography.captionSubtle.copyWith(
+              const SizedBox(height: 12),
+              // Disclaimer in clean muted text
+              const Text(
+                'Estimasi harga mencakup suku cadang & jasa rata-rata bengkel umum.',
+                style: TextStyle(
                   fontSize: 10,
-                  color: AppColors.textMuted,
-                  height: 1.3,
+                  color: Color(0xFF94A3B8),
+                  height: 1.35,
                 ),
               ),
             ],
@@ -183,52 +201,60 @@ class DashboardCostBudgetCard extends ConsumerWidget {
 
   Widget _buildHorizonBox({
     required String title,
+    required String sublabel,
     required String range,
     required int itemCount,
-    bool isHighlighted = false,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
-        color: isHighlighted
-            ? AppColors.primaryBlue.withValues(alpha: 0.05)
-            : AppColors.bgLight,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isHighlighted
-              ? AppColors.primaryBlue.withValues(alpha: 0.3)
-              : AppColors.borderSubtle,
-        ),
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: AppTypography.captionSubtle.copyWith(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              Text(
+                sublabel,
+                style: const TextStyle(
+                  fontSize: 9,
+                  color: Color(0xFF94A3B8),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             range,
-            style: AppTypography.bodySmall.copyWith(
+            style: const TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 12,
-              color: isHighlighted
-                  ? AppColors.primaryBlue
-                  : AppColors.textPrimary,
+              color: AppColors.textPrimary,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
           Text(
-            '$itemCount servis',
-            style: AppTypography.captionSubtle.copyWith(fontSize: 10),
+            '$itemCount komponen',
+            style: const TextStyle(
+              fontSize: 10,
+              color: Color(0xFF64748B),
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),

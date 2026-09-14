@@ -38,10 +38,11 @@ class HomeDashboardScreen extends ConsumerWidget {
     final allVehicles = ref.watch(vehicleListProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: AppColors.surfaceWhite,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         titleSpacing: AppSpacing.space16,
         title: Row(
           children: [
@@ -49,17 +50,24 @@ class HomeDashboardScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
+                const Text(
                   'RideCare',
-                  style: AppTypography.heading2.copyWith(
+                  style: TextStyle(
+                    fontFamily: 'Inter',
                     fontWeight: FontWeight.w800,
-                    color: AppColors.primaryBlue,
+                    color: Color(0xFF2563EB),
                     fontSize: 20,
+                    letterSpacing: -0.4,
                   ),
                 ),
-                Text(
+                const SizedBox(height: 1),
+                const Text(
                   'Asisten Kendaraan Pribadi',
-                  style: AppTypography.captionSubtle.copyWith(fontSize: 10),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
@@ -69,7 +77,7 @@ class HomeDashboardScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history_rounded, color: AppColors.textPrimary),
+            icon: const Icon(Icons.history_rounded, color: Color(0xFF334155)),
             tooltip: 'Riwayat Perjalanan',
             onPressed: () {
               Navigator.push(
@@ -101,67 +109,75 @@ class HomeDashboardScreen extends ConsumerWidget {
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(AppSpacing.space16),
-            child: allVehicles.isEmpty || activeVehicle == null
-                ? _buildFriendlyOnboarding(context)
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 1. Status Kendaraan (Visual Anchor Bahasa Manusia)
-                      const DashboardVehicleSummaryCard(),
-                      const SizedBox(height: AppSpacing.space16),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.space16,
+              vertical: AppSpacing.space16,
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: allVehicles.isEmpty || activeVehicle == null
+                    ? _buildFriendlyOnboarding(context)
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 1. Hero Showcase Card (Dark Obsidian Luxury)
+                          const DashboardVehicleSummaryCard(),
+                          const SizedBox(height: 14),
 
-                      // 2. Quick Actions ([Mulai Perjalanan], [Catat Servis], [Lihat Kondisi])
-                      DashboardQuickActions(
-                        onStartRide: onNavigateToTracking,
-                        onNavigateToMaintenance: onNavigateToMaintenance ??
-                            () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => MaintenancePage(
-                                    initialVehicleId: activeVehicle.id,
-                                  ),
-                                ),
-                              );
-                            },
-                        onNavigateToGarage: onNavigateToGarage,
+                          // 2. Cohesive Action Deck ([Mulai Perjalanan], [Catat Servis], [Kondisi])
+                          DashboardQuickActions(
+                            onStartRide: onNavigateToTracking,
+                            onNavigateToMaintenance: onNavigateToMaintenance ??
+                                () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => MaintenancePage(
+                                        initialVehicleId: activeVehicle.id,
+                                      ),
+                                    ),
+                                  );
+                                },
+                            onNavigateToGarage: onNavigateToGarage,
+                          ),
+                          const SizedBox(height: 14),
+
+                          // 3. Next Maintenance Card (Tindakan Terdekat & Biaya Realistis)
+                          DashboardNextMaintenanceCard(
+                            onNavigateToMaintenance: onNavigateToMaintenance ??
+                                () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => MaintenancePage(
+                                        initialVehicleId: activeVehicle.id,
+                                      ),
+                                    ),
+                                  );
+                                },
+                          ),
+                          const SizedBox(height: 14),
+
+                          // 4. Perkiraan Biaya & Anggaran Servis
+                          DashboardCostBudgetCard(
+                            onNavigateToMaintenance: onNavigateToMaintenance,
+                          ),
+                          const SizedBox(height: 14),
+
+                          // 5. Aktivitas Bulan Ini (Bahasa Indonesia)
+                          const DashboardMonthlyActivityCard(),
+                          const SizedBox(height: 14),
+
+                          // 6. Perjalanan Terakhir
+                          DashboardRecentRidesCard(
+                            onStartRide: onNavigateToTracking,
+                          ),
+                          const SizedBox(height: 24),
+                        ],
                       ),
-                      const SizedBox(height: AppSpacing.space16),
-
-                      // 3. Next Maintenance Card (Hanya jika perlu perhatian / servis)
-                      DashboardNextMaintenanceCard(
-                        onNavigateToMaintenance: onNavigateToMaintenance ??
-                            () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => MaintenancePage(
-                                    initialVehicleId: activeVehicle.id,
-                                  ),
-                                ),
-                              );
-                            },
-                      ),
-                      const SizedBox(height: AppSpacing.space16),
-
-                      // 4. Perkiraan Biaya & Anggaran Servis
-                      DashboardCostBudgetCard(
-                        onNavigateToMaintenance: onNavigateToMaintenance,
-                      ),
-                      const SizedBox(height: AppSpacing.space16),
-
-                      // 5. Aktivitas Bulanan Ringkas
-                      const DashboardMonthlyActivityCard(),
-                      const SizedBox(height: AppSpacing.space16),
-
-                      // 6. Perjalanan Terbaru
-                      DashboardRecentRidesCard(
-                        onStartRide: onNavigateToTracking,
-                      ),
-                      const SizedBox(height: AppSpacing.space24),
-                    ],
-                  ),
+              ),
+            ),
           ),
         ),
       ),

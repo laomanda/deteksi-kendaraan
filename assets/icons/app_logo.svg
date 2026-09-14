@@ -14,13 +14,10 @@
       <stop offset="0%" stop-color="#34D399"/>
       <stop offset="100%" stop-color="#10B981"/>
     </linearGradient>
-    <filter id="subtleShadow" x="-10%" y="-10%" width="120%" height="125%" filterUnits="userSpaceOnUse">
-      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#1E3A8A" flood-opacity="0.25"/>
-    </filter>
   </defs>
 
   <!-- App Icon Base: Squircle with Calm Tech Shadow -->
-  <rect x="36" y="36" width="440" height="440" rx="108" fill="url(#bgGrad)" filter="url(#subtleShadow)"/>
+  <rect x="36" y="36" width="440" height="440" rx="108" fill="url(#bgGrad)"/>
 
   <!-- Subtle Inner Border for High-Resolution Polish -->
   <rect x="37" y="37" width="438" height="438" rx="107" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="2"/>

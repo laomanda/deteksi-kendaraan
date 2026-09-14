@@ -27,13 +27,13 @@ class DashboardVehicleSelector extends ConsumerWidget {
       onTap: hasMultiple
           ? () => _showVehiclePickerModal(context, ref, activeVehicle, allVehicles)
           : null,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.surfaceWhite,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.borderSubtle),
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -42,28 +42,29 @@ class DashboardVehicleSelector extends ConsumerWidget {
               activeVehicle.isMotorcycle
                   ? Icons.two_wheeler_rounded
                   : Icons.directions_car_rounded,
-              size: 18,
-              color: AppColors.primaryBlue,
+              size: 16,
+              color: const Color(0xFF2563EB),
             ),
             const SizedBox(width: 6),
             ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 160),
+              constraints: const BoxConstraints(maxWidth: 140),
               child: Text(
                 activeVehicle.displayName,
-                style: AppTypography.bodyMedium.copyWith(
+                style: const TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  fontSize: 13,
+                  color: Color(0xFF0F172A),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             if (hasMultiple) ...[
-              const SizedBox(width: 4),
+              const SizedBox(width: 2),
               const Icon(
                 Icons.arrow_drop_down_rounded,
-                size: 20,
-                color: AppColors.textSecondary,
+                size: 18,
+                color: Color(0xFF64748B),
               ),
             ],
           ],
@@ -80,13 +81,17 @@ class DashboardVehicleSelector extends ConsumerWidget {
   ) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: AppSpacing.modalTopRadius,
       ),
       backgroundColor: AppColors.surfaceWhite,
       builder: (ctx) {
         return SafeArea(
-          child: Padding(
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.85,
+            ),
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.space24,
               vertical: AppSpacing.space16,
@@ -117,12 +122,12 @@ class DashboardVehicleSelector extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.space16),
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: vehicles.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (_, index) {
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: vehicles.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (_, index) {
                     final v = vehicles[index];
                     final isSelected = v.id == activeVehicle.id;
 
@@ -183,8 +188,9 @@ class DashboardVehicleSelector extends ConsumerWidget {
                         Navigator.pop(ctx);
                       },
                     );
-                  },
-                ),
+                      },
+                    ),
+                  ),
                 const SizedBox(height: AppSpacing.space16),
                 SizedBox(
                   width: double.infinity,

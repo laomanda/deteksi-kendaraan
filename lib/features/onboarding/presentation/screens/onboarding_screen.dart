@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/constants/app_typography.dart';
 import 'first_vehicle_setup_screen.dart';
 
 class OnboardingSlide {
@@ -17,7 +15,7 @@ class OnboardingSlide {
   });
 }
 
-/// Onboarding Screen with 3 Calm Technology & Offline First slides (DSS Section 10.1)
+/// Simple, elegant, and responsive Onboarding screen
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -32,21 +30,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   static const List<OnboardingSlide> _slides = [
     OnboardingSlide(
       svgPath: 'assets/illustrations/onboarding_maintenance.svg',
-      title: 'Privat & 100% Offline',
+      title: 'Pantau Jadwal Servis & Oli',
       description:
-          'Data kendaraan dan riwayat perjalanan tersimpan aman di perangkat. Tanpa akun, tanpa cloud, dan tanpa iklan.',
+          'Ketahui waktu tepat untuk mengganti oli dan merawat komponen sebelum motor mengalami kendala.',
     ),
     OnboardingSlide(
       svgPath: 'assets/illustrations/onboarding_health.svg',
-      title: 'Pantau Kondisi Kendaraan',
+      title: 'Kesehatan Mesin & Komponen',
       description:
-          'Pantau sisa usia oli, rem, aki, dan ban dengan kalkulasi kilometer dan waktu yang akurat.',
+          'Pantau kondisi oli, rem, ban, dan aki secara real-time berdasarkan jarak kilometer spidometer Anda.',
     ),
     OnboardingSlide(
       svgPath: 'assets/illustrations/onboarding_tracking.svg',
-      title: 'Catat Rute & Perjalanan',
+      title: 'Catat Perjalanan & Odometer',
       description:
-          'Rekam rute perjalanan GPS secara mandiri dan bagikan ringkasan pencapaian dengan mudah.',
+          'Rekam rute berkendara dengan GPS. Jarak perjalanan otomatis memperbarui angka spidometer kendaraan Anda.',
     ),
   ];
 
@@ -56,129 +54,184 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
+  void _goToSetup() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const FirstVehicleSetupScreen()),
+    );
+  }
+
   void _next() {
     if (_currentIndex < _slides.length - 1) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 260),
         curve: Curves.easeInOut,
       );
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const FirstVehicleSetupScreen()),
-      );
+      _goToSetup();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLastSlide = _currentIndex == _slides.length - 1;
+
     return Scaffold(
-      backgroundColor: AppColors.surfaceWhite,
+      backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space24),
-          child: Column(
-            children: [
-              const SizedBox(height: AppSpacing.space24),
-              // App Identity Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 460),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
                 children: [
-                  SvgPicture.asset(
-                    'assets/icons/app_logo.svg',
-                    width: 36,
-                    height: 36,
+                  const SizedBox(height: 12),
+
+                  // Minimal Header Bar
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // App Mark
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SvgPicture.asset(
+                            'assets/icons/app_logo.svg',
+                            width: 28,
+                            height: 28,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'RideCare',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Skip Button
+                      if (!isLastSlide)
+                        TextButton(
+                          onPressed: _goToSetup,
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.textSecondary,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            'Lewati',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        )
+                      else
+                        const SizedBox(width: 48),
+                    ],
                   ),
-                  const SizedBox(width: AppSpacing.space12),
-                  Text(
-                    'RideCare',
-                    style: AppTypography.heading1.copyWith(
-                      color: AppColors.textPrimary,
-                      letterSpacing: -0.5,
+
+                  // Carousel Slides
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: _slides.length,
+                      onPageChanged: (idx) => setState(() => _currentIndex = idx),
+                      itemBuilder: (context, index) {
+                        final slide = _slides[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Clean Illustration Container
+                              SizedBox(
+                                height: 210,
+                                child: SvgPicture.asset(
+                                  slide.svgPath,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                              const SizedBox(height: 36),
+
+                              // Title
+                              Text(
+                                slide.title,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                  letterSpacing: -0.4,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 12),
+
+                              // Description
+                              Text(
+                                slide.description,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.textSecondary,
+                                  height: 1.45,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
+
+                  // Smooth Page Indicator
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_slides.length, (i) {
+                      final isActive = i == _currentIndex;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: isActive ? 22 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: isActive ? AppColors.primaryBlue : const Color(0xFFE2E8F0),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // Bottom Action Button
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: _next,
+                    child: Text(
+                      isLastSlide ? 'Mulai Daftarkan Kendaraan' : 'Lanjut',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
-              const SizedBox(height: AppSpacing.space16),
-
-              // Slide content
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: _slides.length,
-                  onPageChanged: (idx) => setState(() => _currentIndex = idx),
-                  itemBuilder: (context, index) {
-                    final slide = _slides[index];
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          height: 200,
-                          child: SvgPicture.asset(
-                            slide.svgPath,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.space32),
-                        Text(
-                          slide.title,
-                          style: AppTypography.heading1,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: AppSpacing.space16),
-                        Text(
-                          slide.description,
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
-                            height: 1.5,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-
-              // Page Indicators
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(_slides.length, (i) {
-                  final isActive = i == _currentIndex;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: isActive ? 24 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: isActive ? AppColors.primaryBlue : AppColors.borderSubtle,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(height: AppSpacing.space32),
-
-              // Bottom Action Button
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
-                  minimumSize: const Size.fromHeight(52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppSpacing.buttonBorderRadius,
-                  ),
-                ),
-                onPressed: _next,
-                child: Text(
-                  _currentIndex == _slides.length - 1 ? 'Mulai Pengaturan' : 'Lanjut',
-                  style: AppTypography.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.space24),
-            ],
+            ),
           ),
         ),
       ),

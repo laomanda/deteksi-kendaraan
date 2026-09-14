@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
-import '../../../maintenance/presentation/pages/maintenance_page.dart';
 import '../../../maintenance/presentation/widgets/maintenance_detail_bottom_sheet.dart';
 import '../../../maintenance/providers/maintenance_prediction_providers.dart';
 
-/// Next Maintenance Card with Smart Priority (OVERDUE > DUE SOON > GOOD)
+/// Single Source of Truth for Nearest / Urgent Maintenance Action
+/// Cohesive, harmonious color styling without conflicting hues
 class DashboardNextMaintenanceCard extends ConsumerWidget {
   final VoidCallback? onNavigateToMaintenance;
 
@@ -35,32 +34,37 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
           return Container(
             padding: const EdgeInsets.all(AppSpacing.space16),
             decoration: BoxDecoration(
-              color: AppColors.surfaceWhite,
-              borderRadius: AppSpacing.cardBorderRadius,
-              border: Border.all(color: AppColors.borderSubtle),
+              color: const Color(0xFFF0FDF4),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFBBF7D0)),
             ),
-            child: Row(
+            child: const Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.check_circle_rounded,
-                  color: AppColors.healthOptimal,
-                  size: 24,
+                  color: Color(0xFF16A34A),
+                  size: 22,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Semua Komponen Aman',
-                        style: AppTypography.bodyMedium.copyWith(
-                          fontWeight: FontWeight.bold,
+                        'Semua Komponen Terawat',
+                        style: TextStyle(
+                          color: Color(0xFF166534),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2),
                       Text(
-                        'Belum ada jadwal servis yang perlu dilakukan.',
-                        style: AppTypography.captionSubtle,
+                        'Tidak ada jadwal servis mendesak saat ini.',
+                        style: TextStyle(
+                          color: Color(0xFF15803D),
+                          fontSize: 11,
+                        ),
                       ),
                     ],
                   ),
@@ -74,184 +78,226 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
         final isOverdue = nextItem.isOverdue;
         final isDueSoon = nextItem.isDueSoon;
 
-        Color badgeColor;
-        Color badgeBgColor;
-        Color cardBorderColor;
-        IconData headerIcon;
-        String headerTitle;
-        String statusLabel;
+        // Scoped unified color scheme for this card to prevent clashing
+        final Color themeColor;
+        final Color themeLightBg;
+        final Color themeBorder;
+        final IconData headerIcon;
+        final String statusLabel;
 
         if (isOverdue) {
-          badgeColor = AppColors.healthCritical;
-          badgeBgColor = Colors.red.withValues(alpha: 0.12);
-          cardBorderColor = AppColors.healthCritical.withValues(alpha: 0.6);
-          headerIcon = Icons.warning_rounded;
-          headerTitle = 'PERAWATAN MENDESAK';
-          statusLabel = 'LEWAT JADWAL';
+          themeColor = const Color(0xFFDC2626);
+          themeLightBg = const Color(0xFFFEF2F2);
+          themeBorder = const Color(0xFFFECACA);
+          headerIcon = Icons.error_outline_rounded;
+          statusLabel = 'Lewat Jadwal';
         } else if (isDueSoon) {
-          badgeColor = AppColors.healthWarning;
-          badgeBgColor = Colors.orange.withValues(alpha: 0.12);
-          cardBorderColor = AppColors.healthWarning.withValues(alpha: 0.5);
-          headerIcon = Icons.build_circle_rounded;
-          headerTitle = 'PERKIRAAN SERVIS TERDEKAT';
-          statusLabel = 'SEGERA DIGANTI';
+          themeColor = const Color(0xFFD97706);
+          themeLightBg = const Color(0xFFFFFBEB);
+          themeBorder = const Color(0xFFFDE68A);
+          headerIcon = Icons.warning_amber_rounded;
+          statusLabel = 'Perlu Perhatian';
         } else {
-          badgeColor = AppColors.healthOptimal;
-          badgeBgColor = Colors.green.withValues(alpha: 0.12);
-          cardBorderColor = AppColors.borderSubtle;
-          headerIcon = Icons.event_available_rounded;
-          headerTitle = 'JADWAL SERVIS BERKALA';
-          statusLabel = 'KONDISI BAIK';
+          themeColor = const Color(0xFF2563EB);
+          themeLightBg = const Color(0xFFEFF6FF);
+          themeBorder = const Color(0xFFBFDBFE);
+          headerIcon = Icons.event_note_rounded;
+          statusLabel = 'Jadwal Berkala';
         }
 
         return Container(
           decoration: BoxDecoration(
-            color: isOverdue ? const Color(0xFFFFF7F7) : AppColors.surfaceWhite,
-            borderRadius: AppSpacing.cardBorderRadius,
+            color: AppColors.surfaceWhite,
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: cardBorderColor,
-              width: isOverdue || isDueSoon ? 1.5 : 1.0,
+              color: isOverdue ? themeBorder : const Color(0xFFE2E8F0),
+              width: isOverdue ? 1.2 : 1.0,
             ),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x06000000),
-                blurRadius: 8,
+                blurRadius: 10,
                 offset: Offset(0, 2),
               ),
             ],
           ),
-          child: InkWell(
-            onTap: () {
-              MaintenanceDetailBottomSheet.show(
-                context,
-                prediction: nextItem,
-                vehicleId: activeVehicle.id,
-              );
-            },
-            borderRadius: AppSpacing.cardBorderRadius,
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.space16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header Row with Icon, Title, and Urgency Badge
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            headerIcon,
-                            size: 18,
-                            color: isOverdue
-                                ? AppColors.healthCritical
-                                : AppColors.primaryBlue,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            headerTitle,
-                            style: AppTypography.captionBadge.copyWith(
-                              color: isOverdue
-                                  ? AppColors.healthCritical
-                                  : AppColors.primaryBlue,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                MaintenanceDetailBottomSheet.show(
+                  context,
+                  prediction: nextItem,
+                  vehicleId: activeVehicle.id,
+                );
+              },
+              borderRadius: BorderRadius.circular(18),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.space16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header row: Section title & status pill
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              headerIcon,
+                              size: 17,
+                              color: themeColor,
                             ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: badgeBgColor,
-                          borderRadius: AppSpacing.chipBorderRadius,
-                        ),
-                        child: Text(
-                          statusLabel,
-                          style: AppTypography.captionBadge.copyWith(
-                            color: badgeColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: AppSpacing.space12),
-
-                  // Component Name
-                  Text(
-                    nextItem.componentName,
-                    style: AppTypography.heading2.copyWith(fontSize: 18),
-                  ),
-                  const SizedBox(height: 4),
-
-                  // Sisa KM and Days in Indonesian
-                  Text(
-                    isOverdue
-                        ? 'Sudah melewati jadwal servis! Segera ganti di bengkel.'
-                        : 'Perkiraan: ${nextItem.remainingKm > 0 ? DateFormatter.formatKm(nextItem.remainingKm.toDouble()) : '0 KM'} lagi (${nextItem.remainingDays > 0 ? '${nextItem.remainingDays} hari' : 'segera'})',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: isOverdue
-                          ? AppColors.healthCritical
-                          : AppColors.textSecondary,
-                      fontWeight: isOverdue ? FontWeight.w600 : FontWeight.normal,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-                  const Divider(height: 1, color: AppColors.borderSubtle),
-                  const SizedBox(height: 10),
-
-                  // Bottom Row: Estimated Cost and View Maintenance CTA
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Perkiraan Biaya:', style: AppTypography.captionSubtle),
-                          const SizedBox(height: 1),
-                          Text(
-                            nextItem.formattedCompactRange,
-                            style: AppTypography.bodyMedium.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primaryBlue,
-                            ),
-                          ),
-                        ],
-                      ),
-                      TextButton.icon(
-                        onPressed: () {
-                          if (onNavigateToMaintenance != null) {
-                            onNavigateToMaintenance!();
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => MaintenancePage(
-                                  initialVehicleId: activeVehicle.id,
-                                ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Tindakan Disarankan',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
                               ),
-                            );
-                          }
-                        },
-                        style: TextButton.styleFrom(
+                            ),
+                          ],
+                        ),
+                        Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
-                            vertical: 6,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: themeLightBg,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: themeBorder),
+                          ),
+                          child: Text(
+                            statusLabel,
+                            style: TextStyle(
+                              color: themeColor,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                            ),
                           ),
                         ),
-                        icon: const Text('Lihat Detail'),
-                        label: const Icon(Icons.arrow_forward_rounded, size: 16),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Component Name & Icon (Both themed harmoniously)
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: themeLightBg,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.build_circle_outlined,
+                            color: themeColor,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                nextItem.componentName,
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                isOverdue
+                                    ? 'Sudah melewati batas pemakaian. Segera servis.'
+                                    : 'Perkiraan: ${nextItem.remainingKm > 0 ? DateFormatter.formatKm(nextItem.remainingKm.toDouble()) : '0 km'} lagi (${nextItem.remainingDays > 0 ? '${nextItem.remainingDays} hari' : 'segera'})',
+                                style: TextStyle(
+                                  color: isOverdue
+                                      ? const Color(0xFFDC2626)
+                                      : AppColors.textSecondary,
+                                  fontSize: 12,
+                                  fontWeight:
+                                      isOverdue ? FontWeight.w500 : FontWeight.normal,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 14),
+                    const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                    const SizedBox(height: 12),
+
+                    // Bottom Row: Cost & Action Button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'PERKIRAAN BIAYA',
+                              style: TextStyle(
+                                color: Color(0xFF64748B),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              nextItem.formattedCompactRange,
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 7,
+                          ),
+                          decoration: BoxDecoration(
+                            color: themeLightBg,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: themeBorder),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Lihat Detail',
+                                style: TextStyle(
+                                  color: themeColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 14,
+                                color: themeColor,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

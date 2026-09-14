@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/constants/app_typography.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../../maintenance/presentation/pages/add_service_page.dart';
 import '../../../maintenance/presentation/pages/maintenance_page.dart';
 
-/// Simplified Quick Actions for RideCare Dashboard
-/// Gives user 3 unambiguous choices:
-/// 1. [Mulai Perjalanan]
-/// 2. [Catat Servis]
-/// 3. [Lihat Kondisi]
+/// Cohesive Action Deck with Unified Brand Palette (No clashing colors)
 class DashboardQuickActions extends ConsumerWidget {
   final VoidCallback? onStartRide;
   final VoidCallback? onNavigateToMaintenance;
@@ -31,48 +25,57 @@ class DashboardQuickActions extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Aksi Utama: Mulai Perjalanan
+        // 1. Primary Action: Mulai Perjalanan (Clean Royal Blue)
         SizedBox(
           width: double.infinity,
           height: 50,
-          child: ElevatedButton.icon(
+          child: ElevatedButton(
+            onPressed: onStartRide,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryBlue,
               foregroundColor: Colors.white,
-              elevation: 1,
+              elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: AppSpacing.buttonBorderRadius,
+                borderRadius: BorderRadius.circular(14),
               ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
             ),
-            icon: const Icon(Icons.play_arrow_rounded, size: 24),
-            label: const Text(
-              'Mulai Perjalanan',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.3,
-              ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.play_arrow_rounded, size: 22, color: Colors.white),
+                SizedBox(width: 8),
+                Text(
+                  'Mulai Perjalanan',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
-            onPressed: onStartRide,
           ),
         ),
 
-        const SizedBox(height: AppSpacing.space12),
+        const SizedBox(height: 10),
 
-        // 2 & 3: [Catat Servis] dan [Lihat Kondisi]
+        // 2 & 3: Companion Cards ([Catat Servis] & [Kondisi Komponen])
         Row(
           children: [
             // Catat Servis
             Expanded(
-              child: _buildSecondaryButton(
+              child: _buildActionTile(
                 context: context,
                 icon: Icons.build_circle_outlined,
-                label: 'Catat Servis',
+                title: 'Catat Servis',
+                subtitle: 'Riwayat perawatan',
                 onTap: () {
                   if (activeVehicle == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Pilih atau tambahkan kendaraan terlebih dahulu.'),
+                        content: Text('Pilih kendaraan terlebih dahulu.'),
                       ),
                     );
                     return;
@@ -86,13 +89,14 @@ class DashboardQuickActions extends ConsumerWidget {
                 },
               ),
             ),
-            const SizedBox(width: AppSpacing.space12),
-            // Lihat Kondisi
+            const SizedBox(width: 10),
+            // Kondisi Komponen
             Expanded(
-              child: _buildSecondaryButton(
+              child: _buildActionTile(
                 context: context,
                 icon: Icons.health_and_safety_outlined,
-                label: 'Lihat Kondisi',
+                title: 'Kondisi Komponen',
+                subtitle: 'Cek status mesin',
                 onTap: () {
                   if (onNavigateToMaintenance != null) {
                     onNavigateToMaintenance!();
@@ -100,7 +104,9 @@ class DashboardQuickActions extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => MaintenancePage(initialVehicleId: activeVehicle.id),
+                        builder: (_) => MaintenancePage(
+                          initialVehicleId: activeVehicle.id,
+                        ),
                       ),
                     );
                   }
@@ -113,42 +119,77 @@ class DashboardQuickActions extends ConsumerWidget {
     );
   }
 
-  Widget _buildSecondaryButton({
+  Widget _buildActionTile({
     required BuildContext context,
     required IconData icon,
-    required String label,
+    required String title,
+    required String subtitle,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceWhite,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.borderSubtle),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x04000000),
-              blurRadius: 4,
-              offset: Offset(0, 1),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 6,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF), // Soft clean blue
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: const Color(0xFF2563EB), size: 20),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 18, color: AppColors.primaryBlue),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: AppTypography.bodySmall.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
