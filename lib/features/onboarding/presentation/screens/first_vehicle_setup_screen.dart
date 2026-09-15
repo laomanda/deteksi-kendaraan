@@ -53,6 +53,65 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
     super.dispose();
   }
 
+  bool get _isTransmissionLocked => _selectedCategory != 'car_diesel';
+
+  List<String> get _allowedTransmissions {
+    if (_selectedCategory == 'scooter_cvt' ||
+        _selectedCategory == 'car_automatic' ||
+        _selectedCategory == 'car_hybrid') {
+      return const ['Automatic'];
+    } else if (_selectedCategory == 'motorcycle_manual' ||
+        _selectedCategory == 'sport_motorcycle' ||
+        _selectedCategory == 'car_manual') {
+      return const ['Manual'];
+    } else {
+      return const ['Automatic', 'Manual'];
+    }
+  }
+
+  String? get _transmissionHelperText {
+    if (_selectedCategory == 'scooter_cvt') {
+      return 'Sesuai Tipe Motor Matic';
+    } else if (_selectedCategory == 'car_automatic') {
+      return 'Sesuai Tipe Mobil Matic';
+    } else if (_selectedCategory == 'car_hybrid') {
+      return 'Sesuai Tipe Mobil Hybrid';
+    } else if (_selectedCategory == 'motorcycle_manual' || _selectedCategory == 'sport_motorcycle') {
+      return 'Sesuai Tipe Motor Manual';
+    } else if (_selectedCategory == 'car_manual') {
+      return 'Sesuai Tipe Mobil Manual';
+    }
+    return null;
+  }
+
+  bool get _isFuelTypeLocked =>
+      _selectedVehicleType == 'motorcycle' ||
+      _selectedCategory == 'car_diesel' ||
+      _selectedCategory == 'car_hybrid';
+
+  List<String> get _allowedFuelTypes {
+    if (_selectedVehicleType == 'motorcycle') {
+      return const ['Gasoline'];
+    } else if (_selectedCategory == 'car_diesel') {
+      return const ['Diesel'];
+    } else if (_selectedCategory == 'car_hybrid') {
+      return const ['Hybrid'];
+    } else {
+      return const ['Gasoline', 'Electric'];
+    }
+  }
+
+  String? get _fuelTypeHelperText {
+    if (_selectedVehicleType == 'motorcycle') {
+      return 'Standar Motor (Bensin)';
+    } else if (_selectedCategory == 'car_diesel') {
+      return 'Sesuai Mesin Diesel (Solar)';
+    } else if (_selectedCategory == 'car_hybrid') {
+      return 'Sesuai Sistem Hybrid';
+    }
+    return null;
+  }
+
   void _showOdometerInfoDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -508,43 +567,95 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
                                 children: [
                                   Expanded(
                                     child: DropdownButtonFormField<String>(
-                                      key: ValueKey('trans_$_selectedTransmission'),
+                                      key: ValueKey('trans_${_selectedCategory}_$_selectedTransmission'),
                                       initialValue: _selectedTransmission,
+                                      disabledHint: Text(
+                                        _selectedTransmission == 'Automatic' ? 'Otomatis (Matic)' : 'Manual',
+                                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                                      ),
                                       decoration: InputDecoration(
                                         labelText: 'Transmisi',
+                                        helperText: _transmissionHelperText,
+                                        helperMaxLines: 1,
                                         prefixIcon: const Icon(Icons.tune_rounded, size: 20),
                                         border: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(10),
                                           borderSide: const BorderSide(color: AppColors.borderSubtle),
                                         ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                          borderSide: const BorderSide(color: AppColors.borderSubtle),
+                                        ),
+                                        disabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                          borderSide: BorderSide(color: AppColors.borderSubtle.withValues(alpha: 0.6)),
+                                        ),
+                                        filled: _isTransmissionLocked,
+                                        fillColor: _isTransmissionLocked ? AppColors.surfaceSubtle : null,
                                       ),
-                                      items: const [
-                                        DropdownMenuItem(value: 'Automatic', child: Text('Otomatis (Matic)')),
-                                        DropdownMenuItem(value: 'Manual', child: Text('Manual')),
-                                      ],
-                                      onChanged: (val) => setState(() => _selectedTransmission = val),
+                                      items: _allowedTransmissions.map((t) {
+                                        return DropdownMenuItem(
+                                          value: t,
+                                          child: Text(t == 'Automatic' ? 'Otomatis (Matic)' : 'Manual'),
+                                        );
+                                      }).toList(),
+                                      onChanged: _isTransmissionLocked
+                                          ? null
+                                          : (val) => setState(() => _selectedTransmission = val),
                                     ),
                                   ),
                                   const SizedBox(width: AppSpacing.space12),
                                   Expanded(
                                     child: DropdownButtonFormField<String>(
-                                      key: ValueKey('fuel_$_selectedFuelType'),
+                                      key: ValueKey('fuel_${_selectedCategory}_$_selectedFuelType'),
                                       initialValue: _selectedFuelType,
+                                      disabledHint: Text(
+                                        _selectedFuelType == 'Diesel'
+                                            ? 'Diesel'
+                                            : _selectedFuelType == 'Hybrid'
+                                                ? 'Hybrid'
+                                                : _selectedFuelType == 'Electric'
+                                                    ? 'Listrik'
+                                                    : 'Bensin',
+                                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                                      ),
                                       decoration: InputDecoration(
                                         labelText: 'Bahan Bakar',
+                                        helperText: _fuelTypeHelperText,
+                                        helperMaxLines: 1,
                                         prefixIcon: const Icon(Icons.local_gas_station_rounded, size: 20),
                                         border: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(10),
                                           borderSide: const BorderSide(color: AppColors.borderSubtle),
                                         ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                          borderSide: const BorderSide(color: AppColors.borderSubtle),
+                                        ),
+                                        disabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                          borderSide: BorderSide(color: AppColors.borderSubtle.withValues(alpha: 0.6)),
+                                        ),
+                                        filled: _isFuelTypeLocked,
+                                        fillColor: _isFuelTypeLocked ? AppColors.surfaceSubtle : null,
                                       ),
-                                      items: const [
-                                        DropdownMenuItem(value: 'Gasoline', child: Text('Bensin')),
-                                        DropdownMenuItem(value: 'Diesel', child: Text('Diesel')),
-                                        DropdownMenuItem(value: 'Hybrid', child: Text('Hybrid')),
-                                        DropdownMenuItem(value: 'Electric', child: Text('Listrik')),
-                                      ],
-                                      onChanged: (val) => setState(() => _selectedFuelType = val),
+                                      items: _allowedFuelTypes.map((f) {
+                                        return DropdownMenuItem(
+                                          value: f,
+                                          child: Text(
+                                            f == 'Gasoline'
+                                                ? 'Bensin'
+                                                : f == 'Diesel'
+                                                    ? 'Diesel'
+                                                    : f == 'Hybrid'
+                                                        ? 'Hybrid'
+                                                        : 'Listrik',
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: _isFuelTypeLocked
+                                          ? null
+                                          : (val) => setState(() => _selectedFuelType = val),
                                     ),
                                   ),
                                 ],
@@ -663,10 +774,12 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
               onTap: () {
                 setState(() {
                   _selectedCategory = cat.$1;
-                  if (cat.$1 == 'scooter_cvt' || cat.$1 == 'car_automatic') {
+                  if (cat.$1 == 'scooter_cvt' || cat.$1 == 'car_automatic' || cat.$1 == 'car_hybrid') {
                     _selectedTransmission = 'Automatic';
                   } else if (cat.$1 == 'motorcycle_manual' || cat.$1 == 'sport_motorcycle' || cat.$1 == 'car_manual') {
                     _selectedTransmission = 'Manual';
+                  } else if (cat.$1 == 'car_diesel') {
+                    _selectedTransmission = _selectedTransmission ?? 'Automatic';
                   }
                   if (cat.$1 == 'car_diesel') {
                     _selectedFuelType = 'Diesel';
