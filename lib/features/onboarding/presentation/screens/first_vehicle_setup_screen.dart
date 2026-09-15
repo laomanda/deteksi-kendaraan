@@ -23,6 +23,7 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
   final _formKey = GlobalKey<FormState>();
 
   String _selectedVehicleType = 'motorcycle'; // 'motorcycle' | 'car'
+  String _selectedCategory = 'scooter_cvt';
   final _brandController = TextEditingController();
   final _modelController = TextEditingController();
   final _variantController = TextEditingController();
@@ -170,6 +171,7 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
       MaterialPageRoute(
         builder: (_) => InitialConditionSetupScreen(
           vehicleType: _selectedVehicleType,
+          vehicleCategoryId: _selectedCategory,
           brand: brand,
           model: model,
           year: year,
@@ -291,6 +293,34 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
                       ),
                     ],
                   ),
+                ),
+
+                const SizedBox(height: AppSpacing.space16),
+
+                // Section: Vehicle Category (Tipe Kendaraan)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _selectedVehicleType == 'motorcycle' ? 'TIPE MOTOR' : 'TIPE MOBIL',
+                          style: AppTypography.captionBadge,
+                        ),
+                        const Text(
+                          'Untuk rekomendasi perawatan otomatis',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.space8),
+                    _buildCategorySelector(),
+                  ],
                 ),
 
                 const SizedBox(height: AppSpacing.space16),
@@ -561,7 +591,16 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
   }) {
     final isSelected = _selectedVehicleType == type;
     return GestureDetector(
-      onTap: () => setState(() => _selectedVehicleType = type),
+      onTap: () {
+        if (_selectedVehicleType != type) {
+          setState(() {
+            _selectedVehicleType = type;
+            _selectedCategory = type == 'car' ? 'car_automatic' : 'scooter_cvt';
+            _selectedTransmission = 'Automatic';
+            _selectedFuelType = 'Gasoline';
+          });
+        }
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -587,6 +626,95 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCategorySelector() {
+    final isMotor = _selectedVehicleType == 'motorcycle';
+    final categories = isMotor
+        ? [
+            ('scooter_cvt', 'Motor Matic', Icons.two_wheeler_rounded, 'Vario, Beat, NMAX'),
+            ('motorcycle_manual', 'Bebek / Manual', Icons.sports_motorsports_rounded, 'Supra, Revo, Jupiter'),
+            ('sport_motorcycle', 'Motor Sport', Icons.speed_rounded, 'CB150R, R15, CBR'),
+          ]
+        : [
+            ('car_automatic', 'Matic (AT/CVT)', Icons.directions_car_rounded, 'Avanza AT, Brio CVT'),
+            ('car_manual', 'Manual (MT)', Icons.tune_rounded, 'Avanza MT, Sigra MT'),
+            ('car_diesel', 'Diesel', Icons.local_gas_station_rounded, 'Innova, Pajero, Fortuner'),
+            ('car_hybrid', 'Hybrid', Icons.bolt_rounded, 'Yaris Cross, Kicks HEV'),
+          ];
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: AppSpacing.cardBorderRadius,
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Row(
+        children: categories.map((cat) {
+          final isSelected = _selectedCategory == cat.$1;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedCategory = cat.$1;
+                  if (cat.$1 == 'scooter_cvt' || cat.$1 == 'car_automatic') {
+                    _selectedTransmission = 'Automatic';
+                  } else if (cat.$1 == 'motorcycle_manual' || cat.$1 == 'sport_motorcycle' || cat.$1 == 'car_manual') {
+                    _selectedTransmission = 'Manual';
+                  }
+                  if (cat.$1 == 'car_diesel') {
+                    _selectedFuelType = 'Diesel';
+                  } else if (cat.$1 == 'car_hybrid') {
+                    _selectedFuelType = 'Hybrid';
+                  } else {
+                    _selectedFuelType = 'Gasoline';
+                  }
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primaryBlue : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      cat.$3,
+                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                      size: 20,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      cat.$2,
+                      textAlign: TextAlign.center,
+                      style: AppTypography.bodySmall.copyWith(
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      cat.$4,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        color: isSelected ? Colors.white.withValues(alpha: 0.9) : AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

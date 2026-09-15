@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/database/hive_registrar.dart';
 import '../../../../core/supabase/supabase_config.dart';
 import '../../../../core/supabase/supabase_service.dart';
+import '../../../maintenance/data/repositories/maintenance_repository.dart';
 import '../models/vehicle_model.dart';
 
 /// Repository for handling vehicle CRUD with offline-first Hive and remote Supabase
@@ -123,8 +124,23 @@ class VehicleRepository {
   /// Update vehicle: updates in local Hive first, then syncs to Supabase
   Future<VehicleModel> updateVehicle(VehicleModel vehicle) async {
     try {
+      final oldVehicle = _box.get(vehicle.id);
+      final categoryChanged = oldVehicle != null &&
+          oldVehicle.vehicleCategoryId != vehicle.vehicleCategoryId &&
+          vehicle.vehicleCategoryId != null;
+
       // 1. Update in local Hive database
       await _box.put(vehicle.id, vehicle);
+
+      // If category changed, regenerate tailored maintenance items
+      if (categoryChanged) {
+        try {
+          final maintenanceRepo = MaintenanceRepository();
+          await maintenanceRepo.regenerateVehicleMaintenance(vehicle);
+        } catch (e) {
+          debugPrint('Regenerate maintenance items notice: $e');
+        }
+      }
 
       // 2. Sync update to Supabase
       if (SupabaseConfig.isInitialized) {

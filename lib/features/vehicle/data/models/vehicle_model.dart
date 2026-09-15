@@ -24,6 +24,9 @@ class VehicleModel extends HiveObject {
   final String? engineNumber;
   final String? chassisNumber;
 
+  // Vehicle Category from Vehicle Intelligence Layer
+  final String? vehicleCategoryId;
+
   VehicleModel({
     required this.id,
     this.profileId,
@@ -46,6 +49,7 @@ class VehicleModel extends HiveObject {
     this.color,
     this.engineNumber,
     this.chassisNumber,
+    this.vehicleCategoryId,
   })  : currentOdometer = currentOdometer ?? (currentKilometer?.round() ?? 0),
         photoUrl = photoUrl ?? photoPath;
 
@@ -85,6 +89,7 @@ class VehicleModel extends HiveObject {
     String? color,
     String? engineNumber,
     String? chassisNumber,
+    String? vehicleCategoryId,
   }) {
     return VehicleModel(
       id: id ?? this.id,
@@ -106,6 +111,7 @@ class VehicleModel extends HiveObject {
       color: color ?? this.color,
       engineNumber: engineNumber ?? this.engineNumber,
       chassisNumber: chassisNumber ?? this.chassisNumber,
+      vehicleCategoryId: vehicleCategoryId ?? this.vehicleCategoryId,
     );
   }
 
@@ -124,6 +130,7 @@ class VehicleModel extends HiveObject {
       'initial_odometer': initialOdometer,
       'current_odometer': currentOdometer,
       if (photoUrl != null) 'photo_url': photoUrl,
+      if (vehicleCategoryId != null) 'vehicle_category_id': vehicleCategoryId,
       if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
       if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
     };
@@ -168,6 +175,7 @@ class VehicleModel extends HiveObject {
       initialOdometer: initialOdo,
       currentOdometer: odo,
       photoUrl: json['photo_url'] as String? ?? json['photoPath'] as String?,
+      vehicleCategoryId: json['vehicle_category_id'] as String? ?? json['vehicleCategoryId'] as String?,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString())
           : (json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null),
@@ -275,13 +283,14 @@ class VehicleModelAdapter extends TypeAdapter<VehicleModel> {
       fuelType: fields.containsKey(12) ? fields[12] as String? : null,
       transmission: fields.containsKey(13) ? fields[13] as String? : null,
       color: fields.containsKey(14) ? fields[14] as String? : null,
+      vehicleCategoryId: fields.containsKey(15) ? fields[15] as String? : null,
     );
   }
 
   @override
   void write(BinaryWriter writer, VehicleModel obj) {
     writer
-      ..writeByte(15)
+      ..writeByte(16)
       ..writeByte(0)..write(obj.id)
       ..writeByte(1)..write(obj.vehicleType)
       ..writeByte(2)..write(obj.brand)
@@ -296,6 +305,7 @@ class VehicleModelAdapter extends TypeAdapter<VehicleModel> {
       ..writeByte(11)..write(obj.initialOdometer)
       ..writeByte(12)..write(obj.fuelType)
       ..writeByte(13)..write(obj.transmission)
-      ..writeByte(14)..write(obj.color);
+      ..writeByte(14)..write(obj.color)
+      ..writeByte(15)..write(obj.vehicleCategoryId);
   }
 }

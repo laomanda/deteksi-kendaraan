@@ -4,9 +4,13 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/database/hive_registrar.dart';
 import '../../../../core/supabase/supabase_config.dart';
 import '../../../../core/supabase/supabase_service.dart';
+import '../../../vehicle/data/models/vehicle_category_model.dart';
+import '../../../vehicle/data/models/vehicle_model.dart';
+import '../../../vehicle/domain/vehicle_intelligence_service.dart';
 import '../models/maintenance_catalog_model.dart';
 import '../models/maintenance_item_model.dart';
 import '../models/maintenance_price_model.dart';
+import '../models/maintenance_template_model.dart';
 import '../models/service_log_model.dart';
 import '../models/service_record_model.dart';
 import '../models/vehicle_maintenance_model.dart';
@@ -167,11 +171,98 @@ class MaintenanceRepository {
     return null;
   }
 
+  // -------------------------------------------------------------
+  // 1B. VEHICLE INTELLIGENCE LAYER (Categories & Templates)
+  // -------------------------------------------------------------
+
+  /// Mengambil daftar kategori kendaraan (offline first dengan background Supabase sync)
+  Future<List<VehicleCategoryModel>> getVehicleCategories({String? vehicleType}) async {
+    const cacheKey = 'vehicle_categories_cache';
+    final cached = _settingsBox.get(cacheKey);
+    List<VehicleCategoryModel> localList = [];
+
+    if (cached != null && cached is List) {
+      try {
+        localList = cached
+            .map((e) => VehicleCategoryModel.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      } catch (e) {
+        debugPrint('Error parsing cached vehicle categories: $e');
+      }
+    }
+
+    if (localList.isEmpty) {
+      localList = VehicleCategoryModel.defaultCategories;
+    }
+
+    if (SupabaseConfig.isInitialized) {
+      _syncCategoriesFromSupabase(cacheKey);
+    }
+
+    if (vehicleType != null && vehicleType.isNotEmpty) {
+      return localList.where((c) => c.vehicleType.toLowerCase() == vehicleType.toLowerCase()).toList();
+    }
+    return localList;
+  }
+
+  Future<void> _syncCategoriesFromSupabase(String cacheKey) async {
+    try {
+      final remoteData = await _supabaseService.getData('vehicle_categories');
+      if (remoteData.isNotEmpty) {
+        await _settingsBox.put(cacheKey, remoteData);
+      }
+    } catch (e) {
+      debugPrint('Background sync vehicle_categories skipped: $e');
+    }
+  }
+
+  /// Mengambil template maintenance berdasarkan kategori (offline first dengan background Supabase sync)
+  Future<List<MaintenanceTemplateModel>> getMaintenanceTemplates({String? categoryId}) async {
+    final cacheKey = 'templates_cache_${categoryId ?? "all"}';
+    final cached = _settingsBox.get(cacheKey);
+    List<MaintenanceTemplateModel> localList = [];
+
+    if (cached != null && cached is List) {
+      try {
+        localList = cached
+            .map((e) => MaintenanceTemplateModel.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      } catch (e) {
+        debugPrint('Error parsing cached templates: $e');
+      }
+    }
+
+    if (localList.isEmpty) {
+      localList = categoryId != null
+          ? MaintenanceTemplateModel.getTemplatesForCategory(categoryId)
+          : MaintenanceTemplateModel.defaultTemplates;
+    }
+
+    if (SupabaseConfig.isInitialized) {
+      _syncTemplatesFromSupabase(categoryId, cacheKey);
+    }
+
+    return localList;
+  }
+
+  Future<void> _syncTemplatesFromSupabase(String? categoryId, String cacheKey) async {
+    try {
+      final match = categoryId != null ? {'category_id': categoryId} : null;
+      final remoteData = await _supabaseService.getData('maintenance_templates', match: match);
+      if (remoteData.isNotEmpty) {
+        await _settingsBox.put(cacheKey, remoteData);
+      }
+    } catch (e) {
+      debugPrint('Background sync maintenance_templates skipped: $e');
+    }
+  }
+
   /// Mengambil data maintenance aktif untuk suatu kendaraan.
-  /// Jika belum ada, otomatis di-generate berdasarkan katalog tipe kendaraan.
+  /// Jika belum ada, otomatis di-generate secara cerdas sesuai kategori spesifik kendaraan.
   Future<List<VehicleMaintenanceModel>> getVehicleMaintenance(
     String vehicleId, {
     String vehicleType = 'motorcycle',
+    String? vehicleCategoryId,
     int currentOdometer = 0,
   }) async {
     final storageKey = 'vehicle_maintenance_$vehicleId';
@@ -189,27 +280,39 @@ class MaintenanceRepository {
       }
     }
 
-    // Jika belum ada data lokal untuk kendaraan ini, buat item awal berdasarkan katalog
+    // Jika belum ada data lokal untuk kendaraan ini, gunakan VehicleIntelligenceService
     if (items.isEmpty) {
-      final catalog = await getCatalog(vehicleType: vehicleType);
-      const uuid = Uuid();
-      final now = DateTime.now();
+      final vehicle = HiveRegistrar.vehiclesBox.get(vehicleId);
 
-      items = catalog.map((cat) {
-        return VehicleMaintenanceModel(
-          id: uuid.v4(),
-          vehicleId: vehicleId,
-          maintenanceId: cat.id,
-          lastServiceDate: now,
-          lastServiceOdometer: 0,
-          healthPercentage: 100,
-          status: 'GOOD',
-          itemName: cat.name,
-          itemCategory: cat.category,
-          intervalKm: cat.defaultIntervalKm,
-          intervalMonth: cat.defaultIntervalMonth,
+      if (vehicle != null) {
+        items = VehicleIntelligenceService.generateMaintenanceItems(
+          vehicle: vehicle,
+          overrideCategoryId: vehicleCategoryId,
         );
-      }).toList();
+      } else {
+        // Fallback jika vehicle belum tersimpan di box
+        final resolvedCatId = vehicleCategoryId ??
+            VehicleIntelligenceService.inferCategory(vehicleType: vehicleType);
+        final templates = MaintenanceTemplateModel.getTemplatesForCategory(resolvedCatId);
+        const uuid = Uuid();
+        final now = DateTime.now();
+
+        items = templates.map((tmpl) {
+          return VehicleMaintenanceModel(
+            id: uuid.v4(),
+            vehicleId: vehicleId,
+            maintenanceId: tmpl.id,
+            lastServiceDate: now,
+            lastServiceOdometer: 0,
+            healthPercentage: 100,
+            status: 'GOOD',
+            itemName: tmpl.componentName,
+            itemCategory: tmpl.componentKey,
+            intervalKm: tmpl.intervalKm,
+            intervalMonth: tmpl.intervalMonth,
+          );
+        }).toList();
+      }
 
       // Simpan ke Hive lokal segera
       await _settingsBox.put(
@@ -230,6 +333,32 @@ class MaintenanceRepository {
     }
 
     return items;
+  }
+
+  /// Meregenerasi item maintenance berdasarkan kategori kendaraan yang baru dipilih
+  Future<List<VehicleMaintenanceModel>> regenerateVehicleMaintenance(VehicleModel vehicle) async {
+    final storageKey = 'vehicle_maintenance_${vehicle.id}';
+    final newItems = VehicleIntelligenceService.generateMaintenanceItems(vehicle: vehicle);
+
+    // Update ke Hive
+    await _settingsBox.put(
+      storageKey,
+      newItems.map((it) => it.toLocalJson()).toList(),
+    );
+
+    // Update ke Supabase
+    if (SupabaseConfig.isInitialized) {
+      try {
+        await _supabaseService.deleteData('vehicle_maintenance', matchColumn: 'vehicle_id', matchValue: vehicle.id);
+        for (final it in newItems) {
+          await _supabaseService.insertData('vehicle_maintenance', it.toJson());
+        }
+      } catch (e) {
+        debugPrint('Regenerate vehicle_maintenance remote sync warning: $e');
+      }
+    }
+
+    return newItems;
   }
 
   /// Memperbarui satu item vehicle_maintenance
@@ -349,9 +478,23 @@ class MaintenanceRepository {
     // 2. Perbarui item vehicle_maintenance terkait
     final vmList = await getVehicleMaintenance(record.vehicleId);
     final targetItemIndex = vmList.indexWhere(
-      (it) => it.id == record.maintenanceId ||
-              it.maintenanceId == record.maintenanceId ||
-              (it.itemName != null && it.itemName == record.maintenanceName),
+      (it) {
+        if (it.id == record.maintenanceId ||
+            it.maintenanceId == record.maintenanceId ||
+            (it.itemName != null && it.itemName == record.maintenanceName)) {
+          return true;
+        }
+        final recId = (record.maintenanceId ?? '').toLowerCase().replaceAll('_', '-');
+        final itCat = (it.itemCategory ?? '').toLowerCase().replaceAll('_', '-');
+        final itMaintId = it.maintenanceId.toLowerCase().replaceAll('_', '-');
+        if (itCat.isNotEmpty && (recId.contains(itCat) || itCat.contains(recId))) {
+          return true;
+        }
+        if (itMaintId.isNotEmpty && (recId.contains(itMaintId) || itMaintId.contains(recId))) {
+          return true;
+        }
+        return false;
+      },
     );
 
     if (targetItemIndex >= 0) {

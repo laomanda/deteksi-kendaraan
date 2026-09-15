@@ -6,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../data/models/vehicle_model.dart';
+import '../../domain/vehicle_intelligence_service.dart';
 import '../../providers/vehicle_provider.dart';
 
 /// Page to add a new vehicle or edit an existing vehicle
@@ -35,6 +36,7 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
   late final TextEditingController _colorController;
 
   late String _selectedVehicleType;
+  late String _selectedCategory;
   String? _selectedTransmission;
   String? _selectedFuelType;
 
@@ -57,6 +59,11 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
     _colorController = TextEditingController(text: v?.color ?? '');
 
     _selectedVehicleType = v?.vehicleType.toLowerCase() == 'car' ? 'car' : 'motorcycle';
+    final initialCategory = v?.vehicleCategoryId ??
+        (v != null
+            ? VehicleIntelligenceService.resolveCategoryId(v)
+            : (_selectedVehicleType == 'car' ? 'car_automatic' : 'scooter_cvt'));
+    _selectedCategory = initialCategory;
     _selectedTransmission = v?.transmission ?? 'Automatic';
     _selectedFuelType = v?.fuelType ?? 'Gasoline';
   }
@@ -102,6 +109,7 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
         fuelType: _selectedFuelType,
         transmission: _selectedTransmission,
         color: _colorController.text.trim().isNotEmpty ? _colorController.text.trim() : null,
+        vehicleCategoryId: _selectedCategory,
       );
 
       if (_isEditing) {
@@ -192,6 +200,34 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
 
                 const SizedBox(height: AppSpacing.space16),
 
+                // Section: Vehicle Category (Tipe Kendaraan)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _selectedVehicleType == 'motorcycle' ? 'TIPE MOTOR' : 'TIPE MOBIL',
+                          style: AppTypography.captionBadge,
+                        ),
+                        const Text(
+                          'Untuk rekomendasi perawatan otomatis',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.space8),
+                    _buildCategorySelector(),
+                  ],
+                ),
+
+                const SizedBox(height: AppSpacing.space16),
+
                 // Section: Essential Info
                 Text('INFORMASI KENDARAAN', style: AppTypography.captionBadge),
                 const SizedBox(height: AppSpacing.space8),
@@ -217,8 +253,12 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
                       _buildTextField(
                         controller: _modelController,
                         label: 'Model Kendaraan',
-                        hint: 'Contoh: Vario 160, Beat, Avanza',
-                        icon: Icons.directions_bike_rounded,
+                        hint: _selectedVehicleType == 'motorcycle'
+                            ? 'Contoh: Vario 160, Beat, NMAX'
+                            : 'Contoh: Avanza, Brio, Innova',
+                        icon: _selectedVehicleType == 'motorcycle'
+                            ? Icons.directions_bike_rounded
+                            : Icons.directions_car_rounded,
                         validator: (val) => val == null || val.trim().isEmpty
                             ? 'Model kendaraan wajib diisi'
                             : null,
@@ -450,7 +490,16 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
   }) {
     final isSelected = _selectedVehicleType == type;
     return GestureDetector(
-      onTap: () => setState(() => _selectedVehicleType = type),
+      onTap: () {
+        if (_selectedVehicleType != type) {
+          setState(() {
+            _selectedVehicleType = type;
+            _selectedCategory = type == 'car' ? 'car_automatic' : 'scooter_cvt';
+            _selectedTransmission = 'Automatic';
+            _selectedFuelType = 'Gasoline';
+          });
+        }
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -476,6 +525,99 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCategorySelector() {
+    final isMotor = _selectedVehicleType == 'motorcycle';
+    final categories = isMotor
+        ? [
+            ('scooter_cvt', 'Motor Matic', Icons.two_wheeler_rounded, 'Vario, Beat, NMAX'),
+            ('motorcycle_manual', 'Bebek / Manual', Icons.sports_motorsports_rounded, 'Supra, Revo, Jupiter'),
+            ('sport_motorcycle', 'Motor Sport', Icons.speed_rounded, 'CB150R, R15, CBR'),
+          ]
+        : [
+            ('car_automatic', 'Matic (AT/CVT)', Icons.directions_car_rounded, 'Avanza AT, Brio CVT'),
+            ('car_manual', 'Manual (MT)', Icons.tune_rounded, 'Avanza MT, Sigra MT'),
+            ('car_diesel', 'Diesel', Icons.local_gas_station_rounded, 'Innova, Pajero, Fortuner'),
+            ('car_hybrid', 'Hybrid', Icons.bolt_rounded, 'Yaris Cross, Kicks HEV'),
+          ];
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: AppSpacing.cardBorderRadius,
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Row(
+        children: categories.map((cat) {
+          final isSelected = _selectedCategory == cat.$1;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedCategory = cat.$1;
+                  if (cat.$1 == 'scooter_cvt' || cat.$1 == 'car_automatic') {
+                    _selectedTransmission = 'Automatic';
+                  } else if (cat.$1 == 'motorcycle_manual' ||
+                      cat.$1 == 'sport_motorcycle' ||
+                      cat.$1 == 'car_manual') {
+                    _selectedTransmission = 'Manual';
+                  }
+                  if (cat.$1 == 'car_diesel') {
+                    _selectedFuelType = 'Diesel';
+                  } else if (cat.$1 == 'car_hybrid') {
+                    _selectedFuelType = 'Hybrid';
+                  } else {
+                    _selectedFuelType = 'Gasoline';
+                  }
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primaryBlue : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      cat.$3,
+                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                      size: 20,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      cat.$2,
+                      textAlign: TextAlign.center,
+                      style: AppTypography.bodySmall.copyWith(
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      cat.$4,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        color: isSelected
+                            ? Colors.white.withValues(alpha: 0.9)
+                            : AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

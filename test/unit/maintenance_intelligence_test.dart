@@ -75,20 +75,20 @@ void main() {
         currentOdometer: beat.currentOdometer,
       );
 
-      // Verifikasi 14 item motor tersedia lengkap
-      expect(items.length, 14);
+      // Verifikasi item motor matic terkurasi tersedia (9 komponen)
+      expect(items.length, 9);
 
-      // Verifikasi komponen penting ada
-      final names = items.map((e) => e.itemName).toList();
-      expect(names, contains('Engine Oil'));
-      expect(names, contains('Final Drive / Gear Oil'));
-      expect(names, contains('Brake Pad Front'));
-      expect(names, contains('CVT Service'));
-      expect(names, contains('Spark Plug'));
-      expect(names, contains('Coolant'));
+      // Verifikasi komponen penting matic ada
+      final keys = items.map((e) => e.itemCategory ?? e.maintenanceId).toList();
+      expect(keys, contains('engine_oil'));
+      expect(keys, contains('gear_oil'));
+      expect(keys, contains('brake_pad'));
+      expect(keys, contains('cvt_roller'));
+      expect(keys, contains('cvt_belt'));
+      expect(keys, contains('spark_plug'));
 
       // Verifikasi default interval oli mesin 3000 km
-      final oilItem = items.firstWhere((e) => e.itemName == 'Engine Oil');
+      final oilItem = items.firstWhere((e) => (e.itemCategory ?? '').contains('engine_oil'));
       expect(oilItem.intervalKm, 3000);
       expect(oilItem.healthPercentage, 100);
       expect(oilItem.status, 'GOOD');
@@ -177,7 +177,9 @@ void main() {
 
       // Cek vehicle_maintenance terupdate
       final updatedItems = await maintenanceRepository.getVehicleMaintenance(vehicleId);
-      final updatedOil = updatedItems.firstWhere((it) => it.maintenanceId == 'mc-01-engine-oil');
+      final updatedOil = updatedItems.firstWhere((it) =>
+          it.maintenanceId == 'mc-01-engine-oil' ||
+          (it.itemCategory ?? '').contains('engine_oil'));
 
       expect(updatedOil.lastServiceOdometer, 12500);
       expect(updatedOil.healthPercentage, 100);

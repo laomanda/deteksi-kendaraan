@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:intl/intl.dart';
 import '../data/models/maintenance_price_model.dart';
+import '../data/models/maintenance_template_model.dart';
 import '../data/models/vehicle_maintenance_model.dart';
 import '../../vehicle/data/models/vehicle_model.dart';
 
@@ -246,6 +247,12 @@ class MaintenancePredictionService {
     final now = currentDate ?? DateTime.now();
 
     final predictions = items.map((item) {
+      final template = MaintenanceTemplateModel.defaultTemplates
+          .where((t) =>
+              t.id == item.maintenanceId ||
+              (item.itemCategory != null && t.componentKey == item.itemCategory))
+          .firstOrNull;
+
       final price = prices?.where((p) {
             return p.maintenanceId == item.maintenanceId ||
                 p.maintenanceId == item.id ||
@@ -255,7 +262,24 @@ class MaintenancePredictionService {
           MaintenancePriceModel.getPriceForMaintenance(
             item.itemName ?? item.maintenanceId,
             vehicleType: vehicle.vehicleType,
-          );
+          ) ??
+          (item.itemCategory != null
+              ? MaintenancePriceModel.getPriceForMaintenance(
+                  item.itemCategory!,
+                  vehicleType: vehicle.vehicleType,
+                )
+              : null) ??
+          (template != null && template.estimatedCostMin > 0
+              ? MaintenancePriceModel(
+                  id: 'price-${template.id}',
+                  maintenanceId: template.id,
+                  vehicleType: vehicle.vehicleType,
+                  minPrice: template.estimatedCostMin.toDouble(),
+                  maxPrice: template.estimatedCostMax.toDouble(),
+                  laborMin: 15000,
+                  laborMax: 35000,
+                )
+              : null);
 
       return predictItem(
         item: item,

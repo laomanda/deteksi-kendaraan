@@ -36,6 +36,8 @@ class VehicleMaintenanceModel {
   bool get isDueSoon =>
       status.toUpperCase() == 'DUE_SOON' || status.toUpperCase() == 'DUE SOON';
   bool get isOverdue => status.toUpperCase() == 'OVERDUE';
+  String get itemKey => itemCategory ?? maintenanceId;
+  String get name => itemName ?? '';
 
   VehicleMaintenanceModel copyWith({
     String? id,

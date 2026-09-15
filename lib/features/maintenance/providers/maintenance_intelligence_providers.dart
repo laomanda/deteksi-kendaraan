@@ -32,11 +32,13 @@ class VehicleMaintenanceNotifier
   final MaintenanceRepository _repository;
   final String vehicleId;
   final String vehicleType;
+  final String? vehicleCategoryId;
 
   VehicleMaintenanceNotifier({
     required MaintenanceRepository repository,
     required this.vehicleId,
     this.vehicleType = 'motorcycle',
+    this.vehicleCategoryId,
   })  : _repository = repository,
         super(repository.getCachedVehicleMaintenance(vehicleId) != null
             ? AsyncValue.data(repository.getCachedVehicleMaintenance(vehicleId)!)
@@ -52,6 +54,7 @@ class VehicleMaintenanceNotifier
       final items = await _repository.getVehicleMaintenance(
         vehicleId,
         vehicleType: vehicleType,
+        vehicleCategoryId: vehicleCategoryId,
       );
       if (!mounted) return;
       state = AsyncValue.data(items);
@@ -81,10 +84,12 @@ final vehicleMaintenanceProvider = StateNotifierProvider.family<
   final vehiclesState = ref.watch(vehicleListProvider);
 
   String vehicleType = 'motorcycle';
+  String? vehicleCategoryId;
   vehiclesState.whenData((list) {
     final v = list.where((e) => e.id == vehicleId).firstOrNull;
     if (v != null) {
       vehicleType = v.vehicleType;
+      vehicleCategoryId = v.vehicleCategoryId;
     }
   });
 
@@ -92,6 +97,7 @@ final vehicleMaintenanceProvider = StateNotifierProvider.family<
     repository: repo,
     vehicleId: vehicleId,
     vehicleType: vehicleType,
+    vehicleCategoryId: vehicleCategoryId,
   );
 });
 

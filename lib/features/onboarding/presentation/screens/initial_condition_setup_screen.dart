@@ -32,6 +32,7 @@ class InitialConditionSetupScreen extends ConsumerStatefulWidget {
   final String? color;
   final String? transmission;
   final String? fuelType;
+  final String? vehicleCategoryId;
 
   const InitialConditionSetupScreen({
     super.key,
@@ -47,6 +48,7 @@ class InitialConditionSetupScreen extends ConsumerStatefulWidget {
     this.color,
     this.transmission,
     this.fuelType,
+    this.vehicleCategoryId,
   });
 
   @override
@@ -72,7 +74,10 @@ class _InitialConditionSetupScreenState
       _selectedOption = InitialConditionOption.brandNew;
     }
 
-    final catalog = ComponentCatalog.getCatalogForVehicleType(widget.vehicleType);
+    final catalog = ComponentCatalog.getCatalogForCategory(
+      widget.vehicleCategoryId,
+      vehicleType: widget.vehicleType,
+    );
     _kmControllers = {
       for (final comp in catalog)
         comp.key: TextEditingController(
@@ -112,6 +117,7 @@ class _InitialConditionSetupScreenState
         color: widget.color,
         transmission: widget.transmission,
         fuelType: widget.fuelType,
+        vehicleCategoryId: widget.vehicleCategoryId,
         initialOdometer: widget.currentKilometer.round(),
         currentOdometer: widget.currentKilometer.round(),
         currentKilometer: widget.currentKilometer,
@@ -120,7 +126,10 @@ class _InitialConditionSetupScreenState
         updatedAt: DateTime.now(),
       );
 
-      final catalog = ComponentCatalog.getCatalogForVehicleType(widget.vehicleType);
+      final catalog = ComponentCatalog.getCatalogForCategory(
+        widget.vehicleCategoryId,
+        vehicleType: widget.vehicleType,
+      );
       final now = DateTime.now();
 
       final List<MaintenanceItemModel> items = [];
@@ -288,7 +297,7 @@ class _InitialConditionSetupScreenState
                       ),
                     ),
                     const SizedBox(height: 14),
-                    ...ComponentCatalog.getCatalogForVehicleType(widget.vehicleType).map((m) {
+                    ...ComponentCatalog.getCatalogForCategory(widget.vehicleCategoryId, vehicleType: widget.vehicleType).map((m) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: Row(
