@@ -454,9 +454,14 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
   }
 
   String _formatTransmission(String? val) {
-    if (val == null || val.isEmpty) return 'Otomatis';
+    final isCar = _vehicle.vehicleType.toLowerCase() == 'car';
+    if (val == null || val.isEmpty) {
+      return isCar ? 'Otomatis (Matic)' : 'Matic';
+    }
     final lower = val.toLowerCase();
-    if (lower == 'automatic' || lower == 'otomatis' || lower == 'matic') return 'Otomatis';
+    if (lower == 'automatic' || lower == 'otomatis' || lower == 'matic') {
+      return isCar ? 'Otomatis (Matic)' : 'Matic';
+    }
     if (lower == 'manual') return 'Manual';
     return val;
   }
@@ -465,7 +470,8 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
     if (val == null || val.isEmpty) return 'Bensin';
     final lower = val.toLowerCase();
     if (lower == 'gasoline' || lower == 'petrol' || lower == 'bensin') return 'Bensin';
-    if (lower == 'diesel') return 'Diesel';
+    if (lower == 'diesel' || lower == 'solar') return 'Diesel';
+    if (lower == 'hybrid') return 'Hybrid';
     if (lower == 'electric' || lower == 'listrik') return 'Listrik';
     return val;
   }

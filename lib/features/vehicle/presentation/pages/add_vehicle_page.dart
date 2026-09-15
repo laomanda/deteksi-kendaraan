@@ -111,6 +111,15 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
     return null;
   }
 
+  String _transmissionLabel(String? t) {
+    if (t == null) return '-';
+    final lower = t.toLowerCase();
+    if (lower == 'automatic' || lower == 'otomatis' || lower == 'matic') {
+      return _selectedVehicleType == 'car' ? 'Otomatis (Matic)' : 'Matic';
+    }
+    return 'Manual';
+  }
+
   bool get _isFuelTypeLocked =>
       _selectedVehicleType == 'motorcycle' ||
       _selectedCategory == 'car_diesel' ||
@@ -457,10 +466,10 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
                                 children: [
                                   Expanded(
                                     child: DropdownButtonFormField<String>(
-                                      key: ValueKey('trans_${_selectedCategory}_$_selectedTransmission'),
+                                      key: ValueKey('trans_${_selectedVehicleType}_${_selectedCategory}_$_selectedTransmission'),
                                       initialValue: _selectedTransmission,
                                       disabledHint: Text(
-                                        _selectedTransmission == 'Automatic' ? 'Otomatis (Matic)' : 'Manual',
+                                        _transmissionLabel(_selectedTransmission),
                                         style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
                                       ),
                                       decoration: InputDecoration(
@@ -486,7 +495,7 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
                                       items: _allowedTransmissions.map((t) {
                                         return DropdownMenuItem(
                                           value: t,
-                                          child: Text(t == 'Automatic' ? 'Otomatis (Matic)' : 'Manual'),
+                                          child: Text(_transmissionLabel(t)),
                                         );
                                       }).toList(),
                                       onChanged: _isTransmissionLocked
