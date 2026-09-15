@@ -215,7 +215,7 @@ class VehicleCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              'Health',
+                              'Kesehatan',
                               style: AppTypography.captionSubtle,
                             ),
                           ],

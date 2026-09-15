@@ -284,7 +284,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                   Text('TOTAL JARAK KENDARAAN', style: AppTypography.captionBadge),
                   const SizedBox(height: 2),
                   Text(
-                    '${DateFormatter.formatKm(_vehicle.currentKilometer)} KM',
+                    DateFormatter.formatKm(_vehicle.currentKilometer),
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ],
@@ -428,13 +428,13 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                   _buildSpecRow(
                     icon: Icons.settings_suggest_rounded,
                     label: 'Transmisi',
-                    value: _vehicle.transmission ?? 'Automatic',
+                    value: _formatTransmission(_vehicle.transmission),
                   ),
                   const Divider(height: 16, color: AppColors.borderSubtle),
                   _buildSpecRow(
                     icon: Icons.local_gas_station_rounded,
                     label: 'Bahan Bakar',
-                    value: _vehicle.fuelType ?? 'Gasoline',
+                    value: _formatFuelType(_vehicle.fuelType),
                   ),
                   if (_vehicle.color != null && _vehicle.color!.isNotEmpty) ...[
                     const Divider(height: 16, color: AppColors.borderSubtle),
@@ -451,6 +451,23 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
         ),
       ),
     );
+  }
+
+  String _formatTransmission(String? val) {
+    if (val == null || val.isEmpty) return 'Otomatis';
+    final lower = val.toLowerCase();
+    if (lower == 'automatic' || lower == 'otomatis' || lower == 'matic') return 'Otomatis';
+    if (lower == 'manual') return 'Manual';
+    return val;
+  }
+
+  String _formatFuelType(String? val) {
+    if (val == null || val.isEmpty) return 'Bensin';
+    final lower = val.toLowerCase();
+    if (lower == 'gasoline' || lower == 'petrol' || lower == 'bensin') return 'Bensin';
+    if (lower == 'diesel') return 'Diesel';
+    if (lower == 'electric' || lower == 'listrik') return 'Listrik';
+    return val;
   }
 
   Widget _buildSpecRow({
@@ -579,7 +596,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Perkiraan: ${nextItem.remainingKm > 0 ? DateFormatter.formatKm(nextItem.remainingKm.toDouble()) : '0'} KM lagi (${nextItem.remainingDays > 0 ? '${nextItem.remainingDays} hari' : 'Hari ini'})',
+                              'Perkiraan: ${nextItem.remainingKm > 0 ? DateFormatter.formatKm(nextItem.remainingKm.toDouble()) : '0 km'} lagi (${nextItem.remainingDays > 0 ? '${nextItem.remainingDays} hari' : 'Hari ini'})',
                               style: AppTypography.bodySmall.copyWith(
                                 color: AppColors.textSecondary,
                               ),
@@ -742,8 +759,8 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                               children: [
                                 Text(
                                   item.isOverdue
-                                      ? 'Lewat ${DateFormatter.formatKm(item.remainingKm.abs().toDouble())} KM'
-                                      : '${DateFormatter.formatKm(item.remainingKm.toDouble())} KM lagi',
+                                      ? 'Lewat ${DateFormatter.formatKm(item.remainingKm.abs().toDouble())}'
+                                      : '${DateFormatter.formatKm(item.remainingKm.toDouble())} lagi',
                                   style: AppTypography.bodySmall.copyWith(
                                     fontWeight: FontWeight.w600,
                                     color: itemColor,

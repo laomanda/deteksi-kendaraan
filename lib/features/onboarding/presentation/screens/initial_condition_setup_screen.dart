@@ -26,6 +26,12 @@ class InitialConditionSetupScreen extends ConsumerStatefulWidget {
   final int year;
   final double currentKilometer;
   final String? photoPath;
+  final String? variant;
+  final String? licensePlate;
+  final int? engineCc;
+  final String? color;
+  final String? transmission;
+  final String? fuelType;
 
   const InitialConditionSetupScreen({
     super.key,
@@ -35,6 +41,12 @@ class InitialConditionSetupScreen extends ConsumerStatefulWidget {
     required this.year,
     required this.currentKilometer,
     this.photoPath,
+    this.variant,
+    this.licensePlate,
+    this.engineCc,
+    this.color,
+    this.transmission,
+    this.fuelType,
   });
 
   @override
@@ -93,10 +105,19 @@ class _InitialConditionSetupScreenState
         vehicleType: widget.vehicleType,
         brand: widget.brand,
         model: widget.model,
+        variant: widget.variant,
         year: widget.year,
+        licensePlate: widget.licensePlate,
+        engineCc: widget.engineCc,
+        color: widget.color,
+        transmission: widget.transmission,
+        fuelType: widget.fuelType,
+        initialOdometer: widget.currentKilometer.round(),
+        currentOdometer: widget.currentKilometer.round(),
         currentKilometer: widget.currentKilometer,
         photoPath: widget.photoPath,
         createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
 
       final catalog = ComponentCatalog.getCatalogForVehicleType(widget.vehicleType);

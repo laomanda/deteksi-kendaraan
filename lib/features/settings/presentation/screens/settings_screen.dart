@@ -196,7 +196,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: AppSpacing.space24),
 
             // Section: Supabase & Cloud Sync
-            Text('SUPABASE & CLOUD SYNC', style: AppTypography.captionBadge),
+            Text('SINKRONISASI CLOUD & SUPABASE', style: AppTypography.captionBadge),
             const SizedBox(height: AppSpacing.space8),
             Container(
               decoration: BoxDecoration(
@@ -208,8 +208,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 children: [
                   ListTile(
                     leading: const Icon(Icons.storage_rounded, color: AppColors.secondaryTeal),
-                    title: Text('Test CRUD Database', style: AppTypography.bodyMedium),
-                    subtitle: Text('Testing Create, Read, Update, Delete', style: AppTypography.captionSubtle),
+                    title: Text('Uji Coba Database CRUD', style: AppTypography.bodyMedium),
+                    subtitle: Text('Pengujian Tambah, Baca, Ubah, Hapus data', style: AppTypography.captionSubtle),
                     trailing: const Icon(Icons.chevron_right_rounded),
                     onTap: () {
                       Navigator.push(
@@ -221,8 +221,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.sync_rounded, color: Colors.indigo),
-                    title: Text('Sinkronisasi Data (Hive -> Supabase)', style: AppTypography.bodyMedium),
-                    subtitle: Text('Upload data lokal ke Supabase', style: AppTypography.captionSubtle),
+                    title: Text('Sinkronisasi Data (Lokal -> Cloud)', style: AppTypography.bodyMedium),
+                    subtitle: Text('Unggah data lokal ke Supabase', style: AppTypography.captionSubtle),
                     trailing: const Icon(Icons.cloud_upload_outlined),
                     onTap: () async {
                       ScaffoldMessenger.of(context).showSnackBar(

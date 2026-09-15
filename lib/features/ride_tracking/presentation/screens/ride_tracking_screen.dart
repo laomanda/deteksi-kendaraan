@@ -443,7 +443,7 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                     Text('KENDARAAN PERJALANAN', style: AppTypography.captionBadge),
                     const SizedBox(height: 2),
                     Text(
-                      '${currentVehicle.displayName} • ${DateFormatter.formatKm(currentVehicle.currentKilometer)} KM',
+                      '${currentVehicle.displayName} • ${DateFormatter.formatKm(currentVehicle.currentKilometer)}',
                       style: AppTypography.bodySmall.copyWith(
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
@@ -530,7 +530,7 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                     ),
                   ),
                   subtitle: Text(
-                    '${DateFormatter.formatKm(v.currentKilometer)} KM',
+                    DateFormatter.formatKm(v.currentKilometer),
                   ),
                   trailing: isSelected
                       ? const Icon(Icons.check_circle_rounded,

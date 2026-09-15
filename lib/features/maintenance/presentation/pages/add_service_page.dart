@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../../vehicle/data/models/vehicle_model.dart';
 import '../../../vehicle/providers/vehicle_provider.dart';
 import '../../data/models/service_record_model.dart';
@@ -303,7 +304,7 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
                               style: AppTypography.heading3,
                             ),
                             Text(
-                              'Total Jarak: ${NumberFormat.decimalPattern('id_ID').format(widget.vehicle.currentOdometer)} KM',
+                              'Total Jarak: ${DateFormatter.formatKm(widget.vehicle.currentOdometer.toDouble())}',
                               style: AppTypography.captionSubtle,
                             ),
                           ],
@@ -414,7 +415,7 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: AppColors.surfaceWhite,
-                    suffixText: 'KM',
+                    suffixText: 'km',
                     prefixIcon: const Icon(
                       Icons.speed_rounded,
                       color: AppColors.primaryBlue,

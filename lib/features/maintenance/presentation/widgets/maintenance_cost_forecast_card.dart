@@ -60,7 +60,7 @@ class MaintenanceCostForecastCard extends ConsumerWidget {
                         color: AppColors.primaryBlue,
                       ),
                       const SizedBox(width: 8),
-                      Text('ESTIMATED UPCOMING COST', style: AppTypography.captionBadge),
+                      Text('PERKIRAAN BIAYA MENDATANG', style: AppTypography.captionBadge),
                     ],
                   ),
                   InkWell(
@@ -69,7 +69,7 @@ class MaintenanceCostForecastCard extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'View Forecast',
+                          'Lihat Perkiraan',
                           style: AppTypography.captionBadge.copyWith(
                             color: AppColors.primaryBlue,
                             fontWeight: FontWeight.bold,
@@ -94,7 +94,7 @@ class MaintenanceCostForecastCard extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: _buildHorizonBox(
-                      title: 'Next 30 Days',
+                      title: '30 Hari ke Depan',
                       range: h30?.formattedCompactRange ?? 'Rp0',
                       count: h30?.items.length ?? 0,
                       isHighlighted: true,
@@ -103,7 +103,7 @@ class MaintenanceCostForecastCard extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildHorizonBox(
-                      title: 'Next 90 Days',
+                      title: '90 Hari ke Depan',
                       range: h90?.formattedCompactRange ?? 'Rp0',
                       count: h90?.items.length ?? 0,
                     ),
@@ -111,7 +111,7 @@ class MaintenanceCostForecastCard extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildHorizonBox(
-                      title: 'Next 180 Days',
+                      title: '180 Hari ke Depan',
                       range: h180?.formattedCompactRange ?? 'Rp0',
                       count: h180?.items.length ?? 0,
                     ),
@@ -217,7 +217,7 @@ class MaintenanceCostForecastCard extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Maintenance Budget Forecast',
+                'Perkiraan Anggaran Servis',
                 style: AppTypography.heading1.copyWith(fontSize: 20),
               ),
               Text(
@@ -243,7 +243,7 @@ class MaintenanceCostForecastCard extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              h?.title ?? 'Next $days Days',
+                              h?.title ?? '$days Hari ke Depan',
                               style: AppTypography.bodyMedium
                                   .copyWith(fontWeight: FontWeight.bold),
                             ),
@@ -259,7 +259,7 @@ class MaintenanceCostForecastCard extends ConsumerWidget {
                         const SizedBox(height: 6),
                         if (h == null || h.items.isEmpty)
                           Text(
-                            'Belum ada maintenance yang diperkirakan dalam periode ini.',
+                            'Belum ada servis yang diperkirakan dalam periode ini.',
                             style: AppTypography.captionSubtle.copyWith(
                               fontStyle: FontStyle.italic,
                             ),

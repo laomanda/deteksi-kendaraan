@@ -198,7 +198,7 @@ class UpcomingMaintenanceCard extends ConsumerWidget {
                   Text(
                     p.isOverdue
                         ? 'Sudah melewati batas jadwal servis'
-                        : 'Perkiraan: ${DateFormatter.formatKm(p.remainingKm.toDouble())} KM lagi (${p.remainingDays > 0 ? '${p.remainingDays} hari' : 'segera'})',
+                        : 'Perkiraan: ${DateFormatter.formatKm(p.remainingKm.toDouble())} lagi (${p.remainingDays > 0 ? '${p.remainingDays} hari' : 'segera'})',
                     style: AppTypography.bodySmall.copyWith(
                       color: p.isOverdue ? AppColors.healthCritical : AppColors.textSecondary,
                     ),

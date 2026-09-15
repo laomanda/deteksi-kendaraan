@@ -171,7 +171,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'TOTAL TRIP',
+                    'TOTAL PERJALANAN',
                     style: AppTypography.captionSubtle.copyWith(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,

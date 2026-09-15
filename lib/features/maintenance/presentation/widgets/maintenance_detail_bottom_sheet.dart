@@ -50,7 +50,7 @@ class MaintenanceDetailBottomSheet extends ConsumerWidget {
       statusColor = AppColors.healthWarning;
       statusText = 'Segera Diganti';
       reasonText =
-          'Sudah mendekati batas pemakaian (${DateFormatter.formatKm(prediction.remainingKm.toDouble())} KM lagi).';
+          'Sudah mendekati batas pemakaian (${DateFormatter.formatKm(prediction.remainingKm.toDouble())} lagi).';
     } else {
       statusColor = AppColors.healthOptimal;
       statusText = 'Kondisi Baik';
@@ -281,7 +281,7 @@ class MaintenanceDetailBottomSheet extends ConsumerWidget {
                           const Divider(height: 16),
                           _buildCostRow(
                             'Rekomendasi Servis',
-                            '${DateFormatter.formatKm(prediction.nextServiceOdometer.toDouble())} KM',
+                            DateFormatter.formatKm(prediction.nextServiceOdometer.toDouble()),
                           ),
                           const SizedBox(height: 6),
                           _buildCostRow(

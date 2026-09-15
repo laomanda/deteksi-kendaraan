@@ -375,7 +375,7 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
       body: SafeArea(
         child: vehiclesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
+          error: (e, _) => Center(child: Text('Gagal memuat data: $e')),
           data: (vehicles) {
             if (vehicles.isEmpty) {
               return Center(
@@ -384,7 +384,7 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
                   children: [
                     const Icon(Icons.garage_rounded, size: 64, color: AppColors.textSecondary),
                     const SizedBox(height: AppSpacing.space16),
-                    Text('Belum ada kendaraan di Garage', style: AppTypography.heading2),
+                    Text('Belum ada kendaraan di Garasi', style: AppTypography.heading2),
                     const SizedBox(height: AppSpacing.space8),
                     Text(
                       'Tambahkan kendaraan terlebih dahulu untuk memantau kesehatan servis.',
@@ -487,7 +487,7 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
           // 2. Human-First Status Summary Card
           healthSummaryAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Text('Error: $e'),
+            error: (e, _) => Text('Gagal memuat: $e'),
             data: (summary) {
               final numberFormat = NumberFormat.decimalPattern('id_ID');
 

@@ -91,11 +91,11 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Ride Completed',
+                        'Perjalanan Selesai',
                         style: AppTypography.heading1.copyWith(fontSize: 22),
                       ),
                       Text(
-                        'Perjalanan tersimpan & odometer bertambah',
+                        'Perjalanan tersimpan & odometer diperbarui',
                         style: AppTypography.captionSubtle,
                       ),
                     ],
@@ -133,7 +133,7 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('DISTANCE', style: AppTypography.captionBadge),
+                        Text('JARAK TEMPUH', style: AppTypography.captionBadge),
                         const SizedBox(height: 4),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -147,7 +147,7 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            Text('KM', style: AppTypography.bodySmall),
+                            Text('km', style: AppTypography.bodySmall),
                           ],
                         ),
                       ],
@@ -166,7 +166,7 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('DURATION', style: AppTypography.captionBadge),
+                        Text('DURASI', style: AppTypography.captionBadge),
                         const SizedBox(height: 4),
                         Text(
                           DateFormatter.formatDuration(result.session.durationSeconds),
@@ -211,7 +211,7 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                         size: 20,
                       ),
                       const SizedBox(width: 8),
-                      Text('VEHICLE', style: AppTypography.captionBadge),
+                      Text('KENDARAAN', style: AppTypography.captionBadge),
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -231,7 +231,7 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                           Row(
                             children: [
                               Text(
-                                '${DateFormatter.formatKm(result.previousOdometer.toDouble())} KM',
+                                DateFormatter.formatKm(result.previousOdometer.toDouble()),
                                 style: AppTypography.bodyMedium.copyWith(
                                   color: AppColors.textSecondary,
                                   decoration: TextDecoration.lineThrough,
@@ -245,7 +245,7 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                '${DateFormatter.formatKm(result.newOdometer.toDouble())} KM',
+                                DateFormatter.formatKm(result.newOdometer.toDouble()),
                                 style: AppTypography.heading3.copyWith(
                                   color: AppColors.primaryBlue,
                                   fontWeight: FontWeight.bold,
@@ -263,7 +263,7 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                             borderRadius: AppSpacing.chipBorderRadius,
                           ),
                           child: Text(
-                            '+$distanceDiff KM',
+                            '+$distanceDiff km',
                             style: AppTypography.captionBadge.copyWith(
                               color: AppColors.secondaryTeal,
                               fontWeight: FontWeight.bold,
@@ -293,12 +293,16 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                 if (mostUrgent == null) return const SizedBox.shrink();
 
                 Color statusColor;
+                String statusBadgeText;
                 if (mostUrgent.isOverdue) {
                   statusColor = AppColors.healthCritical;
+                  statusBadgeText = 'Lewat Jadwal';
                 } else if (mostUrgent.isDueSoon) {
                   statusColor = AppColors.healthWarning;
+                  statusBadgeText = 'Segera Diganti';
                 } else {
                   statusColor = AppColors.healthOptimal;
+                  statusBadgeText = 'Kondisi Baik';
                 }
 
                 return Container(
@@ -326,7 +330,7 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                'MAINTENANCE IMPACT',
+                                'STATUS SERVIS TERPENGARUH',
                                 style: AppTypography.captionBadge.copyWith(
                                   color: statusColor,
                                   fontWeight: FontWeight.bold,
@@ -344,7 +348,7 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                               borderRadius: AppSpacing.chipBorderRadius,
                             ),
                             child: Text(
-                              mostUrgent.status,
+                              statusBadgeText,
                               style: AppTypography.captionBadge.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -365,7 +369,9 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            '${DateFormatter.formatKm(mostUrgent.remainingKm.toDouble())} KM remaining',
+                            mostUrgent.isOverdue
+                                ? 'Terlewat ${DateFormatter.formatKm(mostUrgent.remainingKm.abs().toDouble())}'
+                                : '${DateFormatter.formatKm(mostUrgent.remainingKm.toDouble())} lagi',
                             style: AppTypography.bodyMedium.copyWith(
                               fontWeight: FontWeight.bold,
                               color: statusColor,
@@ -409,7 +415,7 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                   Icon(Icons.build_rounded, size: 20),
                   SizedBox(width: 8),
                   Text(
-                    'View Maintenance',
+                    'Lihat Jadwal Perawatan',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,

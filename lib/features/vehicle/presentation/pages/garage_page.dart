@@ -20,7 +20,7 @@ class GaragePage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.bgLight,
       appBar: AppBar(
-        title: Text('My Garage', style: AppTypography.heading1),
+        title: Text('Garasi Saya', style: AppTypography.heading1),
         elevation: 0,
         backgroundColor: AppColors.surfaceWhite,
         actions: [

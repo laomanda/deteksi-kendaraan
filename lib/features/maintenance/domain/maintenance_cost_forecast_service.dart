@@ -115,9 +115,9 @@ class MaintenanceCostForecastService {
     List<MaintenancePrediction> predictions,
   ) {
     const horizons = [
-      (days: 30, title: 'Next 30 Days'),
-      (days: 90, title: 'Next 90 Days'),
-      (days: 180, title: 'Next 180 Days'),
+      (days: 30, title: '30 Hari ke Depan'),
+      (days: 90, title: '90 Hari ke Depan'),
+      (days: 180, title: '180 Hari ke Depan'),
     ];
 
     final Map<int, BudgetForecastHorizon> result = {};

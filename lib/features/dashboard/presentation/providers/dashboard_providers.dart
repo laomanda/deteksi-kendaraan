@@ -139,13 +139,13 @@ class MonthlyRideStats {
   String get formattedDistance => DateFormatter.formatKm(totalDistanceKm);
 
   String get formattedRideTime {
-    if (totalDurationSeconds <= 0) return '0 min';
+    if (totalDurationSeconds <= 0) return '0 mnt';
     final hours = totalDurationSeconds ~/ 3600;
     final minutes = (totalDurationSeconds % 3600) ~/ 60;
     if (hours > 0) {
-      return '${hours}h ${minutes}m';
+      return '$hours jam $minutes mnt';
     }
-    return '$minutes min';
+    return '$minutes mnt';
   }
 
   bool get hasActivity => tripCount > 0 || totalDistanceKm > 0;

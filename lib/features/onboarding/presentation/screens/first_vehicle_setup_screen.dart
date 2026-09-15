@@ -3,14 +3,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/image_helper.dart';
 import 'initial_condition_setup_screen.dart';
 
 /// First Vehicle Setup Screen (PRD Section 7.1 & DSS Section 10.1)
-/// Simple, clean, and elegant vehicle registration form with interactive guidance
+/// Consistent with AddVehiclePage in structure, fields, and styling.
 class FirstVehicleSetupScreen extends StatefulWidget {
   const FirstVehicleSetupScreen({super.key});
 
@@ -20,42 +21,35 @@ class FirstVehicleSetupScreen extends StatefulWidget {
 
 class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _selectedType = 'motorcycle'; // 'motorcycle' | 'car'
+
+  String _selectedVehicleType = 'motorcycle'; // 'motorcycle' | 'car'
   final _brandController = TextEditingController();
   final _modelController = TextEditingController();
+  final _variantController = TextEditingController();
   int? _selectedYear;
   final List<int> _availableYears = List.generate(
     DateTime.now().year - 1980 + 1,
     (index) => DateTime.now().year - index,
   );
-  final _kmController = TextEditingController();
+  final _engineCcController = TextEditingController();
+  final _licensePlateController = TextEditingController();
+  final _odometerController = TextEditingController(text: '0');
+  final _colorController = TextEditingController();
+
+  String? _selectedTransmission = 'Automatic';
+  String? _selectedFuelType = 'Gasoline';
   String? _selectedPhotoPath;
 
   @override
-  void initState() {
-    super.initState();
-    _kmController.addListener(_onKmChanged);
-  }
-
-  void _onKmChanged() {
-    setState(() {});
-  }
-
-  @override
   void dispose() {
-    _kmController.removeListener(_onKmChanged);
     _brandController.dispose();
     _modelController.dispose();
-    _kmController.dispose();
+    _variantController.dispose();
+    _engineCcController.dispose();
+    _licensePlateController.dispose();
+    _odometerController.dispose();
+    _colorController.dispose();
     super.dispose();
-  }
-
-  String _formatKmFeedback(String text) {
-    final n = int.tryParse(text);
-    if (n == null) return '';
-    if (n == 0) return 'Kendaraan baru (0 km)';
-    final formatted = NumberFormat.decimalPattern('id').format(n);
-    return 'Terbaca: $formatted km';
   }
 
   void _showOdometerInfoDialog(BuildContext context) {
@@ -90,7 +84,7 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Angka ini adalah TOTAL JARAK TEMPUH (odometer keseluruhan) yang tertera pada layar speedometer motor Anda saat ini.',
+              'Angka ini adalah TOTAL JARAK TEMPUH (odometer keseluruhan) yang tertera pada layar speedometer kendaraan Anda saat ini.',
               style: TextStyle(fontSize: 13, height: 1.4, color: AppColors.textPrimary),
             ),
             const SizedBox(height: 12),
@@ -108,7 +102,7 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
                   SizedBox(height: 4),
                   Text('• Menjadi acuan RideCare untuk menghitung jadwal servis otomatis.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                   SizedBox(height: 4),
-                  Text('• Jika motor baru dari dealer, isi dengan angka 0.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  Text('• Jika kendaraan baru dari dealer, isi dengan angka 0.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                 ],
               ),
             ),
@@ -155,23 +149,40 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
 
   void _proceed() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    if (_selectedYear == null) return;
+    if (_selectedYear == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pilih tahun kendaraan terlebih dahulu'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
     final brand = _brandController.text.trim();
     final model = _modelController.text.trim();
     final year = _selectedYear!;
-    final currentKm = double.parse(_kmController.text.trim());
+    final currentKm = double.tryParse(_odometerController.text.trim()) ?? 0.0;
+    final engineCc = int.tryParse(_engineCcController.text.trim());
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => InitialConditionSetupScreen(
-          vehicleType: _selectedType,
+          vehicleType: _selectedVehicleType,
           brand: brand,
           model: model,
           year: year,
           currentKilometer: currentKm,
           photoPath: _selectedPhotoPath,
+          variant: _variantController.text.trim().isNotEmpty ? _variantController.text.trim() : null,
+          licensePlate: _licensePlateController.text.trim().isNotEmpty
+              ? _licensePlateController.text.trim().toUpperCase()
+              : null,
+          engineCc: engineCc,
+          color: _colorController.text.trim().isNotEmpty ? _colorController.text.trim() : null,
+          transmission: _selectedTransmission,
+          fuelType: _selectedFuelType,
         ),
       ),
     );
@@ -180,10 +191,14 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.bgLight,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        title: Text(
+          'Data Kendaraan',
+          style: AppTypography.heading2,
+        ),
         elevation: 0,
+        backgroundColor: AppColors.surfaceWhite,
         leading: Navigator.canPop(context)
             ? IconButton(
                 icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
@@ -192,70 +207,32 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
             : null,
       ),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 460),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title & Description
-                    const Text(
-                      'Data Kendaraan',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.4,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Masukkan data kendaraan untuk mulai memantau servis.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Vehicle Type Segmented Control
-                    Container(
-                      height: 44,
-                      padding: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: [
-                          _buildSegmentItem('motorcycle', 'Sepeda Motor', Icons.two_wheeler_rounded),
-                          _buildSegmentItem('car', 'Mobil', Icons.directions_car_rounded),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Simple Photo Avatar
-                    Center(
-                      child: GestureDetector(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.space16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Vehicle Photo Avatar Picker
+                Center(
+                  child: Column(
+                    children: [
+                      GestureDetector(
                         onTap: _pickImage,
                         child: Stack(
                           alignment: Alignment.bottomRight,
                           children: [
                             CircleAvatar(
                               radius: 44,
-                              backgroundColor: const Color(0xFFF8FAFC),
+                              backgroundColor: AppColors.surfaceWhite,
                               backgroundImage: ImageHelper.getVehicleImageProvider(_selectedPhotoPath),
                               child: _selectedPhotoPath == null
                                   ? Icon(
-                                      _selectedType == 'motorcycle'
+                                      _selectedVehicleType == 'motorcycle'
                                           ? Icons.two_wheeler_outlined
                                           : Icons.directions_car_outlined,
-                                      size: 36,
+                                      size: 38,
                                       color: AppColors.textMuted,
                                     )
                                   : null,
@@ -267,211 +244,309 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
                                 shape: BoxShape.circle,
                                 border: Border.all(color: Colors.white, width: 2),
                               ),
-                              child: const Icon(Icons.camera_alt, size: 13, color: Colors.white),
+                              child: const Icon(Icons.camera_alt, size: 14, color: Colors.white),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Merek Kendaraan
-                    _buildLabel('Merek Kendaraan'),
-                    const SizedBox(height: 6),
-                    TextFormField(
-                      controller: _brandController,
-                      decoration: _cleanInputDecoration(
-                        hintText: 'Misal: Honda, Yamaha, Toyota',
-                      ),
-                      validator: (val) {
-                        if (val == null || val.trim().length < 2) {
-                          return 'Merek kendaraan minimal 2 karakter';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 18),
-
-                    // Model / Seri
-                    _buildLabel('Model / Seri'),
-                    const SizedBox(height: 6),
-                    TextFormField(
-                      controller: _modelController,
-                      decoration: _cleanInputDecoration(
-                        hintText: _selectedType == 'motorcycle'
-                            ? 'Misal: Vario 160, Beat, NMAX'
-                            : 'Misal: Avanza, Brio, Innova',
-                      ),
-                      validator: (val) {
-                        if (val == null || val.trim().length < 2) {
-                          return 'Model kendaraan minimal 2 karakter';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 18),
-
-                    // Row: Tahun Perakitan & Kilometer di Spidometer
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Tahun Dropdown
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildLabel('Tahun'),
-                              const SizedBox(height: 6),
-                              DropdownButtonFormField<int>(
-                                initialValue: _selectedYear,
-                                hint: const Text(
-                                  'Pilih',
-                                  style: TextStyle(color: AppColors.textMuted, fontSize: 14),
-                                ),
-                                isExpanded: true,
-                                menuMaxHeight: 300,
-                                decoration: _cleanInputDecoration(hintText: 'Pilih'),
-                                items: _availableYears.map((y) {
-                                  return DropdownMenuItem<int>(
-                                    value: y,
-                                    child: Text(
-                                      y.toString(),
-                                      style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
-                                    ),
-                                  );
-                                }).toList(),
-                                onChanged: (val) => setState(() => _selectedYear = val),
-                                validator: (val) => val == null ? 'Pilih tahun' : null,
-                              ),
-                            ],
-                          ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Foto Kendaraan (Opsional)',
+                        style: AppTypography.captionBadge.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.normal,
                         ),
-                        const SizedBox(width: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.space16),
 
-                        // Kilometer Spidometer
-                        Expanded(
-                          flex: 3,
+                // Section: Vehicle Type
+                Text('TIPE KENDARAAN', style: AppTypography.captionBadge),
+                const SizedBox(height: AppSpacing.space8),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceWhite,
+                    borderRadius: AppSpacing.cardBorderRadius,
+                    border: Border.all(color: AppColors.borderSubtle),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildTypeButton(
+                          title: 'Motor',
+                          icon: Icons.two_wheeler_rounded,
+                          type: 'motorcycle',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildTypeButton(
+                          title: 'Mobil',
+                          icon: Icons.directions_car_rounded,
+                          type: 'car',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.space16),
+
+                // Section: Essential Info
+                Text('INFORMASI KENDARAAN', style: AppTypography.captionBadge),
+                const SizedBox(height: AppSpacing.space8),
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.space16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceWhite,
+                    borderRadius: AppSpacing.cardBorderRadius,
+                    border: Border.all(color: AppColors.borderSubtle),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildTextField(
+                        controller: _brandController,
+                        label: 'Merek Kendaraan',
+                        hint: 'Contoh: Honda, Yamaha, Toyota',
+                        icon: Icons.business_rounded,
+                        validator: (val) => val == null || val.trim().isEmpty
+                            ? 'Merek kendaraan wajib diisi'
+                            : null,
+                      ),
+                      const SizedBox(height: AppSpacing.space12),
+                      _buildTextField(
+                        controller: _modelController,
+                        label: 'Model Kendaraan',
+                        hint: _selectedVehicleType == 'motorcycle'
+                            ? 'Contoh: Vario 160, Beat, NMAX'
+                            : 'Contoh: Avanza, Brio, Innova',
+                        icon: _selectedVehicleType == 'motorcycle'
+                            ? Icons.directions_bike_rounded
+                            : Icons.directions_car_rounded,
+                        validator: (val) => val == null || val.trim().isEmpty
+                            ? 'Model kendaraan wajib diisi'
+                            : null,
+                      ),
+                      const SizedBox(height: AppSpacing.space12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                              initialValue: _selectedYear,
+                              isExpanded: true,
+                              menuMaxHeight: 300,
+                              decoration: InputDecoration(
+                                labelText: 'Tahun',
+                                hintText: 'Pilih',
+                                prefixIcon: const Icon(
+                                  Icons.calendar_today_rounded,
+                                  size: 20,
+                                  color: AppColors.textMuted,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(color: AppColors.borderSubtle),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(color: AppColors.borderSubtle),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                              ),
+                              items: _availableYears.map((y) {
+                                return DropdownMenuItem<int>(
+                                  value: y,
+                                  child: Text(y.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (val) => setState(() => _selectedYear = val),
+                              validator: (val) => val == null ? 'Pilih tahun' : null,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.space12),
+                          Expanded(
+                            child: _buildTextField(
+                              controller: _odometerController,
+                              label: 'Kilometer Saat Ini',
+                              hint: '0',
+                              helperText: 'Total km di spidometer',
+                              icon: Icons.speed_rounded,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(7),
+                              ],
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.info_outline_rounded, size: 18, color: AppColors.primaryBlue),
+                                tooltip: 'Panduan Odometer',
+                                onPressed: () => _showOdometerInfoDialog(context),
+                              ),
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty) return 'Wajib diisi';
+                                final num = int.tryParse(val);
+                                if (num == null || num < 0) return 'Odometer tidak valid';
+                                return null;
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.space16),
+
+                // Section: Collapsible Optional Information
+                Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceWhite,
+                      borderRadius: AppSpacing.cardBorderRadius,
+                      border: Border.all(color: AppColors.borderSubtle),
+                    ),
+                    child: ExpansionTile(
+                      tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      title: Text(
+                        'Informasi Tambahan (Opsional)',
+                        style: AppTypography.heading3.copyWith(
+                          fontSize: 14,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Plat nomor, warna, transmisi, kapasitas mesin',
+                        style: AppTypography.captionBadge.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildLabel(
-                                'Kilometer di Spidometer',
-                                trailing: InkWell(
-                                  onTap: () => _showOdometerInfoDialog(context),
-                                  borderRadius: BorderRadius.circular(6),
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.info_outline_rounded, size: 14, color: AppColors.primaryBlue),
-                                        SizedBox(width: 3),
-                                        Text(
-                                          'Info',
-                                          style: TextStyle(
-                                            fontSize: 11.5,
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.primaryBlue,
-                                          ),
-                                        ),
-                                      ],
+                              _buildTextField(
+                                controller: _licensePlateController,
+                                label: 'Nomor Plat (Opsional)',
+                                hint: 'Contoh: B 1234 XYZ',
+                                icon: Icons.credit_card_rounded,
+                                textCapitalization: TextCapitalization.characters,
+                              ),
+                              const SizedBox(height: AppSpacing.space12),
+                              _buildTextField(
+                                controller: _variantController,
+                                label: 'Varian / Tipe (Opsional)',
+                                hint: 'Contoh: CBS-ISS, GR Sport, ABS',
+                                icon: Icons.style_rounded,
+                              ),
+                              const SizedBox(height: AppSpacing.space12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildTextField(
+                                      controller: _engineCcController,
+                                      label: 'Kapasitas Mesin (CC)',
+                                      hint: 'Contoh: 150',
+                                      icon: Icons.speed_rounded,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                     ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              TextFormField(
-                                controller: _kmController,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(7),
+                                  const SizedBox(width: AppSpacing.space12),
+                                  Expanded(
+                                    child: _buildTextField(
+                                      controller: _colorController,
+                                      label: 'Warna Kendaraan',
+                                      hint: 'Contoh: Hitam',
+                                      icon: Icons.palette_outlined,
+                                    ),
+                                  ),
                                 ],
-                                decoration: _cleanInputDecoration(
-                                  hintText: 'Contoh: 14250',
-                                  suffixText: 'km',
-                                ),
-                                validator: (val) {
-                                  if (val == null || val.trim().isEmpty) {
-                                    return 'Wajib diisi (isi 0 jika baru)';
-                                  }
-                                  final km = double.tryParse(val.trim());
-                                  if (km == null || km < 0) {
-                                    return 'Hanya boleh angka positif';
-                                  }
-                                  return null;
-                                },
                               ),
-                              const SizedBox(height: 5),
-                              if (_kmController.text.isNotEmpty)
-                                Row(
-                                  children: [
-                                    const Icon(Icons.check_circle_rounded, size: 13, color: AppColors.healthOptimal),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        _formatKmFeedback(_kmController.text),
-                                        style: const TextStyle(
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.healthOptimal,
+                              const SizedBox(height: AppSpacing.space12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: DropdownButtonFormField<String>(
+                                      initialValue: _selectedTransmission,
+                                      decoration: InputDecoration(
+                                        labelText: 'Transmisi',
+                                        prefixIcon: const Icon(Icons.tune_rounded, size: 20),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                          borderSide: const BorderSide(color: AppColors.borderSubtle),
                                         ),
                                       ),
+                                      items: const [
+                                        DropdownMenuItem(value: 'Automatic', child: Text('Otomatis (Matic)')),
+                                        DropdownMenuItem(value: 'Manual', child: Text('Manual')),
+                                      ],
+                                      onChanged: (val) => setState(() => _selectedTransmission = val),
                                     ),
-                                  ],
-                                )
-                              else
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      'Total jarak tempuh',
-                                      style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                                    ),
-                                    InkWell(
-                                      onTap: () => setState(() => _kmController.text = '0'),
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: const Text(
-                                        '+ Baru (0 km)',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.primaryBlue,
+                                  ),
+                                  const SizedBox(width: AppSpacing.space12),
+                                  Expanded(
+                                    child: DropdownButtonFormField<String>(
+                                      initialValue: _selectedFuelType,
+                                      decoration: InputDecoration(
+                                        labelText: 'Bahan Bakar',
+                                        prefixIcon: const Icon(Icons.local_gas_station_rounded, size: 20),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                          borderSide: const BorderSide(color: AppColors.borderSubtle),
                                         ),
                                       ),
+                                      items: const [
+                                        DropdownMenuItem(value: 'Gasoline', child: Text('Bensin')),
+                                        DropdownMenuItem(value: 'Diesel', child: Text('Diesel')),
+                                        DropdownMenuItem(value: 'Electric', child: Text('Listrik')),
+                                      ],
+                                      onChanged: (val) => setState(() => _selectedFuelType = val),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 32),
-
-                    // Submit Button
-                    FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue,
-                        minimumSize: const Size.fromHeight(50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      onPressed: _proceed,
-                      child: const Text(
-                        'Lanjutkan',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+                  ),
                 ),
-              ),
+
+                const SizedBox(height: AppSpacing.space24),
+
+                // Submit Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: _proceed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppSpacing.buttonBorderRadius,
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Lanjutkan',
+                      style: AppTypography.heading3.copyWith(color: Colors.white),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.space24),
+              ],
             ),
           ),
         ),
@@ -479,104 +554,80 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
     );
   }
 
-  Widget _buildSegmentItem(String type, String title, IconData icon) {
-    final isSelected = _selectedType == type;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _selectedType = type),
-        behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: isSelected
-                ? const [
-                    BoxShadow(
-                      color: Color.fromRGBO(0, 0, 0, 0.06),
-                      blurRadius: 4,
-                      offset: Offset(0, 1),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 18,
-                color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLabel(String label, {Widget? trailing}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        if (trailing != null) trailing,
-      ],
-    );
-  }
-
-  InputDecoration _cleanInputDecoration({
-    required String hintText,
-    String? suffixText,
+  Widget _buildTypeButton({
+    required String title,
+    required IconData icon,
+    required String type,
   }) {
-    return InputDecoration(
-      hintText: hintText,
-      hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
-      suffixText: suffixText,
-      suffixStyle: const TextStyle(
-        fontWeight: FontWeight.w600,
-        color: AppColors.textSecondary,
-        fontSize: 13,
+    final isSelected = _selectedVehicleType == type;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedVehicleType = type),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryBlue : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.white : AppColors.textSecondary,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: AppTypography.bodyMedium.copyWith(
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? Colors.white : AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
       ),
-      filled: true,
-      fillColor: const Color(0xFFF8FAFC),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.healthCritical),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.healthCritical, width: 1.5),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    String? helperText,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      textCapitalization: textCapitalization,
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        helperText: helperText,
+        prefixIcon: Icon(icon, size: 20, color: AppColors.textMuted),
+        suffixIcon: suffixIcon,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.borderSubtle),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.borderSubtle),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }
