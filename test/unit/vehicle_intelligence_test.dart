@@ -483,6 +483,38 @@ void main() {
         expect(generated, isNotEmpty);
         expect(generated.any((m) => m.itemKey == 'cvt_belt'), isTrue);
       });
+
+      // -----------------------------------------------------------
+      // TEST HYBRID: Yaris Cross Hybrid (car_hybrid)
+      // -----------------------------------------------------------
+      test('TEST HYBRID: Yaris Cross Hybrid - Ada Inverter Coolant & Baterai Hybrid, TIDAK ADA Kopling Manual', () {
+        final hybridCar = VehicleModel(
+          id: 'audit-yaris-hybrid',
+          brand: 'Toyota',
+          model: 'Yaris Cross 1.5 S HEV',
+          vehicleType: 'car',
+          vehicleCategoryId: 'car_hybrid',
+          transmission: 'Automatic',
+          fuelType: 'Hybrid',
+          currentOdometer: 15000,
+          year: 2023,
+        );
+
+        final items = VehicleIntelligenceService.generateMaintenanceItems(
+          vehicle: hybridCar,
+          categoryId: 'car_hybrid',
+        );
+        final itemKeys = items.map((i) => i.itemKey).toSet();
+
+        expect(itemKeys, contains('engine_oil'));
+        expect(itemKeys, contains('oil_filter'));
+        expect(itemKeys, contains('inverter_coolant'));
+        expect(itemKeys, contains('aux_battery'));
+
+        // TIDAK BOLEH ADA:
+        expect(itemKeys, isNot(contains('clutch_plate')));
+        expect(itemKeys, isNot(contains('mt_fluid')));
+      });
     });
   });
 }

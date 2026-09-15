@@ -508,6 +508,7 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
                                 children: [
                                   Expanded(
                                     child: DropdownButtonFormField<String>(
+                                      key: ValueKey('trans_$_selectedTransmission'),
                                       initialValue: _selectedTransmission,
                                       decoration: InputDecoration(
                                         labelText: 'Transmisi',
@@ -527,6 +528,7 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
                                   const SizedBox(width: AppSpacing.space12),
                                   Expanded(
                                     child: DropdownButtonFormField<String>(
+                                      key: ValueKey('fuel_$_selectedFuelType'),
                                       initialValue: _selectedFuelType,
                                       decoration: InputDecoration(
                                         labelText: 'Bahan Bakar',
@@ -539,6 +541,7 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
                                       items: const [
                                         DropdownMenuItem(value: 'Gasoline', child: Text('Bensin')),
                                         DropdownMenuItem(value: 'Diesel', child: Text('Diesel')),
+                                        DropdownMenuItem(value: 'Hybrid', child: Text('Hybrid')),
                                         DropdownMenuItem(value: 'Electric', child: Text('Listrik')),
                                       ],
                                       onChanged: (val) => setState(() => _selectedFuelType = val),
