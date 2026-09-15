@@ -189,15 +189,12 @@ class MaintenanceCostForecastCard extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(ctx).size.height * 0.88,
+        ),
         decoration: const BoxDecoration(
           color: AppColors.surfaceWhite,
           borderRadius: AppSpacing.modalTopRadius,
-        ),
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.space24,
-          AppSpacing.space16,
-          AppSpacing.space24,
-          AppSpacing.space24,
         ),
         child: SafeArea(
           top: false,
@@ -205,99 +202,201 @@ class MaintenanceCostForecastCard extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.borderSubtle,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+              // Header & Drag Handle (Fixed at top)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.space24,
+                  AppSpacing.space16,
+                  AppSpacing.space24,
+                  AppSpacing.space12,
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Perkiraan Anggaran Servis',
-                style: AppTypography.heading1.copyWith(fontSize: 20),
-              ),
-              Text(
-                'Perkiraan anggaran servis berdasarkan jadwal jatuh tempo.',
-                style: AppTypography.captionSubtle,
-              ),
-              const SizedBox(height: 20),
-              ...[30, 90, 180].map((days) {
-                final h = horizons[days];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceSubtle,
-                      borderRadius: AppSpacing.cardBorderRadius,
-                      border: Border.all(color: AppColors.borderSubtle),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.borderSubtle,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
                     ),
-                    child: Column(
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              h?.title ?? '$days Hari ke Depan',
-                              style: AppTypography.bodyMedium
-                                  .copyWith(fontWeight: FontWeight.bold),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Perkiraan Anggaran Servis',
+                                style: AppTypography.heading1.copyWith(fontSize: 20),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Estimasi anggaran servis berdasarkan jadwal jatuh tempo komponen.',
+                                style: AppTypography.captionSubtle,
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, color: AppColors.borderSubtle),
+
+              // Scrollable Horizons List
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.space24,
+                    AppSpacing.space16,
+                    AppSpacing.space24,
+                    AppSpacing.space16,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ...[30, 90, 180].map((days) {
+                        final h = horizons[days];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 14.0),
+                          child: Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceSubtle,
+                              borderRadius: AppSpacing.cardBorderRadius,
+                              border: Border.all(color: AppColors.borderSubtle),
                             ),
-                            Text(
-                              h?.formattedRange ?? 'Rp0',
-                              style: AppTypography.bodyMedium.copyWith(
-                                color: AppColors.primaryBlue,
-                                fontWeight: FontWeight.bold,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      h?.title ?? '$days Hari ke Depan',
+                                      style: AppTypography.bodyMedium
+                                          .copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      h?.formattedRange ?? 'Rp0',
+                                      style: AppTypography.bodyMedium.copyWith(
+                                        color: AppColors.primaryBlue,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                if (h == null || h.items.isEmpty)
+                                  Text(
+                                    'Belum ada servis yang diperkirakan dalam periode ini.',
+                                    style: AppTypography.captionSubtle.copyWith(
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  )
+                                else
+                                  ...h.items.map((it) => Padding(
+                                        padding: const EdgeInsets.only(top: 5.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                '• ${it.componentName}',
+                                                style: AppTypography.bodySmall,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              it.formattedCompactRange,
+                                              style: AppTypography.captionBadge,
+                                            ),
+                                          ],
+                                        ),
+                                      )),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.bgLight,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.borderSubtle),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.info_outline_rounded,
+                              size: 15,
+                              color: AppColors.textMuted,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                MaintenancePriceModel.priceDisclaimer,
+                                style: AppTypography.captionSubtle.copyWith(fontSize: 11),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6),
-                        if (h == null || h.items.isEmpty)
-                          Text(
-                            'Belum ada servis yang diperkirakan dalam periode ini.',
-                            style: AppTypography.captionSubtle.copyWith(
-                              fontStyle: FontStyle.italic,
-                            ),
-                          )
-                        else
-                          ...h.items.map((it) => Padding(
-                                padding: const EdgeInsets.only(top: 4.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('• ${it.componentName}',
-                                        style: AppTypography.bodySmall),
-                                    Text(it.formattedCompactRange,
-                                        style: AppTypography.captionBadge),
-                                  ],
-                                ),
-                              )),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-              const SizedBox(height: 8),
-              Text(
-                MaintenancePriceModel.priceDisclaimer,
-                style: AppTypography.captionSubtle.copyWith(fontSize: 11),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppSpacing.buttonBorderRadius,
+                      ),
+                    ],
                   ),
                 ),
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Tutup', style: TextStyle(color: Colors.white)),
+              ),
+
+              // Sticky Bottom Action Button
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.space24,
+                  AppSpacing.space12,
+                  AppSpacing.space24,
+                  AppSpacing.space16,
+                ),
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppSpacing.buttonBorderRadius,
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text(
+                      'Tutup',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
