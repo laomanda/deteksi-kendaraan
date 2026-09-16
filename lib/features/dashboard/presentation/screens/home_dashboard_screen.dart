@@ -9,7 +9,6 @@ import '../../../maintenance/providers/maintenance_intelligence_providers.dart';
 import '../../../maintenance/providers/maintenance_prediction_providers.dart';
 import '../../../ride_tracking/presentation/controllers/ride_tracking_controller.dart';
 import '../../../ride_tracking/presentation/screens/ride_history_screen.dart';
-import '../../../vehicle/data/models/vehicle_model.dart';
 import '../../../vehicle/presentation/pages/add_vehicle_page.dart';
 import '../providers/dashboard_providers.dart';
 import '../widgets/dashboard_monthly_activity_card.dart';
@@ -118,11 +117,6 @@ class HomeDashboardScreen extends ConsumerWidget {
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (activeVehicle.vehicleCategoryId == null) ...[
-                            _buildCategoryReminderBanner(context, activeVehicle),
-                            const SizedBox(height: 14),
-                          ],
-
                           // 1. Hero Showcase Card (Dark Obsidian Luxury)
                           const DashboardVehicleSummaryCard(),
                           const SizedBox(height: 14),
@@ -340,83 +334,6 @@ class HomeDashboardScreen extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildCategoryReminderBanner(BuildContext context, VehicleModel vehicle) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
-        borderRadius: AppSpacing.cardBorderRadius,
-        border: Border.all(color: const Color(0xFFBFDBFE)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFDBEAFE),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.auto_awesome_rounded,
-              color: Color(0xFF2563EB),
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Optimalkan Rekomendasi Servis',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E3A8A),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                const Text(
-                  'Lengkapi tipe kendaraan agar rekomendasi servis lebih sesuai.',
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    color: Color(0xFF3B82F6),
-                    height: 1.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          TextButton(
-            style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              backgroundColor: const Color(0xFF2563EB),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => AddVehiclePage(vehicleToEdit: vehicle),
-                ),
-              );
-            },
-            child: const Text(
-              'Lengkapi',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
