@@ -191,5 +191,60 @@ void main() {
       final list = await vehicleRepository.getVehicles();
       expect(list.any((v) => v.id == 'delete-target-uuid'), isFalse);
     });
+
+    // -------------------------------------------------------------
+    // Test Case 5: Delete multiple kendaraan (Batch delete)
+    // -------------------------------------------------------------
+    test('5. Delete multiple kendaraan - Batch deletion berhasil menghapus banyak kendaraan sekaligus', () async {
+      final v1 = VehicleModel(
+        id: 'batch-target-1',
+        brand: 'Honda',
+        model: 'Vario 160',
+        vehicleType: 'motorcycle',
+        year: 2023,
+      );
+      final v2 = VehicleModel(
+        id: 'batch-target-2',
+        brand: 'Yamaha',
+        model: 'NMAX',
+        vehicleType: 'motorcycle',
+        year: 2024,
+      );
+      final v3 = VehicleModel(
+        id: 'batch-target-3',
+        brand: 'Suzuki',
+        model: 'Burgman',
+        vehicleType: 'motorcycle',
+        year: 2022,
+      );
+
+      await vehicleRepository.createVehicle(v1);
+      await vehicleRepository.createVehicle(v2);
+      await vehicleRepository.createVehicle(v3);
+
+      expect(vehicleBox.containsKey('batch-target-1'), isTrue);
+      expect(vehicleBox.containsKey('batch-target-2'), isTrue);
+      expect(vehicleBox.containsKey('batch-target-3'), isTrue);
+
+      // Set v1 as active
+      await vehicleRepository.setActiveVehicleId('batch-target-1');
+
+      // Batch delete v1 and v2
+      await vehicleRepository.deleteMultipleVehicles(['batch-target-1', 'batch-target-2']);
+
+      expect(vehicleBox.containsKey('batch-target-1'), isFalse);
+      expect(vehicleBox.containsKey('batch-target-2'), isFalse);
+      // v3 must remain intact
+      expect(vehicleBox.containsKey('batch-target-3'), isTrue);
+
+      final list = await vehicleRepository.getVehicles();
+      expect(list.any((v) => v.id == 'batch-target-1'), isFalse);
+      expect(list.any((v) => v.id == 'batch-target-2'), isFalse);
+      expect(list.any((v) => v.id == 'batch-target-3'), isTrue);
+
+      // Active vehicle should now have gracefully fallen back
+      final activeId = vehicleRepository.getActiveVehicleId();
+      expect(activeId, isNot('batch-target-1'));
+    });
   });
 }

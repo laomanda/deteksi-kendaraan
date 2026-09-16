@@ -227,6 +227,13 @@ class VehicleRepository {
     }
   }
 
+  /// Delete multiple vehicles in batch
+  Future<void> deleteMultipleVehicles(List<String> ids) async {
+    for (final id in ids) {
+      await deleteVehicle(id);
+    }
+  }
+
   Future<void> updateOdometer(String vehicleId, double newKm) async {
     final vehicle = _box.get(vehicleId);
     if (vehicle != null) {

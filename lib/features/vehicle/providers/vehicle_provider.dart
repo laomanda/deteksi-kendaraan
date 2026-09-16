@@ -89,6 +89,20 @@ class VehicleNotifier extends StateNotifier<AsyncValue<List<VehicleModel>>> {
       rethrow;
     }
   }
+
+  /// Deletes multiple vehicles in batch and refreshes state
+  Future<void> deleteMultipleVehicles(List<String> ids) async {
+    try {
+      await _repository.deleteMultipleVehicles(ids);
+      final currentList = state.value ?? _repository.getAllVehicles();
+      final updatedList = currentList.where((v) => !ids.contains(v.id)).toList();
+      state = AsyncValue.data(updatedList);
+      _ref.read(activeVehicleProvider.notifier).refresh();
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
 }
 
 /// Riverpod provider exposing the vehicle list AsyncValue
