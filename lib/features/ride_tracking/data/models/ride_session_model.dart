@@ -49,12 +49,12 @@ class RideSessionModel extends HiveObject {
   factory RideSessionModel.fromJson(Map<String, dynamic> json) =>
       RideSessionModel(
         id: json['id'] as String,
-        vehicleId: json['vehicleId'] as String,
-        startTime: DateTime.parse(json['startTime'] as String),
-        endTime: DateTime.parse(json['endTime'] as String),
-        totalDistanceKm: (json['totalDistanceKm'] as num).toDouble(),
-        durationSeconds: json['durationSeconds'] as int,
-        averageSpeedKmh: (json['averageSpeedKmh'] as num).toDouble(),
+        vehicleId: (json['vehicleId'] ?? json['vehicle_id']) as String,
+        startTime: DateTime.parse((json['startTime'] ?? json['start_time']) as String),
+        endTime: DateTime.parse((json['endTime'] ?? json['end_time']) as String),
+        totalDistanceKm: ((json['totalDistanceKm'] ?? json['distanceKm'] ?? json['total_distance_km'] ?? 0) as num).toDouble(),
+        durationSeconds: ((json['durationSeconds'] ?? json['duration_seconds'] ?? 0) as num).toInt(),
+        averageSpeedKmh: ((json['averageSpeedKmh'] ?? json['avgSpeedKmh'] ?? json['average_speed_kmh'] ?? 0) as num).toDouble(),
         points: (json['points'] as List<dynamic>?)
                 ?.map((p) => GpsPointModel.fromJson(p as Map<String, dynamic>))
                 .toList() ??

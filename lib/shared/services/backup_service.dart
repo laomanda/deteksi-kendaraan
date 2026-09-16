@@ -1,9 +1,33 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/database/hive_registrar.dart';
+import '../../features/maintenance/data/models/maintenance_item_model.dart';
+import '../../features/maintenance/data/models/service_log_model.dart';
+import '../../features/ride_tracking/data/models/ride_session_model.dart';
+import '../../features/vehicle/data/models/vehicle_model.dart';
+
+/// DTO representasi hasil impor berkas cadangan
+class ImportResult {
+  final bool success;
+  final String message;
+  final int vehiclesCount;
+  final int ridesCount;
+  final int servicesCount;
+  final int maintenanceCount;
+
+  const ImportResult({
+    required this.success,
+    required this.message,
+    this.vehiclesCount = 0,
+    this.ridesCount = 0,
+    this.servicesCount = 0,
+    this.maintenanceCount = 0,
+  });
+}
 
 /// Service managing JSON export and import for offline backup (PRD Section 6, 20.2 & DSS Section 9.5)
 class BackupService {
@@ -18,6 +42,16 @@ class BackupService {
         HiveRegistrar.serviceHistoryBox.values.map((s) => s.toJson()).toList();
     final rides = HiveRegistrar.ridesBox.values.map((r) => r.toJson()).toList();
 
+    // Export vehicle maintenance and service records cache from settingsBox
+    final vehicleMaintenanceMap = <String, dynamic>{};
+    for (final key in HiveRegistrar.settingsBox.keys) {
+      final keyStr = key.toString();
+      if (keyStr.startsWith('vehicle_maintenance_') ||
+          keyStr.startsWith('service_records_')) {
+        vehicleMaintenanceMap[keyStr] = HiveRegistrar.settingsBox.get(key);
+      }
+    }
+
     final exportData = {
       'app': 'RideCare',
       'version': '1.0.0-PROD',
@@ -26,6 +60,7 @@ class BackupService {
       'maintenance': maintenance,
       'service_history': serviceHistory,
       'rides': rides,
+      if (vehicleMaintenanceMap.isNotEmpty) 'vehicle_maintenance': vehicleMaintenanceMap,
     };
 
     final jsonString = const JsonEncoder.withIndent('  ').convert(exportData);
@@ -55,6 +90,139 @@ class BackupService {
       subject: 'RideCare Local Backup ($timestamp)',
       text: 'Berkas cadangan data lokal RideCare Anda.',
     );
+  }
+
+  /// Opens file picker to select a JSON backup file and restores data into Hive
+  static Future<ImportResult?> pickAndImportDatabase() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+      withData: true,
+    );
+
+    if (result == null || result.files.isEmpty) {
+      return null;
+    }
+
+    final file = result.files.first;
+    String jsonString;
+    if (file.bytes != null) {
+      jsonString = utf8.decode(file.bytes!);
+    } else if (file.path != null) {
+      jsonString = await File(file.path!).readAsString();
+    } else {
+      throw Exception('Tidak dapat membaca isi berkas yang dipilih.');
+    }
+
+    return await importDatabase(jsonString);
+  }
+
+  /// Restores database data from JSON string
+  static Future<ImportResult> importDatabase(String jsonString) async {
+    try {
+      final dynamic decoded = jsonDecode(jsonString);
+      if (decoded is! Map<String, dynamic>) {
+        return const ImportResult(
+          success: false,
+          message: 'Format berkas tidak valid. Berkas JSON harus berupa data RideCare.',
+        );
+      }
+
+      int vCount = 0;
+      int mCount = 0;
+      int sCount = 0;
+      int rCount = 0;
+
+      // 1. Vehicles
+      if (decoded['vehicles'] is List) {
+        for (final item in decoded['vehicles']) {
+          try {
+            final v = VehicleModel.fromJson(Map<String, dynamic>.from(item as Map));
+            await HiveRegistrar.vehiclesBox.put(v.id, v);
+            vCount++;
+          } catch (e) {
+            debugPrint('Error importing vehicle: $e');
+          }
+        }
+      }
+
+      // 2. Maintenance Items
+      if (decoded['maintenance'] is List) {
+        for (final item in decoded['maintenance']) {
+          try {
+            final m = MaintenanceItemModel.fromJson(Map<String, dynamic>.from(item as Map));
+            await HiveRegistrar.maintenanceBox.put(m.id, m);
+            mCount++;
+          } catch (e) {
+            debugPrint('Error importing maintenance item: $e');
+          }
+        }
+      }
+
+      // 3. Service History
+      if (decoded['service_history'] is List) {
+        for (final item in decoded['service_history']) {
+          try {
+            final s = ServiceLogModel.fromJson(Map<String, dynamic>.from(item as Map));
+            await HiveRegistrar.serviceHistoryBox.put(s.id, s);
+            sCount++;
+          } catch (e) {
+            debugPrint('Error importing service log: $e');
+          }
+        }
+      }
+
+      // 4. Rides
+      if (decoded['rides'] is List) {
+        for (final item in decoded['rides']) {
+          try {
+            final r = RideSessionModel.fromJson(Map<String, dynamic>.from(item as Map));
+            await HiveRegistrar.ridesBox.put(r.id, r);
+            rCount++;
+          } catch (e) {
+            debugPrint('Error importing ride: $e');
+          }
+        }
+      }
+
+      // 5. Vehicle Maintenance Cache in settingsBox
+      if (decoded['vehicle_maintenance'] is Map) {
+        final map = decoded['vehicle_maintenance'] as Map;
+        for (final entry in map.entries) {
+          await HiveRegistrar.settingsBox.put(entry.key, entry.value);
+        }
+      }
+
+      // 6. Set active vehicle if none selected
+      final allVehicles = HiveRegistrar.vehiclesBox.values.toList();
+      if (allVehicles.isNotEmpty) {
+        final currentActive = HiveRegistrar.settingsBox.get('active_vehicle_id');
+        if (currentActive == null || !allVehicles.any((v) => v.id == currentActive)) {
+          await HiveRegistrar.settingsBox.put('active_vehicle_id', allVehicles.first.id);
+        }
+      }
+
+      if (vCount == 0 && mCount == 0 && sCount == 0 && rCount == 0) {
+        return const ImportResult(
+          success: false,
+          message: 'Berkas cadangan tidak memuat data kendaraan atau servis yang dapat dipulihkan.',
+        );
+      }
+
+      return ImportResult(
+        success: true,
+        message: 'Berhasil memulihkan $vCount kendaraan, $sCount riwayat servis, dan $rCount perjalanan.',
+        vehiclesCount: vCount,
+        servicesCount: sCount,
+        ridesCount: rCount,
+        maintenanceCount: mCount,
+      );
+    } catch (e) {
+      return ImportResult(
+        success: false,
+        message: 'Gagal mengimpor berkas cadangan: $e',
+      );
+    }
   }
 
   /// Clears all local database data (Factory Reset)

@@ -33,12 +33,12 @@ class ServiceLogModel extends HiveObject {
   factory ServiceLogModel.fromJson(Map<String, dynamic> json) =>
       ServiceLogModel(
         id: json['id'] as String,
-        vehicleId: json['vehicleId'] as String,
-        componentType: json['componentType'] as String,
-        serviceKm: (json['serviceKm'] as num).toDouble(),
-        serviceDate: DateTime.parse(json['serviceDate'] as String),
-        cost: (json['cost'] as num).toDouble(),
-        notes: json['notes'] as String? ?? '',
+        vehicleId: (json['vehicleId'] ?? json['vehicle_id']) as String,
+        componentType: (json['componentType'] ?? json['component_type'] ?? 'Servis') as String,
+        serviceKm: ((json['serviceKm'] ?? json['service_km'] ?? json['odometerAtService'] ?? 0) as num).toDouble(),
+        serviceDate: DateTime.parse((json['serviceDate'] ?? json['service_date'] ?? DateTime.now().toIso8601String()) as String),
+        cost: ((json['cost'] ?? 0) as num).toDouble(),
+        notes: (json['notes'] ?? '') as String,
       );
 }
 

@@ -6,7 +6,9 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/database/hive_registrar.dart';
 import '../../../../shared/services/backup_service.dart';
+import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
+import '../../../maintenance/presentation/controllers/maintenance_status_controller.dart';
 import '../../../onboarding/presentation/screens/onboarding_screen.dart';
 
 /// Layar 5: Settings Screen (DSS Section 9.5 & PRD Section 6)
@@ -21,6 +23,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _notificationEnabled = true;
   bool _highAccuracyGps = true;
   bool _isExporting = false;
+  bool _isImporting = false;
 
   @override
   void initState() {
@@ -47,11 +50,61 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal mengekspor data: $e')),
+          SnackBar(
+            content: Text('Gagal mengekspor data: $e'),
+            backgroundColor: AppColors.healthCritical,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     } finally {
       if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
+  Future<void> _importBackup() async {
+    setState(() => _isImporting = true);
+    try {
+      final result = await BackupService.pickAndImportDatabase();
+      if (!mounted) return;
+      if (result == null) {
+        // Pengguna membatalkan pemilihan file
+        return;
+      }
+
+      if (result.success) {
+        ref.read(activeVehicleProvider.notifier).refresh();
+        ref.invalidate(maintenanceStatusProvider);
+        ref.invalidate(dashboardSummaryProvider);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: AppColors.healthOptimal,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: AppColors.healthCritical,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengimpor data: $e'),
+            backgroundColor: AppColors.healthCritical,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isImporting = false);
     }
   }
 
@@ -186,7 +239,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.chevron_right_rounded),
-                    onTap: _isExporting ? null : _exportBackup,
+                    onTap: (_isExporting || _isImporting) ? null : _exportBackup,
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.file_upload_outlined, color: AppColors.primaryBlue),
+                    title: Text('Impor Cadangan (JSON)', style: AppTypography.bodyMedium),
+                    subtitle: Text('Pulihkan data dari berkas cadangan JSON', style: AppTypography.captionSubtle),
+                    trailing: _isImporting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.chevron_right_rounded),
+                    onTap: (_isExporting || _isImporting) ? null : _importBackup,
                   ),
                 ],
               ),
