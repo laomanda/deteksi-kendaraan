@@ -8,6 +8,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/image_helper.dart';
+import '../../../../shared/services/backup_service.dart';
+import '../../../navigation/main_navigation_screen.dart';
 import 'initial_condition_setup_screen.dart';
 
 /// First Vehicle Setup Screen (PRD Section 7.1 & DSS Section 10.1)
@@ -21,6 +23,7 @@ class FirstVehicleSetupScreen extends StatefulWidget {
 
 class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
   final _formKey = GlobalKey<FormState>();
+  bool _isImporting = false;
 
   String _selectedVehicleType = 'motorcycle'; // 'motorcycle' | 'car'
   String _selectedCategory = 'scooter_cvt';
@@ -216,6 +219,55 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
     }
   }
 
+  Future<void> _importBackup() async {
+    setState(() => _isImporting = true);
+    try {
+      final result = await BackupService.pickAndImportDatabase();
+      if (!mounted) return;
+
+      if (result == null) {
+        // User cancelled file picker
+        return;
+      }
+
+      if (result.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: AppColors.healthOptimal,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+          (route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: AppColors.healthCritical,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Terjadi kesalahan saat memulihkan data: $e'),
+          backgroundColor: AppColors.healthCritical,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isImporting = false);
+      }
+    }
+  }
+
   void _proceed() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_selectedYear == null) {
@@ -275,6 +327,27 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
                 onPressed: () => Navigator.pop(context),
               )
             : null,
+        actions: [
+          TextButton.icon(
+            onPressed: _isImporting ? null : _importBackup,
+            icon: _isImporting
+                ? const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryBlue),
+                  )
+                : const Icon(Icons.restore_page_outlined, size: 18, color: AppColors.primaryBlue),
+            label: Text(
+              _isImporting ? 'Memulihkan...' : 'Impor Data',
+              style: const TextStyle(
+                color: AppColors.primaryBlue,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -284,6 +357,81 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Top Restore Data Banner Card
+                Container(
+                  margin: const EdgeInsets.only(bottom: AppSpacing.space16),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.15)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.restore_page_outlined,
+                          color: AppColors.primaryBlue,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Sudah punya data cadangan?',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'Pulihkan profil kendaraan & riwayat servis dari berkas JSON ekspor.',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: _isImporting ? null : _importBackup,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryBlue,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: _isImporting
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Text(
+                                'Impor',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
                 // Vehicle Photo Avatar Picker
                 Center(
                   child: Column(
@@ -695,6 +843,56 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
                     child: Text(
                       'Lanjutkan',
                       style: AppTypography.heading3.copyWith(color: Colors.white),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.space16),
+
+                // Alternative: Import Backup JSON
+                Row(
+                  children: [
+                    const Expanded(child: Divider(color: AppColors.borderSubtle)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        'ATAU',
+                        style: AppTypography.captionSubtle.copyWith(
+                          letterSpacing: 1.0,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const Expanded(child: Divider(color: AppColors.borderSubtle)),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.space16),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: OutlinedButton.icon(
+                    onPressed: _isImporting ? null : _importBackup,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primaryBlue,
+                      side: const BorderSide(color: AppColors.primaryBlue, width: 1.2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppSpacing.buttonBorderRadius,
+                      ),
+                    ),
+                    icon: _isImporting
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryBlue),
+                          )
+                        : const Icon(Icons.file_upload_outlined, size: 20),
+                    label: Text(
+                      _isImporting ? 'Memulihkan Data...' : 'Pulihkan Data dari Berkas Cadangan (JSON)',
+                      style: AppTypography.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primaryBlue,
+                      ),
                     ),
                   ),
                 ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../shared/services/backup_service.dart';
+import '../../../navigation/main_navigation_screen.dart';
 import 'first_vehicle_setup_screen.dart';
 
 class OnboardingSlide {
@@ -26,6 +28,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
+  bool _isImporting = false;
 
   static const List<OnboardingSlide> _slides = [
     OnboardingSlide(
@@ -59,6 +62,52 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       context,
       MaterialPageRoute(builder: (_) => const FirstVehicleSetupScreen()),
     );
+  }
+
+  Future<void> _importBackup() async {
+    setState(() => _isImporting = true);
+    try {
+      final result = await BackupService.pickAndImportDatabase();
+      if (!mounted) return;
+
+      if (result == null) return;
+
+      if (result.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: AppColors.healthOptimal,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+          (route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: AppColors.healthCritical,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal memulihkan data: $e'),
+          backgroundColor: AppColors.healthCritical,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isImporting = false);
+      }
+    }
   }
 
   void _next() {
@@ -152,14 +201,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               // Clean Illustration Container
-                              SizedBox(
-                                height: 210,
+                              Flexible(
+                                flex: 3,
                                 child: SvgPicture.asset(
                                   slide.svgPath,
                                   fit: BoxFit.contain,
                                 ),
                               ),
-                              const SizedBox(height: 36),
+                              const SizedBox(height: 20),
 
                               // Title
                               Text(
@@ -172,7 +221,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 ),
                                 textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 8),
 
                               // Description
                               Text(
@@ -180,7 +229,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: AppColors.textSecondary,
-                                  height: 1.45,
+                                  height: 1.4,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -208,7 +257,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       );
                     }),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 18),
 
                   // Bottom Action Button
                   FilledButton(
@@ -228,7 +277,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 10),
+
+                  // Alternative: Restore Backup
+                  TextButton.icon(
+                    onPressed: _isImporting ? null : _importBackup,
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primaryBlue,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    ),
+                    icon: _isImporting
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryBlue),
+                          )
+                        : const Icon(Icons.restore_page_outlined, size: 18),
+                    label: Text(
+                      _isImporting ? 'Memulihkan Data...' : 'Punya cadangan data? Impor di sini',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
