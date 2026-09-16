@@ -15,7 +15,6 @@ import '../providers/dashboard_providers.dart';
 import '../widgets/dashboard_monthly_activity_card.dart';
 import '../widgets/dashboard_next_maintenance_card.dart';
 import '../widgets/dashboard_quick_actions.dart';
-import '../widgets/dashboard_recent_rides_card.dart';
 import '../widgets/dashboard_vehicle_selector.dart';
 import '../widgets/dashboard_vehicle_summary_card.dart';
 
@@ -164,12 +163,6 @@ class HomeDashboardScreen extends ConsumerWidget {
 
                           // 4. Aktivitas Bulan Ini (Bahasa Indonesia)
                           const DashboardMonthlyActivityCard(),
-                          const SizedBox(height: 14),
-
-                          // 6. Perjalanan Terakhir
-                          DashboardRecentRidesCard(
-                            onStartRide: onNavigateToTracking,
-                          ),
                           const SizedBox(height: 24),
                         ],
                       ),
