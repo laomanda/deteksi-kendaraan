@@ -7,6 +7,7 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../domain/maintenance_prediction_service.dart';
 import '../../providers/maintenance_prediction_providers.dart';
 import 'maintenance_detail_bottom_sheet.dart';
+import 'vehicle_part_icon_badge.dart';
 
 class UpcomingMaintenanceCard extends ConsumerWidget {
   final String vehicleId;
@@ -123,20 +124,16 @@ class UpcomingMaintenanceCard extends ConsumerWidget {
 
   Widget _buildItemRow(BuildContext context, MaintenancePrediction p) {
     Color statusColor;
-    IconData statusIcon;
     String statusLabel;
 
     if (p.isOverdue) {
       statusColor = AppColors.healthCritical;
-      statusIcon = Icons.error_rounded;
       statusLabel = 'LEWAT JADWAL';
     } else if (p.isDueSoon) {
       statusColor = AppColors.healthWarning;
-      statusIcon = Icons.warning_rounded;
       statusLabel = 'SEGERA DIGANTI';
     } else {
       statusColor = AppColors.healthOptimal;
-      statusIcon = Icons.check_circle_rounded;
       statusLabel = 'KONDISI BAIK';
     }
 
@@ -154,14 +151,12 @@ class UpcomingMaintenanceCard extends ConsumerWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              margin: const EdgeInsets.only(top: 2),
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: statusColor.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(statusIcon, color: statusColor, size: 16),
+            VehiclePartIconBadge(
+              componentName: p.componentName,
+              category: p.category,
+              status: p.status,
+              size: 42,
+              iconSize: 22,
             ),
             const SizedBox(width: 12),
             Expanded(

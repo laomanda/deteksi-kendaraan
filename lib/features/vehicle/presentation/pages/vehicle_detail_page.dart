@@ -9,6 +9,7 @@ import '../../providers/vehicle_provider.dart';
 import '../../../maintenance/presentation/pages/maintenance_page.dart';
 import '../../../maintenance/providers/maintenance_intelligence_providers.dart';
 import '../../../maintenance/presentation/widgets/maintenance_detail_bottom_sheet.dart';
+import '../../../maintenance/presentation/widgets/vehicle_part_icon_badge.dart';
 import '../../../maintenance/providers/maintenance_prediction_providers.dart';
 import 'add_vehicle_page.dart';
 
@@ -592,6 +593,14 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                   const SizedBox(height: AppSpacing.space12),
                   Row(
                     children: [
+                      VehiclePartIconBadge(
+                        componentName: nextItem.componentName,
+                        category: nextItem.category,
+                        status: nextItem.status,
+                        size: 42,
+                        iconSize: 22,
+                      ),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

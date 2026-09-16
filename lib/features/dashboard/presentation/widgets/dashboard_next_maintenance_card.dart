@@ -5,6 +5,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../../maintenance/presentation/widgets/maintenance_detail_bottom_sheet.dart';
+import '../../../maintenance/presentation/widgets/vehicle_part_icon_badge.dart';
 import '../../../maintenance/providers/maintenance_prediction_providers.dart';
 
 /// Single Source of Truth for Nearest / Urgent Maintenance Action
@@ -186,18 +187,12 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                     // Component Name & Icon (Both themed harmoniously)
                     Row(
                       children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: themeLightBg,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.build_circle_outlined,
-                            color: themeColor,
-                            size: 22,
-                          ),
+                        VehiclePartIconBadge(
+                          componentName: nextItem.componentName,
+                          category: nextItem.category,
+                          status: nextItem.status,
+                          size: 42,
+                          iconSize: 22,
                         ),
                         const SizedBox(width: 12),
                         Expanded(

@@ -7,6 +7,7 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../vehicle/providers/vehicle_provider.dart';
 import '../../domain/maintenance_prediction_service.dart';
 import '../pages/add_service_page.dart';
+import 'vehicle_part_icon_badge.dart';
 
 /// Simplified Human-First Maintenance Detail Bottom Sheet
 class MaintenanceDetailBottomSheet extends ConsumerWidget {
@@ -87,18 +88,38 @@ class MaintenanceDetailBottomSheet extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
 
-              // Title & Category
-              Text(
-                prediction.componentName,
-                style: AppTypography.heading1.copyWith(fontSize: 20),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                (prediction.item.itemCategory ?? prediction.category).toUpperCase(),
-                style: AppTypography.captionBadge.copyWith(
-                  color: AppColors.textSecondary,
-                  letterSpacing: 1.0,
-                ),
+              // Title & Category with Spare Part Icon
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  VehiclePartIconBadge(
+                    componentName: prediction.componentName,
+                    category: prediction.category,
+                    status: prediction.status,
+                    size: 50,
+                    iconSize: 28,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          prediction.componentName,
+                          style: AppTypography.heading1.copyWith(fontSize: 20),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          (prediction.item.itemCategory ?? prediction.category).toUpperCase(),
+                          style: AppTypography.captionBadge.copyWith(
+                            color: AppColors.textSecondary,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: AppSpacing.space16),
 

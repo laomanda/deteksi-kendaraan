@@ -10,6 +10,7 @@ import '../../domain/health_calculation_service.dart';
 import '../../providers/maintenance_intelligence_providers.dart';
 import '../screens/service_history_screen.dart';
 import '../widgets/upcoming_maintenance_card.dart';
+import '../widgets/vehicle_part_icon_badge.dart';
 import 'add_service_page.dart';
 
 
@@ -99,22 +100,33 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
                 ),
                 const SizedBox(height: 16),
 
-                // Title & Status Badge
+                // Title & Status Badge with Spare Part Icon
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    VehiclePartIconBadge(
+                      componentName: itemHealth.item.itemName ?? itemHealth.item.maintenanceId,
+                      category: itemHealth.item.itemCategory,
+                      status: itemHealth.status,
+                      size: 48,
+                      iconSize: 26,
+                    ),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             itemHealth.item.itemName ?? itemHealth.item.maintenanceId,
-                            style: AppTypography.heading2,
+                            style: AppTypography.heading2.copyWith(fontSize: 18),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 2),
                           Text(
-                            itemHealth.item.itemCategory ?? 'Komponen Perawatan',
-                            style: AppTypography.captionBadge.copyWith(color: AppColors.textSecondary),
+                            (itemHealth.item.itemCategory ?? 'Komponen Perawatan').toUpperCase(),
+                            style: AppTypography.captionBadge.copyWith(
+                              color: AppColors.textSecondary,
+                              letterSpacing: 0.8,
+                            ),
                           ),
                         ],
                       ),
@@ -673,120 +685,161 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
 
     final String timingText;
     if (itemHealth.isOverdue) {
-      timingText = 'Perkiraan: Terlewat ${numberFormat.format(itemHealth.remainingKm.abs())} KM';
+      timingText = 'Terlewat ${numberFormat.format(itemHealth.remainingKm.abs())} KM';
     } else {
-      timingText = 'Perkiraan: ${numberFormat.format(itemHealth.remainingKm)} KM lagi';
+      timingText = '${numberFormat.format(itemHealth.remainingKm)} KM lagi';
     }
 
-    return InkWell(
-      onTap: () => _showComponentDetail(context, itemHealth, vehicle),
-      borderRadius: AppSpacing.cardBorderRadius,
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.space16),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceWhite,
-          borderRadius: AppSpacing.cardBorderRadius,
-          border: Border.all(
-            color: itemHealth.isOverdue
-                ? AppColors.healthCritical.withValues(alpha: 0.5)
-                : (itemHealth.isDueSoon
-                    ? AppColors.healthWarning.withValues(alpha: 0.4)
-                    : AppColors.borderSubtle),
-            width: itemHealth.isDueSoon || itemHealth.isOverdue ? 1.5 : 1.0,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Row Header: Nama Komponen & Badge Status
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    itemHealth.item.itemName ?? itemHealth.item.maintenanceId,
-                    style: AppTypography.heading3,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    statusBadgeText,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
+    final compName = itemHealth.item.itemName ?? itemHealth.item.maintenanceId;
+    final catName = (itemHealth.item.itemCategory ?? 'Komponen').toUpperCase();
+    final healthPct = itemHealth.healthPercentage.clamp(0, 100);
 
-            // Friendly Timing text
-            Row(
-              children: [
-                Icon(
-                  Icons.schedule_rounded,
-                  size: 16,
-                  color: itemHealth.isOverdue
-                      ? AppColors.healthCritical
-                      : (itemHealth.isDueSoon ? AppColors.healthWarning : AppColors.textSecondary),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  timingText,
-                  style: TextStyle(
-                    color: itemHealth.isOverdue
-                        ? AppColors.healthCritical
-                        : (itemHealth.isDueSoon ? AppColors.textPrimary : AppColors.textSecondary),
-                    fontWeight: itemHealth.isDueSoon || itemHealth.isOverdue
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _showComponentDetail(context, itemHealth, vehicle),
+        borderRadius: BorderRadius.circular(16),
+        splashColor: statusColor.withValues(alpha: 0.1),
+        highlightColor: statusColor.withValues(alpha: 0.05),
+        child: Ink(
+          padding: const EdgeInsets.all(AppSpacing.space16),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceWhite,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: itemHealth.isOverdue
+                  ? AppColors.healthCritical.withValues(alpha: 0.35)
+                  : (itemHealth.isDueSoon
+                      ? AppColors.healthWarning.withValues(alpha: 0.3)
+                      : AppColors.borderSubtle),
+              width: itemHealth.isDueSoon || itemHealth.isOverdue ? 1.5 : 1.0,
             ),
-
-            // Estimasi Biaya ringkas jika ada
-            if (itemHealth.priceEstimate != null) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.price_change_outlined, size: 14, color: AppColors.primaryBlue),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Perkiraan Biaya: ${itemHealth.priceEstimate!.formattedTotalRange}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x06000000),
+                blurRadius: 10,
+                offset: Offset(0, 3),
               ),
             ],
-          ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  VehiclePartIconBadge(
+                    componentName: compName,
+                    category: itemHealth.item.itemCategory,
+                    status: itemHealth.status,
+                    size: 46,
+                    iconSize: 24,
+                    onTap: () => _showComponentDetail(context, itemHealth, vehicle),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          compName,
+                          style: AppTypography.heading3.copyWith(fontSize: 15),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          catName,
+                          style: AppTypography.captionBadge.copyWith(
+                            color: AppColors.textSecondary,
+                            fontSize: 10,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      statusBadgeText,
+                      style: TextStyle(
+                        color: statusColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Health progress bar
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: healthPct / 100.0,
+                  minHeight: 5,
+                  backgroundColor: AppColors.bgLight,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    itemHealth.isOverdue
+                        ? AppColors.healthCritical
+                        : (itemHealth.isDueSoon ? AppColors.healthWarning : AppColors.healthOptimal),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.schedule_rounded,
+                        size: 14,
+                        color: itemHealth.isOverdue
+                            ? AppColors.healthCritical
+                            : (itemHealth.isDueSoon ? AppColors.healthWarning : AppColors.textSecondary),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        timingText,
+                        style: TextStyle(
+                          color: itemHealth.isOverdue
+                              ? AppColors.healthCritical
+                              : (itemHealth.isDueSoon ? AppColors.textPrimary : AppColors.textSecondary),
+                          fontWeight: itemHealth.isDueSoon || itemHealth.isOverdue
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        'Detail & Servis',
+                        style: AppTypography.captionBadge.copyWith(
+                          color: AppColors.primaryBlue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        size: 14,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
