@@ -8,8 +8,6 @@ import '../../../../core/database/hive_registrar.dart';
 import '../../../../shared/services/backup_service.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../../onboarding/presentation/screens/onboarding_screen.dart';
-import '../../../shared/presentation/screens/ridecare_database_test_page.dart';
-import '../../../../core/sync/sync_manager.dart';
 
 /// Layar 5: Settings Screen (DSS Section 9.5 & PRD Section 6)
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -195,92 +193,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: AppSpacing.space24),
 
-            // Section: Supabase & Cloud Sync
-            Text('SINKRONISASI CLOUD & SUPABASE', style: AppTypography.captionBadge),
-            const SizedBox(height: AppSpacing.space8),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.surfaceWhite,
-                borderRadius: AppSpacing.cardBorderRadius,
-                border: AppSpacing.cardBorder,
-              ),
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.storage_rounded, color: AppColors.secondaryTeal),
-                    title: Text('Uji Coba Database CRUD', style: AppTypography.bodyMedium),
-                    subtitle: Text('Pengujian Tambah, Baca, Ubah, Hapus data', style: AppTypography.captionSubtle),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const RideCareDatabaseTestPage()),
-                      );
-                    },
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.sync_rounded, color: Colors.indigo),
-                    title: Text('Sinkronisasi Data (Lokal -> Cloud)', style: AppTypography.bodyMedium),
-                    subtitle: Text('Unggah data lokal ke Supabase', style: AppTypography.captionSubtle),
-                    trailing: const Icon(Icons.cloud_upload_outlined),
-                    onTap: () async {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Memulai sinkronisasi ke Supabase...')),
-                      );
-                      final result = await SyncManager().uploadPendingChanges();
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(result.message)),
-                        );
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.space24),
-
-            // Section 3: Privasi & Lisensi
-            Text('PRIVASI & SUMBER DATA', style: AppTypography.captionBadge),
-            const SizedBox(height: AppSpacing.space8),
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.space16),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceWhite,
-                borderRadius: AppSpacing.cardBorderRadius,
-                border: AppSpacing.cardBorder,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.verified_user_outlined, color: AppColors.secondaryTeal, size: 20),
-                      const SizedBox(width: AppSpacing.space8),
-                      Text('100% Offline & Privat', style: AppTypography.heading3),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.space8),
-                  Text(
-                    'Semua data kendaraan dan riwayat lokasi Anda tersimpan secara lokal di perangkat.',
-                    style: AppTypography.captionSubtle.copyWith(height: 1.4),
-                  ),
-                  const SizedBox(height: AppSpacing.space12),
-                  const Divider(),
-                  const SizedBox(height: AppSpacing.space12),
-                  Text('Sumber Peta', style: AppTypography.captionBadge),
-                  const SizedBox(height: 4),
-                  Text(
-                    '© OpenStreetMap contributors',
-                    style: AppTypography.captionSubtle,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.space24),
-
-            // Section 4: Factory Reset
+            // Section: Factory Reset
             Text('HAPUS DATA', style: AppTypography.captionBadge.copyWith(color: AppColors.healthCritical)),
             const SizedBox(height: AppSpacing.space8),
             Container(
