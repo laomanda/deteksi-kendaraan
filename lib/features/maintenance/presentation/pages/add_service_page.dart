@@ -37,8 +37,6 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
   String? _selectedMaintenanceId;
   late DateTime _selectedDate;
   late TextEditingController _odometerController;
-  late TextEditingController _workshopController;
-  late TextEditingController _notesController;
   bool _isSaving = false;
 
   @override
@@ -60,15 +58,11 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
           ? widget.vehicle.currentOdometer.toString()
           : '0',
     );
-    _workshopController = TextEditingController();
-    _notesController = TextEditingController();
   }
 
   @override
   void dispose() {
     _odometerController.dispose();
-    _workshopController.dispose();
-    _notesController.dispose();
     super.dispose();
   }
 
@@ -106,12 +100,6 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
 
 
 
-  void _applyQuickWorkshop(String name) {
-    setState(() {
-      _workshopController.text = name;
-    });
-  }
-
   Future<void> _saveService() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -120,8 +108,6 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
     try {
       final odo = int.tryParse(_odometerController.text.trim()) ??
           widget.vehicle.currentOdometer;
-      final workshop = _workshopController.text.trim();
-      final notes = _notesController.text.trim();
 
       const uuid = Uuid();
       final record = ServiceRecordModel(
@@ -131,8 +117,6 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
         serviceDate: _selectedDate,
         odometer: odo,
         cost: 0.0,
-        workshop: workshop.isNotEmpty ? workshop : null,
-        notes: notes.isNotEmpty ? notes : null,
         maintenanceName: _selectedAction,
       );
 
@@ -237,14 +221,9 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
                 // 3. Execution Info: Tanggal & Odometer (Side-by-Side)
                 _buildExecutionSection(isToday, dateDisplay),
 
-                const SizedBox(height: AppSpacing.space16),
-
-                // 4. Bengkel & Catatan
-                _buildDetailsSection(),
-
                 const SizedBox(height: AppSpacing.space24),
 
-                // 5. Action Button
+                // 4. Action Button
                 _buildSubmitButton(),
 
                 const SizedBox(height: AppSpacing.space24),
@@ -770,122 +749,6 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
                 ),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailsSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.receipt_long_rounded, size: 18, color: AppColors.primaryBlue),
-              const SizedBox(width: 8),
-              Text(
-                'Rincian Bengkel & Catatan',
-                style: AppTypography.heading3.copyWith(fontSize: 14),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '(Opsional)',
-                style: AppTypography.captionSubtle.copyWith(color: AppColors.textMuted),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // 1. Nama Bengkel
-          Text(
-            'Nama Bengkel / Lokasi',
-            style: AppTypography.captionBadge.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 6),
-          TextFormField(
-            controller: _workshopController,
-            style: const TextStyle(fontSize: 13),
-            decoration: InputDecoration(
-              hintText: 'Contoh: Bengkel Resmi AHASS / Berdikari Motor',
-              hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-              filled: true,
-              fillColor: AppColors.bgLight,
-              prefixIcon: const Icon(
-                Icons.storefront_outlined,
-                size: 18,
-                color: AppColors.textSecondary,
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.borderSubtle),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.borderSubtle),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          // Quick workshop chips
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                widget.vehicle.isMotorcycle ? 'Bengkel Resmi (AHASS / Yamaha)' : 'Bengkel Resmi',
-                'Bengkel Umum',
-                'Servis Sendiri (DIY)',
-              ].map((name) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: ActionChip(
-                    label: Text(name, style: const TextStyle(fontSize: 11)),
-                    padding: EdgeInsets.zero,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    backgroundColor: AppColors.bgLight,
-                    side: const BorderSide(color: AppColors.borderSubtle),
-                    onPressed: () => _applyQuickWorkshop(name),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // 3. Catatan Tambahan
-          Text(
-            'Catatan Tambahan',
-            style: AppTypography.captionBadge.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 6),
-          TextFormField(
-            controller: _notesController,
-            maxLines: 2,
-            style: const TextStyle(fontSize: 13),
-            decoration: InputDecoration(
-              hintText: 'Tuliskan merk oli, keluhan, garansi, atau catatan penting...',
-              hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-              filled: true,
-              fillColor: AppColors.bgLight,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.borderSubtle),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.borderSubtle),
-              ),
-            ),
           ),
         ],
       ),
