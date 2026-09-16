@@ -1,14 +1,12 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../core/database/hive_registrar.dart';
 import '../../features/maintenance/data/models/maintenance_item_model.dart';
 import '../../features/maintenance/data/models/service_log_model.dart';
 import '../../features/ride_tracking/data/models/ride_session_model.dart';
 import '../../features/vehicle/data/models/vehicle_model.dart';
+import 'file_download/file_download.dart';
 
 /// DTO representasi hasil impor berkas cadangan
 class ImportResult {
@@ -33,8 +31,8 @@ class ImportResult {
 class BackupService {
   BackupService._();
 
-  /// Exports all Hive database data into a formatted JSON file and invokes the native share sheet
-  static Future<void> exportDatabase() async {
+  /// Generates full JSON string of all local database boxes
+  static String generateExportJson() {
     final vehicles = HiveRegistrar.vehiclesBox.values.map((v) => v.toJson()).toList();
     final maintenance =
         HiveRegistrar.maintenanceBox.values.map((m) => m.toJson()).toList();
@@ -63,32 +61,19 @@ class BackupService {
       if (vehicleMaintenanceMap.isNotEmpty) 'vehicle_maintenance': vehicleMaintenanceMap,
     };
 
-    final jsonString = const JsonEncoder.withIndent('  ').convert(exportData);
+    return const JsonEncoder.withIndent('  ').convert(exportData);
+  }
+
+  /// Exports all Hive database data into a formatted JSON file
+  static Future<bool> exportDatabase() async {
+    final jsonString = generateExportJson();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final fileName = 'ridecare_backup_$timestamp.json';
 
-    if (kIsWeb) {
-      await Share.shareXFiles(
-        [
-          XFile.fromData(
-            utf8.encode(jsonString),
-            mimeType: 'application/json',
-            name: 'ridecare_backup_$timestamp.json',
-          ),
-        ],
-        subject: 'RideCare Local Backup ($timestamp)',
-        text: 'Berkas cadangan data lokal RideCare Anda.',
-      );
-      return;
-    }
-
-    final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/ridecare_backup_$timestamp.json');
-    await file.writeAsString(jsonString);
-
-    await Share.shareXFiles(
-      [XFile(file.path, mimeType: 'application/json')],
-      subject: 'RideCare Local Backup ($timestamp)',
-      text: 'Berkas cadangan data lokal RideCare Anda.',
+    return await saveOrDownloadFile(
+      content: jsonString,
+      fileName: fileName,
+      mimeType: 'application/json',
     );
   }
 

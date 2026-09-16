@@ -148,6 +148,28 @@ void main() {
       expect(result.success, isFalse);
     });
 
+    test('generateExportJson generates valid JSON with vehicles and metadata', () async {
+      final sampleVehicle = VehicleModel(
+        id: 'veh_export_1',
+        brand: 'Honda',
+        model: 'Beat',
+        vehicleType: 'motorcycle',
+        year: 2024,
+        currentOdometer: 5000,
+        createdAt: DateTime.now(),
+      );
+
+      await HiveRegistrar.vehiclesBox.put(sampleVehicle.id, sampleVehicle);
+
+      final jsonString = BackupService.generateExportJson();
+      final decoded = jsonDecode(jsonString) as Map<String, dynamic>;
+
+      expect(decoded['app'], equals('RideCare'));
+      expect(decoded['version'], equals('1.0.0-PROD'));
+      expect(decoded['vehicles'], isA<List>());
+      expect((decoded['vehicles'] as List).length, equals(1));
+    });
+
     test('factoryReset clears all boxes', () async {
       final sampleVehicle = VehicleModel(
         id: 'veh_reset_1',

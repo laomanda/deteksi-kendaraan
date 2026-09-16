@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -43,23 +44,114 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     HiveRegistrar.settingsBox.put('high_accuracy_gps', val);
   }
 
-  Future<void> _exportBackup() async {
+  Future<void> _exportBackupFile() async {
     setState(() => _isExporting = true);
     try {
-      await BackupService.exportDatabase();
+      final success = await BackupService.exportDatabase();
+      if (!mounted) return;
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Berkas cadangan berhasil diekspor/diunduh.'),
+            backgroundColor: AppColors.healthOptimal,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } catch (e) {
+      // Fallback: Salin ke clipboard jika dialog file atau share diblokir browser/OS
+      final jsonString = BackupService.generateExportJson();
+      await Clipboard.setData(ClipboardData(text: jsonString));
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal mengekspor data: $e'),
-            backgroundColor: AppColors.healthCritical,
+            content: Text('Gagal menyimpan berkas ($e). Data JSON telah disalin ke papan klip!'),
+            backgroundColor: AppColors.healthModerate,
             behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
     } finally {
       if (mounted) setState(() => _isExporting = false);
     }
+  }
+
+  Future<void> _copyExportJsonToClipboard() async {
+    final jsonString = BackupService.generateExportJson();
+    await Clipboard.setData(ClipboardData(text: jsonString));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Data cadangan JSON berhasil disalin ke papan klip!'),
+        backgroundColor: AppColors.healthOptimal,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showExportOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceWhite,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Pilih Metode Ekspor', style: AppTypography.heading2),
+              const SizedBox(height: 8),
+              Text(
+                'Unduh berkas cadangan ke perangkat atau salin teks JSON ke clipboard.',
+                style: AppTypography.bodySmall,
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.download_rounded, color: AppColors.primaryBlue),
+                ),
+                title: Text('Unduh Berkas JSON (.json)', style: AppTypography.bodyMedium),
+                subtitle: Text('Simpan berkas cadangan ke penyimpanan perangkat', style: AppTypography.captionSubtle),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _exportBackupFile();
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.copy_rounded, color: AppColors.primaryBlue),
+                ),
+                title: Text('Salin Teks JSON (Clipboard)', style: AppTypography.bodyMedium),
+                subtitle: Text('Salin data ke papan klip untuk dibagikan atau disimpan', style: AppTypography.captionSubtle),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _copyExportJsonToClipboard();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _processImportResult(ImportResult result) async {
@@ -399,7 +491,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.chevron_right_rounded),
-                    onTap: (_isExporting || _isImporting) ? null : _exportBackup,
+                    onTap: (_isExporting || _isImporting) ? null : _showExportOptions,
                   ),
                   const Divider(height: 1),
                   ListTile(
