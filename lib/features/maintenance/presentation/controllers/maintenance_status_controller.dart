@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/component_catalog.dart';
+import '../../data/models/maintenance_item_model.dart';
 import '../../domain/health_calculation_service.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../../shared/providers/repository_providers.dart';
@@ -46,7 +48,28 @@ class MaintenanceStatusNotifier
     }
 
     final repo = ref.watch(maintenanceRepositoryProvider);
-    final items = repo.getItemsForVehicle(activeVehicle.id);
+    var items = repo.getItemsForVehicle(activeVehicle.id);
+
+    // Auto-generate items for active vehicle using ComponentCatalog and vehicle category
+    if (items.isEmpty) {
+      final catalog = ComponentCatalog.getCatalogForCategory(
+        activeVehicle.vehicleCategoryId,
+        vehicleType: activeVehicle.vehicleType,
+      );
+      final now = DateTime.now();
+      items = catalog.map((meta) {
+        return MaintenanceItemModel(
+          id: '${activeVehicle.id}_${meta.key}',
+          vehicleId: activeVehicle.id,
+          componentType: meta.key,
+          intervalKm: meta.intervalKm,
+          intervalDays: meta.intervalDays,
+          lastServiceKm: activeVehicle.currentKilometer,
+          lastServiceDate: now,
+        );
+      }).toList();
+      await repo.saveItems(items);
+    }
 
     final results = items.map((item) {
       return HealthCalculationService.calculateComponentHealth(
