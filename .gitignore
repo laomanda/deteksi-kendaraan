@@ -12,6 +12,7 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+test_hive_supabase/
 
 # IntelliJ related
 *.iml

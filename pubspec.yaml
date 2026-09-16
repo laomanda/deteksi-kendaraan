@@ -31,8 +31,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # The following adds the Cupertino Icons font to your application.
-  cupertino_icons: ^1.0.8
   flutter_riverpod: ^2.5.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0
