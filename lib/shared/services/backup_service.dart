@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -92,28 +92,19 @@ class BackupService {
     );
   }
 
-  /// Opens file picker to select a JSON backup file and restores data into Hive
+  /// Opens native file picker dialog to select a JSON backup file and restores data into Hive
   static Future<ImportResult?> pickAndImportDatabase() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['json'],
-      withData: true,
+    const typeGroup = XTypeGroup(
+      label: 'JSON Files (*.json)',
+      extensions: <String>['json'],
     );
 
-    if (result == null || result.files.isEmpty) {
+    final file = await openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
+    if (file == null) {
       return null;
     }
 
-    final file = result.files.first;
-    String jsonString;
-    if (file.bytes != null) {
-      jsonString = utf8.decode(file.bytes!);
-    } else if (file.path != null) {
-      jsonString = await File(file.path!).readAsString();
-    } else {
-      throw Exception('Tidak dapat membaca isi berkas yang dipilih.');
-    }
-
+    final jsonString = await file.readAsString();
     return await importDatabase(jsonString);
   }
 

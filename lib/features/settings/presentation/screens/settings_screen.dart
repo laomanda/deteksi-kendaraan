@@ -62,37 +62,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _importBackup() async {
+  Future<void> _processImportResult(ImportResult result) async {
+    if (result.success) {
+      ref.read(activeVehicleProvider.notifier).refresh();
+      ref.invalidate(maintenanceStatusProvider);
+      ref.invalidate(dashboardSummaryProvider);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.message),
+          backgroundColor: AppColors.healthOptimal,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.message),
+          backgroundColor: AppColors.healthCritical,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _importFromFile() async {
     setState(() => _isImporting = true);
     try {
       final result = await BackupService.pickAndImportDatabase();
-      if (!mounted) return;
-      if (result == null) {
-        // Pengguna membatalkan pemilihan file
-        return;
-      }
-
-      if (result.success) {
-        ref.read(activeVehicleProvider.notifier).refresh();
-        ref.invalidate(maintenanceStatusProvider);
-        ref.invalidate(dashboardSummaryProvider);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result.message),
-            backgroundColor: AppColors.healthOptimal,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result.message),
-            backgroundColor: AppColors.healthCritical,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      if (!mounted || result == null) return;
+      await _processImportResult(result);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -106,6 +105,167 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } finally {
       if (mounted) setState(() => _isImporting = false);
     }
+  }
+
+  void _showPasteJsonDialog() {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceWhite,
+        shape: RoundedRectangleBorder(borderRadius: AppSpacing.cardBorderRadius),
+        title: Text('Tempel Data JSON', style: AppTypography.heading2),
+        content: SizedBox(
+          width: 500,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Salin dan tempel teks berkas cadangan JSON Anda di bawah ini:',
+                style: AppTypography.bodySmall,
+              ),
+              const SizedBox(height: AppSpacing.space12),
+              TextField(
+                controller: controller,
+                maxLines: 8,
+                decoration: InputDecoration(
+                  hintText: '{\n  "app": "RideCare",\n  "vehicles": [...]\n}',
+                  hintStyle: AppTypography.captionSubtle,
+                  filled: true,
+                  fillColor: AppColors.surfaceSubtle,
+                  border: OutlineInputBorder(
+                    borderRadius: AppSpacing.buttonBorderRadius,
+                    borderSide: const BorderSide(color: AppColors.borderSubtle),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    side: const BorderSide(color: AppColors.borderSubtle),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppSpacing.buttonBorderRadius,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Batal'),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.space12),
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlue,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppSpacing.buttonBorderRadius,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: () async {
+                    final text = controller.text.trim();
+                    if (text.isEmpty) return;
+                    Navigator.pop(ctx);
+                    setState(() => _isImporting = true);
+                    try {
+                      final result = await BackupService.importDatabase(text);
+                      if (mounted) await _processImportResult(result);
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Gagal mengimpor data: $e'),
+                            backgroundColor: AppColors.healthCritical,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    } finally {
+                      if (mounted) setState(() => _isImporting = false);
+                    }
+                  },
+                  child: const Text('Impor Data'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showImportOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceWhite,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Pilih Metode Impor', style: AppTypography.heading2),
+              const SizedBox(height: 8),
+              Text(
+                'Pilih berkas dari perangkat Anda atau tempel langsung data JSON.',
+                style: AppTypography.bodySmall,
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.folder_open_rounded, color: AppColors.primaryBlue),
+                ),
+                title: Text('Pilih Berkas JSON (.json)', style: AppTypography.bodyMedium),
+                subtitle: Text('Buka dialog berkas dan pilih file cadangan', style: AppTypography.captionSubtle),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _importFromFile();
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.paste_rounded, color: AppColors.primaryBlue),
+                ),
+                title: Text('Tempel Teks JSON', style: AppTypography.bodyMedium),
+                subtitle: Text('Salin-tempel teks cadangan dari clipboard', style: AppTypography.captionSubtle),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showPasteJsonDialog();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _confirmFactoryReset() {
@@ -253,7 +413,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.chevron_right_rounded),
-                    onTap: (_isExporting || _isImporting) ? null : _importBackup,
+                    onTap: (_isExporting || _isImporting) ? null : _showImportOptions,
                   ),
                 ],
               ),
