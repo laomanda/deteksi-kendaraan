@@ -245,9 +245,9 @@ void main() {
     });
 
     // -------------------------------------------------------------
-    // TEST 6: Cost forecast tersedia -> Dashboard menampilkan range harga
+    // TEST 6: Maintenance item mendekati limit -> Dashboard mendeteksi item & status
     // -------------------------------------------------------------
-    test('TEST 6: Cost forecast tersedia -> Dashboard menampilkan range harga', () async {
+    test('TEST 6: Maintenance item mendekati limit -> Dashboard mendeteksi item & status', () async {
       final now = DateTime(2026, 6, 1);
       final vehicle = VehicleModel(
         id: 'veh-dash-06',
@@ -283,14 +283,14 @@ void main() {
       final summary = container.read(dashboardSummaryProvider).value;
 
       expect(summary, isNotNull);
-      expect(summary!.formattedUpcomingCost, contains('Rp'));
-      expect(summary.formattedUpcomingCost, contains('-'));
+      expect(summary!.totalUpcomingCount, greaterThan(0));
+      expect(summary.mostUrgentPrediction?.componentName, equals('Oli Mesin'));
     });
 
     // -------------------------------------------------------------
-    // TEST 7: Tidak ada cost data -> Graceful empty state
+    // TEST 7: Tidak ada overdue/due soon -> Graceful empty state
     // -------------------------------------------------------------
-    test('TEST 7: Tidak ada cost data -> Graceful empty state', () async {
+    test('TEST 7: Tidak ada overdue/due soon -> Graceful state', () async {
       final now = DateTime(2026, 6, 1);
       final vehicle = VehicleModel(
         id: 'veh-dash-07',
@@ -310,7 +310,7 @@ void main() {
       final summary = container.read(dashboardSummaryProvider).value;
 
       expect(summary, isNotNull);
-      expect(summary!.formattedUpcomingCost, equals('Estimasi biaya belum tersedia'));
+      expect(summary!.totalUpcomingCount, equals(0));
     });
 
     // -------------------------------------------------------------

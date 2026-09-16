@@ -6,11 +6,9 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../vehicle/data/models/vehicle_model.dart';
 import '../../../vehicle/providers/vehicle_provider.dart';
-import '../../data/models/maintenance_price_model.dart';
 import '../../domain/health_calculation_service.dart';
 import '../../providers/maintenance_intelligence_providers.dart';
 import '../screens/service_history_screen.dart';
-import '../widgets/maintenance_cost_forecast_card.dart';
 import '../widgets/upcoming_maintenance_card.dart';
 import 'add_service_page.dart';
 
@@ -174,69 +172,6 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 18),
-
-                // Estimated Cost Section
-                Text('PERKIRAAN BIAYA PERAWATAN', style: AppTypography.captionBadge),
-                const SizedBox(height: 8),
-                if (itemHealth.priceEstimate != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withValues(alpha: 0.05),
-                      borderRadius: AppSpacing.cardBorderRadius,
-                      border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.2)),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Total Perkiraan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                            Text(
-                              itemHealth.priceEstimate!.formattedTotalRange,
-                              style: const TextStyle(
-                                color: AppColors.primaryBlue,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Perkiraan Sparepart', style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary)),
-                            Text(itemHealth.priceEstimate!.formattedPartRange, style: AppTypography.bodySmall),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Perkiraan Jasa Bengkel', style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary)),
-                            Text(itemHealth.priceEstimate!.formattedLaborRange, style: AppTypography.bodySmall),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    MaintenancePriceModel.priceDisclaimer,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade600,
-                      height: 1.3,
-                    ),
-                  ),
-                ] else ...[
-                  Text(
-                    'Perkiraan biaya belum tersedia untuk komponen ini.',
-                    style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
-                  ),
-                ],
                 const SizedBox(height: 20),
 
                 // Button Catat Servis
@@ -607,10 +542,6 @@ class _MaintenancePageState extends ConsumerState<MaintenancePage> {
               );
             },
           ),
-          const SizedBox(height: AppSpacing.space16),
-
-          // 2B. Estimated Upcoming Cost & Budget Forecast Card
-          MaintenanceCostForecastCard(vehicleId: vehicle.id),
           const SizedBox(height: AppSpacing.space16),
 
           // 2C. UPCOMING MAINTENANCE Section

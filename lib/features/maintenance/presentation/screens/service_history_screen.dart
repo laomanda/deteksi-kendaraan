@@ -99,16 +99,6 @@ class _ServiceHistoryScreenState extends ConsumerState<ServiceHistoryScreen> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              if (log.cost > 0) ...[
-                                const SizedBox(width: AppSpacing.space16),
-                                Text(
-                                  'Biaya: ${DateFormatter.formatCurrency(log.cost)}',
-                                  style: AppTypography.bodySmall.copyWith(
-                                    color: AppColors.secondaryTeal,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
                             ],
                           ),
                           if (log.notes.isNotEmpty) ...[

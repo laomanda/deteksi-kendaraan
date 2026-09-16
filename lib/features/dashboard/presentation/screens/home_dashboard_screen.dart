@@ -12,7 +12,6 @@ import '../../../ride_tracking/presentation/screens/ride_history_screen.dart';
 import '../../../vehicle/data/models/vehicle_model.dart';
 import '../../../vehicle/presentation/pages/add_vehicle_page.dart';
 import '../providers/dashboard_providers.dart';
-import '../widgets/dashboard_cost_budget_card.dart';
 import '../widgets/dashboard_monthly_activity_card.dart';
 import '../widgets/dashboard_next_maintenance_card.dart';
 import '../widgets/dashboard_quick_actions.dart';
@@ -100,8 +99,6 @@ class HomeDashboardScreen extends ConsumerWidget {
             if (activeVehicle != null) {
               ref.invalidate(maintenanceHealthProvider(activeVehicle.id));
               ref.invalidate(upcomingMaintenanceProvider(activeVehicle.id));
-              ref.invalidate(maintenanceCostForecastProvider(activeVehicle.id));
-              ref.invalidate(maintenanceBudgetForecastProvider(activeVehicle.id));
             }
             ref.invalidate(rideHistoryListProvider);
             ref.invalidate(dashboardSummaryProvider);
@@ -165,13 +162,7 @@ class HomeDashboardScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 14),
 
-                          // 4. Perkiraan Biaya & Anggaran Servis
-                          DashboardCostBudgetCard(
-                            onNavigateToMaintenance: onNavigateToMaintenance,
-                          ),
-                          const SizedBox(height: 14),
-
-                          // 5. Aktivitas Bulan Ini (Bahasa Indonesia)
+                          // 4. Aktivitas Bulan Ini (Bahasa Indonesia)
                           const DashboardMonthlyActivityCard(),
                           const SizedBox(height: 14),
 

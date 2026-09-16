@@ -205,29 +205,18 @@ class UpcomingMaintenanceCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        'Biaya: ${p.formattedCompactRange}',
+                        'Lihat Detail',
                         style: AppTypography.captionBadge.copyWith(
-                          color: AppColors.primaryBlue,
-                          fontWeight: FontWeight.bold,
+                          color: AppColors.textSecondary,
                         ),
                       ),
-                      Row(
-                        children: [
-                          Text(
-                            'Lihat Detail',
-                            style: AppTypography.captionBadge.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            size: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                        ],
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        size: 14,
+                        color: AppColors.textSecondary,
                       ),
                     ],
                   ),

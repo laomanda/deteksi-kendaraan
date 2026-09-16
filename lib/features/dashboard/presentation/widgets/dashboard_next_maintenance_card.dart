@@ -236,33 +236,18 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                     const Divider(height: 1, color: Color(0xFFF1F5F9)),
                     const SizedBox(height: 12),
 
-                    // Bottom Row: Cost & Action Button
+                    // Bottom Row: Action
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'PERKIRAAN BIAYA',
-                              style: TextStyle(
-                                color: Color(0xFF64748B),
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              nextItem.formattedCompactRange,
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
+                        const Text(
+                          'Jadwal Servis Berkala',
+                          style: TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(

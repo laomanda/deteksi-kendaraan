@@ -607,14 +607,6 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                                 color: AppColors.textSecondary,
                               ),
                             ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Perkiraan Biaya: ${nextItem.formattedTotalRange}',
-                              style: AppTypography.captionBadge.copyWith(
-                                color: AppColors.primaryBlue,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
                           ],
                         ),
                       ),

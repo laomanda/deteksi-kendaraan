@@ -11,36 +11,9 @@ import '../../../vehicle/data/models/vehicle_category_model.dart';
 import '../../../vehicle/data/models/vehicle_model.dart';
 import '../../../vehicle/providers/vehicle_provider.dart'
     hide maintenanceRepositoryProvider;
-import '../../data/models/maintenance_price_model.dart';
 import '../../data/models/service_record_model.dart';
 import '../../data/models/vehicle_maintenance_model.dart';
 import '../../providers/maintenance_intelligence_providers.dart';
-
-/// Formatter otomatis angka ke format rupiah ribuan (misal 80000 -> 80.000)
-class CurrencyInputFormatter extends TextInputFormatter {
-  static final NumberFormat _formatter = NumberFormat.decimalPattern('id_ID');
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    if (newValue.text.isEmpty) {
-      return newValue.copyWith(text: '');
-    }
-    final clean = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (clean.isEmpty) {
-      return newValue.copyWith(text: '');
-    }
-    final number = int.tryParse(clean);
-    if (number == null) return oldValue;
-    final newText = _formatter.format(number);
-    return TextEditingValue(
-      text: newText,
-      selection: TextSelection.collapsed(offset: newText.length),
-    );
-  }
-}
 
 /// Human-Friendly & Intelligent Add Service Page (Catat Servis)
 class AddServicePage extends ConsumerStatefulWidget {
@@ -64,7 +37,6 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
   String? _selectedMaintenanceId;
   late DateTime _selectedDate;
   late TextEditingController _odometerController;
-  late TextEditingController _costController;
   late TextEditingController _workshopController;
   late TextEditingController _notesController;
   bool _isSaving = false;
@@ -88,7 +60,6 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
           ? widget.vehicle.currentOdometer.toString()
           : '0',
     );
-    _costController = TextEditingController();
     _workshopController = TextEditingController();
     _notesController = TextEditingController();
   }
@@ -96,7 +67,6 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
   @override
   void dispose() {
     _odometerController.dispose();
-    _costController.dispose();
     _workshopController.dispose();
     _notesController.dispose();
     super.dispose();
@@ -134,12 +104,7 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
     });
   }
 
-  void _applyQuickCost(int amount) {
-    final formatted = NumberFormat.decimalPattern('id_ID').format(amount);
-    setState(() {
-      _costController.text = formatted;
-    });
-  }
+
 
   void _applyQuickWorkshop(String name) {
     setState(() {
@@ -155,9 +120,6 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
     try {
       final odo = int.tryParse(_odometerController.text.trim()) ??
           widget.vehicle.currentOdometer;
-      final rawCost =
-          _costController.text.replaceAll('.', '').replaceAll(',', '').trim();
-      final cost = double.tryParse(rawCost) ?? 0.0;
       final workshop = _workshopController.text.trim();
       final notes = _notesController.text.trim();
 
@@ -168,7 +130,7 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
         maintenanceId: _selectedMaintenanceId ?? 'm-service',
         serviceDate: _selectedDate,
         odometer: odo,
-        cost: cost,
+        cost: 0.0,
         workshop: workshop.isNotEmpty ? workshop : null,
         notes: notes.isNotEmpty ? notes : null,
         maintenanceName: _selectedAction,
@@ -233,14 +195,6 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
   @override
   Widget build(BuildContext context) {
     final vmAsync = ref.watch(vehicleMaintenanceProvider(widget.vehicle.id));
-    final repo = ref.read(maintenanceRepositoryProvider);
-
-    // Hitung estimasi harga jika tersedia
-    final MaintenancePriceModel? priceEstimate = repo.getEstimatedPrice(
-      _selectedAction,
-      vehicleType: widget.vehicle.vehicleType,
-    );
-
     final isToday = DateUtils.isSameDay(_selectedDate, DateTime.now());
     final dateDisplay = DateFormat('dd MMM yyyy').format(_selectedDate);
 
@@ -285,8 +239,8 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
 
                 const SizedBox(height: AppSpacing.space16),
 
-                // 4. Biaya, Bengkel & Catatan
-                _buildDetailsSection(priceEstimate),
+                // 4. Bengkel & Catatan
+                _buildDetailsSection(),
 
                 const SizedBox(height: AppSpacing.space24),
 
@@ -822,7 +776,7 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
     );
   }
 
-  Widget _buildDetailsSection(MaintenancePriceModel? priceEstimate) {
+  Widget _buildDetailsSection() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -838,7 +792,7 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
               const Icon(Icons.receipt_long_rounded, size: 18, color: AppColors.primaryBlue),
               const SizedBox(width: 8),
               Text(
-                'Rincian Biaya & Bengkel',
+                'Rincian Bengkel & Catatan',
                 style: AppTypography.heading3.copyWith(fontSize: 14),
               ),
               const SizedBox(width: 6),
@@ -850,91 +804,7 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
           ),
           const SizedBox(height: 14),
 
-          // 1. Biaya Servis
-          Text(
-            'Biaya Servis',
-            style: AppTypography.captionBadge.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 6),
-          TextFormField(
-            controller: _costController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [CurrencyInputFormatter()],
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            decoration: InputDecoration(
-              hintText: '0 (boleh kosong)',
-              hintStyle: const TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.normal),
-              filled: true,
-              fillColor: AppColors.bgLight,
-              prefixText: 'Rp ',
-              prefixStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryBlue,
-                fontSize: 14,
-              ),
-              prefixIcon: const Icon(
-                Icons.payments_outlined,
-                size: 18,
-                color: AppColors.textSecondary,
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.borderSubtle),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.borderSubtle),
-              ),
-            ),
-          ),
-
-          // Hint estimasi biaya dari katalog
-          if (priceEstimate != null) ...[
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                const Icon(Icons.info_outline_rounded, size: 13, color: AppColors.primaryBlue),
-                const SizedBox(width: 4),
-                Text(
-                  'Perkiraan standar: ${priceEstimate.formattedTotalRange}',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primaryBlue,
-                  ),
-                ),
-              ],
-            ),
-          ],
-
-          const SizedBox(height: 8),
-          // Quick amount chips
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [50000, 100000, 150000, 250000].map((amt) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: ActionChip(
-                    label: Text(
-                      'Rp ${amt ~/ 1000} rb',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
-                    ),
-                    padding: EdgeInsets.zero,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    backgroundColor: AppColors.bgLight,
-                    side: const BorderSide(color: AppColors.borderSubtle),
-                    onPressed: () => _applyQuickCost(amt),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // 2. Nama Bengkel
+          // 1. Nama Bengkel
           Text(
             'Nama Bengkel / Lokasi',
             style: AppTypography.captionBadge.copyWith(fontWeight: FontWeight.bold),

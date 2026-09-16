@@ -43,7 +43,6 @@ class RecordServiceSheet extends ConsumerStatefulWidget {
 class _RecordServiceSheetState extends ConsumerState<RecordServiceSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _kmController;
-  late final TextEditingController _costController;
   late final TextEditingController _notesController;
   late DateTime _selectedDate;
   bool _isSaving = false;
@@ -54,7 +53,6 @@ class _RecordServiceSheetState extends ConsumerState<RecordServiceSheet> {
     _kmController = TextEditingController(
       text: widget.vehicle.currentKilometer.toInt().toString(),
     );
-    _costController = TextEditingController();
     _notesController = TextEditingController();
     _selectedDate = DateTime.now();
   }
@@ -62,7 +60,6 @@ class _RecordServiceSheetState extends ConsumerState<RecordServiceSheet> {
   @override
   void dispose() {
     _kmController.dispose();
-    _costController.dispose();
     _notesController.dispose();
     super.dispose();
   }
@@ -170,28 +167,6 @@ class _RecordServiceSheetState extends ConsumerState<RecordServiceSheet> {
             ),
             const SizedBox(height: AppSpacing.space12),
 
-            // Cost & Notes
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Biaya (Opsional)', style: AppTypography.captionBadge),
-                      const SizedBox(height: AppSpacing.space4),
-                      TextFormField(
-                        controller: _costController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          hintText: '0',
-                          prefixText: 'Rp ',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: AppSpacing.space12),
 
             Text('Catatan Servis / Toko (Opsional)', style: AppTypography.captionBadge),
@@ -267,14 +242,13 @@ class _RecordServiceSheetState extends ConsumerState<RecordServiceSheet> {
     setState(() => _isSaving = true);
     try {
       final km = double.parse(_kmController.text.trim());
-      final cost = double.tryParse(_costController.text.trim()) ?? 0.0;
       final notes = _notesController.text.trim();
 
       await ref.read(maintenanceStatusProvider.notifier).recordService(
             componentType: widget.result.item.componentType,
             serviceKm: km,
             serviceDate: _selectedDate,
-            cost: cost,
+            cost: 0.0,
             notes: notes,
           );
 

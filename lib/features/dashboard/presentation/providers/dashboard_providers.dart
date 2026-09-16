@@ -16,7 +16,6 @@ class DashboardVehicleSummary {
   final int overdueCount;
   final int dueSoonCount;
   final int totalUpcomingCount;
-  final String formattedUpcomingCost;
   final MaintenancePrediction? mostUrgentPrediction;
 
   const DashboardVehicleSummary({
@@ -26,7 +25,6 @@ class DashboardVehicleSummary {
     required this.overdueCount,
     required this.dueSoonCount,
     required this.totalUpcomingCount,
-    required this.formattedUpcomingCost,
     this.mostUrgentPrediction,
   });
 
@@ -76,12 +74,10 @@ final dashboardSummaryProvider = Provider<AsyncValue<DashboardVehicleSummary?>>(
 
   final healthAsync = ref.watch(maintenanceHealthProvider(activeVehicle.id));
   final upcomingAsync = ref.watch(upcomingMaintenanceProvider(activeVehicle.id));
-  final costAsync = ref.watch(maintenanceCostForecastProvider(activeVehicle.id));
 
   // Provide graceful defaults during initial async load to support instant offline-first display
   final healthScore = healthAsync.value?.overallScore ?? 100.0;
   final predictions = upcomingAsync.value ?? [];
-  final costData = costAsync.value;
 
   int overdueCount = 0;
   int dueSoonCount = 0;
@@ -104,10 +100,6 @@ final dashboardSummaryProvider = Provider<AsyncValue<DashboardVehicleSummary?>>(
     status = 'GOOD';
   }
 
-  final String formattedCost = (costData != null && costData.count > 0)
-      ? costData.formattedCompactRange
-      : 'Estimasi biaya belum tersedia';
-
   final mostUrgent = predictions.isNotEmpty ? predictions.first : null;
 
   return AsyncValue.data(
@@ -118,7 +110,6 @@ final dashboardSummaryProvider = Provider<AsyncValue<DashboardVehicleSummary?>>(
       overdueCount: overdueCount,
       dueSoonCount: dueSoonCount,
       totalUpcomingCount: overdueCount + dueSoonCount,
-      formattedUpcomingCost: formattedCost,
       mostUrgentPrediction: mostUrgent,
     ),
   );
