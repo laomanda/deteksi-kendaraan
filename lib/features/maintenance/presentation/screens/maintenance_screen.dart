@@ -6,6 +6,8 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../controllers/maintenance_status_controller.dart';
 import '../widgets/maintenance_card.dart';
+import '../../providers/maintenance_intelligence_providers.dart';
+import '../../providers/maintenance_prediction_providers.dart';
 import 'service_history_screen.dart';
 
 enum MaintenanceFilter {
@@ -39,6 +41,16 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
         ref.read(activeVehicleProvider.notifier).setActiveVehicle(widget.initialVehicleId!);
       });
     }
+  }
+
+  Future<void> _handleRefresh(String? vehicleId) async {
+    if (vehicleId != null) {
+      await ref.read(vehicleMaintenanceProvider(vehicleId).notifier).refresh();
+      ref.invalidate(maintenancePredictionProvider(vehicleId));
+      ref.invalidate(upcomingMaintenanceProvider(vehicleId));
+      ref.invalidate(maintenanceHealthProvider(vehicleId));
+    }
+    ref.invalidate(maintenanceStatusProvider);
   }
 
   @override
@@ -108,9 +120,7 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
                 data: (state) {
                   if (activeVehicle == null || state.results.isEmpty) {
                     return RefreshIndicator(
-                      onRefresh: () async {
-                        ref.invalidate(maintenanceStatusProvider);
-                      },
+                      onRefresh: () => _handleRefresh(activeVehicle?.id),
                       child: ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         children: [
@@ -141,9 +151,7 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
 
                   if (filtered.isEmpty) {
                     return RefreshIndicator(
-                      onRefresh: () async {
-                        ref.invalidate(maintenanceStatusProvider);
-                      },
+                      onRefresh: () => _handleRefresh(activeVehicle.id),
                       child: ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         children: [
@@ -168,9 +176,7 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
                   }
 
                   return RefreshIndicator(
-                    onRefresh: () async {
-                      ref.invalidate(maintenanceStatusProvider);
-                    },
+                    onRefresh: () => _handleRefresh(activeVehicle.id),
                     child: ListView.builder(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.symmetric(

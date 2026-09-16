@@ -493,6 +493,34 @@ class MaintenanceRepository {
         if (itMaintId.isNotEmpty && (recId.contains(itMaintId) || itMaintId.contains(recId))) {
           return true;
         }
+
+        final recNorm = (record.maintenanceId ?? record.maintenanceName ?? '')
+            .toLowerCase()
+            .replaceAll(RegExp(r'[^a-z0-9]'), '');
+        final itCatNorm = (it.itemCategory ?? '')
+            .toLowerCase()
+            .replaceAll(RegExp(r'[^a-z0-9]'), '');
+        final itNameNorm = (it.itemName ?? '')
+            .toLowerCase()
+            .replaceAll(RegExp(r'[^a-z0-9]'), '');
+        final itMaintNorm = it.maintenanceId
+            .toLowerCase()
+            .replaceAll(RegExp(r'[^a-z0-9]'), '');
+
+        if (recNorm.isNotEmpty) {
+          if (itCatNorm.isNotEmpty &&
+              (recNorm == itCatNorm || recNorm.contains(itCatNorm) || itCatNorm.contains(recNorm))) {
+            return true;
+          }
+          if (itNameNorm.isNotEmpty &&
+              (recNorm == itNameNorm || recNorm.contains(itNameNorm) || itNameNorm.contains(recNorm))) {
+            return true;
+          }
+          if (itMaintNorm.isNotEmpty &&
+              (recNorm == itMaintNorm || recNorm.contains(itMaintNorm) || itMaintNorm.contains(recNorm))) {
+            return true;
+          }
+        }
         return false;
       },
     );
@@ -507,6 +535,25 @@ class MaintenanceRepository {
         updatedAt: DateTime.now(),
       );
       await updateVehicleMaintenance(updatedItem);
+    }
+
+    // Perbarui juga legacy _box jika ada
+    try {
+      final legacyItems = _box.values.where((item) => item.vehicleId == record.vehicleId).toList();
+      for (final legacyItem in legacyItems) {
+        final legacyNorm = legacyItem.componentType.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+        final recNorm = (record.maintenanceId ?? record.maintenanceName ?? '').toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+        if (legacyNorm.isNotEmpty &&
+            (legacyNorm == recNorm || legacyNorm.contains(recNorm) || recNorm.contains(legacyNorm))) {
+          final updated = legacyItem.copyWith(
+            lastServiceKm: record.odometer.toDouble(),
+            lastServiceDate: record.serviceDate,
+          );
+          await _box.put(updated.id, updated);
+        }
+      }
+    } catch (e) {
+      debugPrint('Legacy maintenance box update skipped: $e');
     }
 
     // 3. Sync ke Supabase (service_records)

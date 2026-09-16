@@ -270,12 +270,31 @@ class ComponentCatalog {
 
   static ComponentMetadata? findMetadata(String vehicleType, String componentKey) {
     final list = getCatalogForVehicleType(vehicleType);
+    final keyLower = componentKey.toLowerCase().trim();
+    final norm = keyLower.replaceAll(RegExp(r'[^a-z0-9]'), '');
+
     for (final meta in list) {
-      if (meta.key == componentKey) return meta;
+      final metaNorm = meta.key.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+      final dispNorm = meta.displayName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+      if (meta.key == componentKey ||
+          meta.key.toLowerCase() == keyLower ||
+          metaNorm == norm ||
+          meta.displayName.toLowerCase() == keyLower ||
+          dispNorm == norm) {
+        return meta;
+      }
     }
     // Fallback search across all
     for (final meta in [...motorcycleComponents, ...carComponents]) {
-      if (meta.key == componentKey) return meta;
+      final metaNorm = meta.key.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+      final dispNorm = meta.displayName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+      if (meta.key == componentKey ||
+          meta.key.toLowerCase() == keyLower ||
+          metaNorm == norm ||
+          meta.displayName.toLowerCase() == keyLower ||
+          dispNorm == norm) {
+        return meta;
+      }
     }
     return null;
   }
