@@ -96,6 +96,7 @@ class MaintenanceDetailBottomSheet extends ConsumerWidget {
                     componentName: prediction.componentName,
                     category: prediction.category,
                     status: prediction.status,
+                    healthPercentage: prediction.currentHealth,
                     size: 50,
                     iconSize: 28,
                   ),

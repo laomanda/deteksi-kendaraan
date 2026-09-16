@@ -155,10 +155,11 @@ class UpcomingMaintenanceCard extends ConsumerWidget {
               componentName: p.componentName,
               category: p.category,
               status: p.status,
-              size: 42,
-              iconSize: 22,
+              healthPercentage: p.currentHealth,
+              size: 44,
+              iconSize: 24,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

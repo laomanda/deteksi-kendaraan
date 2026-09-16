@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dynamic_fill_icon.dart';
 
 /// Metadata helper that resolves specific spare part icons and thematic colors
 class VehiclePartVisualInfo {
@@ -206,9 +207,9 @@ class VehiclePartVisualInfo {
   }
 }
 
-/// Interactive Vehicle Part Icon Badge with thematic pastel background,
-/// micro-animation feedback on press, and optional status indicator dot.
-class VehiclePartIconBadge extends StatefulWidget {
+/// Interactive Vehicle Part Icon Badge powered by the signature DynamicFillIcon (100% to 0% fill) system.
+/// Keeps visual identity 100% consistent across Dashboard, Maintenance Screen, and Detail Sheets.
+class VehiclePartIconBadge extends StatelessWidget {
   final String componentName;
   final String? category;
   final String? status; // 'OVERDUE' | 'DUE SOON' | 'GOOD'
@@ -216,134 +217,56 @@ class VehiclePartIconBadge extends StatefulWidget {
   final double iconSize;
   final VoidCallback? onTap;
   final bool showStatusDot;
+  final double? healthPercentage;
 
   const VehiclePartIconBadge({
     super.key,
     required this.componentName,
     this.category,
     this.status,
-    this.size = 46,
+    this.size = 44,
     this.iconSize = 24,
     this.onTap,
-    this.showStatusDot = true,
+    this.showStatusDot = false,
+    this.healthPercentage,
   });
 
-  @override
-  State<VehiclePartIconBadge> createState() => _VehiclePartIconBadgeState();
-}
-
-class _VehiclePartIconBadgeState extends State<VehiclePartIconBadge>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
-      lowerBound: 0.0,
-      upperBound: 1.0,
-    );
-    _scaleAnim = Tween<double>(begin: 1.0, end: 0.92).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Color? _getStatusDotColor() {
-    if (widget.status == null) return null;
-    final s = widget.status!.toUpperCase();
-    if (s.contains('OVERDUE')) return const Color(0xFFEF4444);
-    if (s.contains('DUE')) return const Color(0xFFF59E0B);
-    if (s.contains('GOOD')) return const Color(0xFF10B981);
-    return null;
+  double _resolvePercentage() {
+    if (healthPercentage != null) {
+      final hp = healthPercentage!;
+      return hp > 1.0 ? (hp / 100.0).clamp(0.0, 1.0) : hp.clamp(0.0, 1.0);
+    }
+    if (status != null) {
+      final s = status!.toUpperCase();
+      if (s.contains('OVERDUE')) return 0.0;
+      if (s.contains('DUE')) return 0.25;
+      if (s.contains('GOOD')) return 0.95;
+    }
+    return 1.0;
   }
 
   @override
   Widget build(BuildContext context) {
-    final visual = VehiclePartVisualInfo.resolve(
-      widget.componentName,
-      category: widget.category,
-    );
-    final dotColor = _getStatusDotColor();
+    final pct = _resolvePercentage();
+    final type = category != null && category!.isNotEmpty ? category! : componentName;
 
-    return AnimatedBuilder(
-      animation: _scaleAnim,
-      builder: (context, child) => Transform.scale(
-        scale: _scaleAnim.value,
-        child: child,
-      ),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(widget.size * 0.32),
-            child: InkWell(
-              onTap: widget.onTap,
-              onTapDown: (_) {
-                if (widget.onTap != null) _controller.forward();
-              },
-              onTapUp: (_) {
-                if (widget.onTap != null) _controller.reverse();
-              },
-              onTapCancel: () {
-                if (widget.onTap != null) _controller.reverse();
-              },
-              borderRadius: BorderRadius.circular(widget.size * 0.32),
-              splashColor: visual.accentColor.withValues(alpha: 0.25),
-              highlightColor: visual.accentColor.withValues(alpha: 0.12),
-              child: Ink(
-                width: widget.size,
-                height: widget.size,
-                decoration: BoxDecoration(
-                  color: visual.accentColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(widget.size * 0.32),
-                  border: Border.all(
-                    color: visual.accentColor.withValues(alpha: 0.24),
-                    width: 1.2,
-                  ),
-                ),
-                child: Center(
-                  child: Icon(
-                    visual.icon,
-                    size: widget.iconSize,
-                    color: visual.accentColor,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          if (widget.showStatusDot && dotColor != null)
-            Positioned(
-              top: -1,
-              right: -1,
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: dotColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: dotColor.withValues(alpha: 0.4),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
+    Widget dynamicIcon = DynamicFillIcon(
+      componentType: type,
+      percentage: pct,
+      size: size,
+    );
+
+    if (onTap != null) {
+      dynamicIcon = InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(size * 0.25),
+        child: dynamicIcon,
+      );
+    }
+
+    return Semantics(
+      label: 'Status $componentName: ${(pct * 100).toInt()}%',
+      child: dynamicIcon,
     );
   }
 }

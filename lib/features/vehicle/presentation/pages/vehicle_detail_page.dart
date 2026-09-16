@@ -597,10 +597,11 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                         componentName: nextItem.componentName,
                         category: nextItem.category,
                         status: nextItem.status,
-                        size: 42,
-                        iconSize: 22,
+                        healthPercentage: nextItem.currentHealth,
+                        size: 44,
+                        iconSize: 24,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
