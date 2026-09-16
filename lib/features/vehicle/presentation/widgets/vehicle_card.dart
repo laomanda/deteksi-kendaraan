@@ -70,9 +70,10 @@ class VehicleCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isMotor = vehicle.isMotorcycle;
     final healthSummaryAsync = ref.watch(maintenanceHealthProvider(vehicle.id));
-    final double healthPct = healthSummaryAsync.value?.overallScore ?? 1.0;
-    final healthColor = AppColors.getHealthColor(healthPct);
-    final healthLabel = AppColors.getHealthStatusLabel(healthPct);
+    final double rawScore = healthSummaryAsync.value?.overallScore ?? 100.0;
+    final double healthScore = rawScore.clamp(0.0, 100.0);
+    final healthColor = AppColors.getHealthColor(healthScore);
+    final healthLabel = AppColors.getHealthStatusLabel(healthScore);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -290,7 +291,7 @@ class VehicleCard extends ConsumerWidget {
                                 Row(
                                   children: [
                                     Text(
-                                      '${(healthPct * 100).round()}%',
+                                      '${healthScore.round()}%',
                                       style: AppTypography.bodyMedium.copyWith(
                                         fontWeight: FontWeight.w700,
                                         color: healthColor,

@@ -25,6 +25,9 @@ class _DynamicFillIconState extends State<DynamicFillIcon>
   late Animation<double> _animation;
   double _lastPercentage = 0.0;
 
+  double _normalize(double val) =>
+      val > 1.0 ? (val / 100.0).clamp(0.0, 1.0) : val.clamp(0.0, 1.0);
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +36,7 @@ class _DynamicFillIconState extends State<DynamicFillIcon>
       duration: const Duration(milliseconds: 800),
     );
 
-    _lastPercentage = widget.percentage.clamp(0.0, 1.0);
+    _lastPercentage = _normalize(widget.percentage);
     _animation = Tween<double>(begin: 0.0, end: _lastPercentage).animate(
       CurvedAnimation(
         parent: _controller,
@@ -47,7 +50,7 @@ class _DynamicFillIconState extends State<DynamicFillIcon>
   @override
   void didUpdateWidget(covariant DynamicFillIcon oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final target = widget.percentage.clamp(0.0, 1.0);
+    final target = _normalize(widget.percentage);
     if (oldWidget.percentage != widget.percentage) {
       _animation = Tween<double>(
         begin: _animation.value,
@@ -72,9 +75,9 @@ class _DynamicFillIconState extends State<DynamicFillIcon>
 
   @override
   Widget build(BuildContext context) {
-    final clampedPct = widget.percentage.clamp(0.0, 1.0);
+    final clampedPct = _normalize(widget.percentage);
     final semanticLabel =
-        'Status ${widget.componentType}: ${(clampedPct * 100).toInt()} persen, ${AppColors.getHealthStatusLabel(clampedPct)}';
+        'Status ${widget.componentType}: ${(clampedPct * 100).toInt().clamp(0, 100)} persen, ${AppColors.getHealthStatusLabel(clampedPct)}';
 
     return Semantics(
       label: semanticLabel,

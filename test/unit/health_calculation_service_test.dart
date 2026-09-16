@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ridecare/core/constants/app_colors.dart';
 import 'package:ridecare/features/maintenance/data/models/maintenance_item_model.dart';
 import 'package:ridecare/features/maintenance/domain/health_calculation_service.dart';
 
@@ -150,5 +151,66 @@ void main() {
       final score = HealthCalculationService.calculateVehicleAggregateScore([r1, r2]);
       expect(score, closeTo(75.0, 0.1));
     });
+
+    test('Health percentage and aggregate scores NEVER exceed 100.0% even with extreme inputs', () {
+      // Negative delta / future service records
+      final now = DateTime.now();
+      final item = MaintenanceItemModel(
+        id: 'future',
+        vehicleId: 'v1',
+        componentType: 'engine_oil',
+        intervalKm: 2000,
+        intervalDays: 60,
+        lastServiceKm: 15000, // higher than odometer
+        lastServiceDate: now.add(const Duration(days: 30)),
+      );
+
+      final r = HealthCalculationService.calculateComponentHealth(
+        item: item,
+        currentOdometer: 10000,
+        currentDate: now,
+      );
+
+      expect(r.healthPercentage, lessThanOrEqualTo(100.0));
+      expect(r.healthPercentage, greaterThanOrEqualTo(0.0));
+
+      final aggregate = HealthCalculationService.calculateVehicleAggregateScore([r]);
+      expect(aggregate, lessThanOrEqualTo(100.0));
+      expect(aggregate, greaterThanOrEqualTo(0.0));
+    });
+  });
+
+  group('AppColors & Percentage Normalization Tests (Guarantee <= 100%)', () {
+    test('AppColors.normalizePercentage strictly clamps to [0.0, 100.0]', () {
+      expect(AppColors.normalizePercentage(1111.0), 100.0);
+      expect(AppColors.normalizePercentage(150.0), 100.0);
+      expect(AppColors.normalizePercentage(100.0), 100.0);
+      expect(AppColors.normalizePercentage(85.0), 85.0);
+      expect(AppColors.normalizePercentage(11.11), 11.11);
+      expect(AppColors.normalizePercentage(1.0), 100.0);
+      expect(AppColors.normalizePercentage(0.85), 85.0);
+      expect(AppColors.normalizePercentage(0.1111), closeTo(11.11, 0.01));
+      expect(AppColors.normalizePercentage(0.0), 0.0);
+      expect(AppColors.normalizePercentage(-10.0), 0.0);
+    });
+
+    test('AppColors.getHealthStatusLabel accurately categorizes both 0..1 and 0..100 scales', () {
+      // 11.11% should be Jatuh Tempo, NEVER Kondisi Baik
+      expect(AppColors.getHealthStatusLabel(11.11), 'Jatuh Tempo');
+      expect(AppColors.getHealthStatusLabel(0.11), 'Jatuh Tempo');
+
+      // 85% should be Kondisi Baik
+      expect(AppColors.getHealthStatusLabel(85.0), 'Kondisi Baik');
+      expect(AppColors.getHealthStatusLabel(0.85), 'Kondisi Baik');
+
+      // 100% should be Kondisi Baik
+      expect(AppColors.getHealthStatusLabel(100.0), 'Kondisi Baik');
+      expect(AppColors.getHealthStatusLabel(1.0), 'Kondisi Baik');
+
+      // Overflow inputs must never produce anomalous behavior
+      expect(AppColors.getHealthStatusLabel(1111.0), 'Kondisi Baik');
+      expect(AppColors.getHealthColor(1111.0), AppColors.healthOptimal);
+    });
   });
 }
+

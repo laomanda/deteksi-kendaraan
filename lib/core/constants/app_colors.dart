@@ -26,9 +26,19 @@ class AppColors {
   static const Color healthWarning = Color(0xFFF97316); // 20% - 49%
   static const Color healthCritical = Color(0xFFEF4444); // 0% - 19%
 
-  /// Resolves the health status color according to the percentage (0.0 - 1.0)
+  /// Normalizes any percentage input (whether 0.0 - 1.0 fraction or 0.0 - 100.0 scale)
+  /// to guaranteed 0.0 to 100.0 scale, strictly clamped between 0.0 and 100.0.
+  static double normalizePercentage(double percentage) {
+    if (percentage > 1.0) {
+      return percentage.clamp(0.0, 100.0);
+    } else {
+      return (percentage * 100.0).clamp(0.0, 100.0);
+    }
+  }
+
+  /// Resolves the health status color according to the percentage (accepts 0.0 - 1.0 or 0.0 - 100.0)
   static Color getHealthColor(double percentage) {
-    final pct = (percentage * 100).clamp(0.0, 100.0);
+    final pct = normalizePercentage(percentage);
     if (pct >= 80.0) {
       return healthOptimal;
     } else if (pct >= 50.0) {
@@ -41,8 +51,9 @@ class AppColors {
   }
 
   /// Returns textual label in Indonesian for health status (DSS Section 14.2)
+  /// Accepts 0.0 - 1.0 or 0.0 - 100.0, never exceeding 100.0.
   static String getHealthStatusLabel(double percentage) {
-    final pct = (percentage * 100).clamp(0.0, 100.0);
+    final pct = normalizePercentage(percentage);
     if (pct >= 80.0) {
       return 'Kondisi Baik';
     } else if (pct >= 50.0) {

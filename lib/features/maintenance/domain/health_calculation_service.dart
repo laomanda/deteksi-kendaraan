@@ -88,7 +88,7 @@ class HealthCalculationService {
     if (results.isEmpty) return 100.0;
     final total = results.fold<double>(
       0.0,
-      (sum, item) => sum + item.healthPercentage,
+      (sum, item) => sum + item.healthPercentage.clamp(0.0, 100.0),
     );
     return (total / results.length).clamp(0.0, 100.0);
   }
@@ -152,7 +152,7 @@ class HealthCalculationService {
   /// Menghitung skor kesehatan keseluruhan (Overall Health) kendaraan
   static double calculateOverallScore(List<VehicleMaintenanceHealth> items) {
     if (items.isEmpty) return 100.0;
-    final sum = items.fold<double>(0.0, (acc, e) => acc + e.healthPercentage);
+    final sum = items.fold<double>(0.0, (acc, e) => acc + e.healthPercentage.clamp(0.0, 100.0));
     return (sum / items.length).clamp(0.0, 100.0);
   }
 }

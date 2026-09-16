@@ -137,7 +137,7 @@ class MaintenanceStatusNotifier
 
     return MaintenanceStatusState(
       results: results,
-      aggregateHealthScore: aggregate,
+      aggregateHealthScore: aggregate.clamp(0.0, 100.0),
       priorityComponents: priority,
       criticalCount: critical,
       warningCount: warning,

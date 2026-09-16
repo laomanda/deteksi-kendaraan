@@ -265,7 +265,7 @@ class VehiclePartIconBadge extends StatelessWidget {
     }
 
     return Semantics(
-      label: 'Status $componentName: ${(pct * 100).toInt()}%',
+      label: 'Status $componentName: ${(pct * 100).toInt().clamp(0, 100)}%',
       child: dynamicIcon,
     );
   }

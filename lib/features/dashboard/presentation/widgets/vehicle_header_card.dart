@@ -36,10 +36,11 @@ class VehicleHeaderCard extends ConsumerWidget {
       );
     }
 
-    final double aggregateScore = maintenanceStateAsync.value?.aggregateHealthScore ?? 100.0;
+    final double rawScore = maintenanceStateAsync.value?.aggregateHealthScore ?? 100.0;
+    final double aggregateScore = rawScore.clamp(0.0, 100.0);
     final String? warningMsg = maintenanceStateAsync.value?.warningMessage;
-    final statusColor = AppColors.getHealthColor(aggregateScore / 100.0);
-    final statusLabel = AppColors.getHealthStatusLabel(aggregateScore / 100.0);
+    final statusColor = AppColors.getHealthColor(aggregateScore);
+    final statusLabel = AppColors.getHealthStatusLabel(aggregateScore);
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space16),

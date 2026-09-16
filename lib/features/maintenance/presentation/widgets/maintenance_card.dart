@@ -102,7 +102,7 @@ class MaintenanceCard extends StatelessWidget {
                           borderRadius: AppSpacing.chipBorderRadius,
                         ),
                         child: Text(
-                          '${result.healthPercentage.toInt()}%',
+                          '${result.healthPercentage.clamp(0.0, 100.0).toInt()}%',
                           style: AppTypography.captionBadge.copyWith(
                             color: statusColor,
                             fontWeight: FontWeight.w700,
