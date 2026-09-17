@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/constants/app_typography.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hugeicons/hugeicons.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../../maintenance/presentation/pages/maintenance_page.dart';
 import '../../../maintenance/providers/maintenance_intelligence_providers.dart';
@@ -17,7 +17,8 @@ import '../widgets/dashboard_quick_actions.dart';
 import '../widgets/dashboard_vehicle_selector.dart';
 import '../widgets/dashboard_vehicle_summary_card.dart';
 
-/// Simplified RideCare Home Dashboard Screen
+/// RideCare Home Dashboard Screen
+/// Personal Vehicle Companion - Single Source of Truth: DESIGN.md
 class HomeDashboardScreen extends ConsumerWidget {
   final VoidCallback? onNavigateToTracking;
   final VoidCallback? onNavigateToMaintenance;
@@ -36,34 +37,32 @@ class HomeDashboardScreen extends ConsumerWidget {
     final allVehicles = ref.watch(vehicleListProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surfaceWhite,
+        backgroundColor: AppColors.background,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        titleSpacing: AppSpacing.space16,
+        titleSpacing: 16,
         title: Row(
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'RideCare',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
+                  style: GoogleFonts.spaceGrotesk(
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF2563EB),
-                    fontSize: 20,
-                    letterSpacing: -0.4,
+                    color: AppColors.primaryNavy,
+                    fontSize: 21,
+                    letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 1),
-                const Text(
+                Text(
                   'Asisten Kendaraan Pribadi',
-                  style: TextStyle(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 10,
-                    color: Color(0xFF64748B),
+                    color: AppColors.secondarySteel,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -75,7 +74,11 @@ class HomeDashboardScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history_rounded, color: Color(0xFF334155)),
+            icon: const HugeIcon(
+              icon: HugeIcons.strokeRoundedClock01,
+              color: AppColors.primaryNavy,
+              size: 20,
+            ),
             tooltip: 'Riwayat Perjalanan',
             onPressed: () {
               Navigator.push(
@@ -86,12 +89,13 @@ class HomeDashboardScreen extends ConsumerWidget {
               );
             },
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 6),
         ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          color: AppColors.primaryBlue,
+          color: AppColors.primaryNavy,
+          backgroundColor: AppColors.surfaceWhite,
           onRefresh: () async {
             ref.invalidate(activeVehicleProvider);
             if (activeVehicle != null) {
@@ -106,8 +110,8 @@ class HomeDashboardScreen extends ConsumerWidget {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.space16,
-              vertical: AppSpacing.space16,
+              horizontal: 16,
+              vertical: 14,
             ),
             child: Center(
               child: ConstrainedBox(
@@ -117,11 +121,11 @@ class HomeDashboardScreen extends ConsumerWidget {
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // 1. Hero Showcase Card (Dark Obsidian Luxury)
+                          // 1. Hero Vehicle Experience (Siluet, Odometer Space Grotesk, Human Status)
                           const DashboardVehicleSummaryCard(),
                           const SizedBox(height: 14),
 
-                          // 2. Cohesive Action Deck ([Mulai Perjalanan], [Catat Servis], [Kondisi])
+                          // 2. Cockpit Quick Action Area (Mulai Perjalanan, Catat Servis, Cek Kendaraan)
                           DashboardQuickActions(
                             onStartRide: onNavigateToTracking,
                             onNavigateToMaintenance: onNavigateToMaintenance ??
@@ -139,7 +143,7 @@ class HomeDashboardScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 14),
 
-                          // 3. Next Maintenance Card (Tindakan Terdekat & Biaya Realistis)
+                          // 3. Recommended Action / Warning Experience (Perawatan Terdekat)
                           DashboardNextMaintenanceCard(
                             onNavigateToMaintenance: onNavigateToMaintenance ??
                                 () {
@@ -155,8 +159,10 @@ class HomeDashboardScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 14),
 
-                          // 4. Aktivitas Bulan Ini (Bahasa Indonesia)
-                          const DashboardMonthlyActivityCard(),
+                          // 4. Ringkasan Perjalanan & Aktivitas (Humanized Empty State & Telemetry)
+                          DashboardMonthlyActivityCard(
+                            onStartRide: onNavigateToTracking,
+                          ),
                           const SizedBox(height: 24),
                         ],
                       ),
@@ -168,57 +174,62 @@ class HomeDashboardScreen extends ConsumerWidget {
     );
   }
 
-  /// 3-Step Friendly Onboarding for new users (No technical jargon)
+  /// 3-Step Friendly Companion Onboarding for new users
   Widget _buildFriendlyOnboarding(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space16,
-        vertical: AppSpacing.space24,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 72,
-              height: 72,
+              width: 76,
+              height: 76,
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                color: AppColors.primaryNavy.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.two_wheeler_rounded,
-                size: 40,
-                color: AppColors.primaryBlue,
+              child: const Center(
+                child: HugeIcon(
+                  icon: HugeIcons.strokeRoundedMotorbike01,
+                  size: 38,
+                  color: AppColors.primaryNavy,
+                ),
               ),
             ),
-            const SizedBox(height: AppSpacing.space16),
+            const SizedBox(height: 18),
             Text(
               'Selamat Datang di RideCare',
-              style: AppTypography.heading1.copyWith(fontSize: 22),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.space8),
-            Text(
-              'Asisten pribadi agar kendaraan Anda selalu aman dan terawat.',
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: AppColors.primaryNavy,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppSpacing.space24),
+            const SizedBox(height: 8),
+            Text(
+              'Asisten pribadi agar kendaraan Anda selalu aman dan terawat.',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                color: AppColors.secondarySteel,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
 
             // 3-Step Guide Card
             Container(
-              padding: const EdgeInsets.all(AppSpacing.space16),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: AppColors.surfaceWhite,
-                borderRadius: AppSpacing.cardBorderRadius,
+                borderRadius: BorderRadius.circular(18),
                 border: Border.all(color: AppColors.borderSubtle),
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x04000000),
-                    blurRadius: 8,
+                    color: Color(0x06102A43),
+                    blurRadius: 10,
                     offset: Offset(0, 2),
                   ),
                 ],
@@ -228,45 +239,49 @@ class HomeDashboardScreen extends ConsumerWidget {
                   _buildStepRow(
                     stepNumber: '1',
                     title: 'Tambah Kendaraan',
-                    desc: 'Cukup masukkan jenis, merek, model, dan tahun kendaraan Anda.',
-                    icon: Icons.add_circle_outline_rounded,
+                    desc: 'Masukkan data jenis, merek, model, dan tahun kendaraan Anda.',
+                    icon: HugeIcons.strokeRoundedAddCircle,
                   ),
-                  const Divider(height: 24, color: AppColors.borderSubtle),
+                  const Divider(height: 24, color: Color(0xFFF1EFE9)),
                   _buildStepRow(
                     stepNumber: '2',
                     title: 'RideCare Membantu Mengingat',
                     desc: 'Ketahui kapan ganti oli dan servis tanpa perlu mengingat jadwal manual.',
-                    icon: Icons.notifications_none_rounded,
+                    icon: HugeIcons.strokeRoundedNotification01,
                   ),
-                  const Divider(height: 24, color: AppColors.borderSubtle),
+                  const Divider(height: 24, color: Color(0xFFF1EFE9)),
                   _buildStepRow(
                     stepNumber: '3',
                     title: 'Nikmati Kendaraan Lebih Terawat',
-                    desc: 'Berkendara tenang setiap hari dengan perkiraan biaya yang transparan.',
-                    icon: Icons.verified_outlined,
+                    desc: 'Berkendara tenang setiap hari dengan perkiraan servis yang jelas.',
+                    icon: HugeIcons.strokeRoundedShield01,
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: AppSpacing.space24),
+            const SizedBox(height: 24),
 
             // Primary CTA: Tambah Kendaraan Pertama
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 52,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.primaryNavy,
                   foregroundColor: Colors.white,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: AppSpacing.buttonBorderRadius,
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 icon: const Icon(Icons.add_rounded, size: 22),
-                label: const Text(
+                label: Text(
                   'Tambah Kendaraan Pertama',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 onPressed: () {
                   Navigator.push(
@@ -288,7 +303,7 @@ class HomeDashboardScreen extends ConsumerWidget {
     required String stepNumber,
     required String title,
     required String desc,
-    required IconData icon,
+    required dynamic icon,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,37 +312,40 @@ class HomeDashboardScreen extends ConsumerWidget {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: AppColors.primaryBlue.withValues(alpha: 0.1),
+            color: AppColors.primaryNavy.withValues(alpha: 0.08),
             shape: BoxShape.circle,
           ),
           child: Center(
             child: Text(
               stepNumber,
-              style: const TextStyle(
-                color: AppColors.primaryBlue,
-                fontWeight: FontWeight.bold,
+              style: GoogleFonts.spaceGrotesk(
+                color: AppColors.primaryNavy,
+                fontWeight: FontWeight.w800,
                 fontSize: 14,
               ),
             ),
           ),
         ),
-        const SizedBox(width: AppSpacing.space12),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: AppTypography.bodyMedium.copyWith(
-                  fontWeight: FontWeight.bold,
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  color: AppColors.primaryNavy,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 desc,
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.3,
+                style: GoogleFonts.plusJakartaSans(
+                  color: AppColors.secondarySteel,
+                  fontSize: 11,
+                  height: 1.35,
                 ),
               ),
             ],

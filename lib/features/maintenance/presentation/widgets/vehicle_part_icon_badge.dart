@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../core/theme/app_colors.dart';
 import 'dynamic_fill_icon.dart';
 
 /// Metadata helper that resolves specific spare part icons and thematic colors
@@ -13,23 +15,117 @@ class VehiclePartVisualInfo {
     required this.label,
   });
 
-  /// Resolves the specific visual identity for a given component name or ID
-  static VehiclePartVisualInfo resolve(String rawName, {String? category}) {
+  /// Resolves the genuine maintenance SVG asset path for any component name or category
+  static String resolveSvgAsset(String rawName, {String? category}) {
     final name = rawName.toLowerCase();
     final cat = (category ?? '').toLowerCase();
 
     // 1. Engine Oil (Oli Mesin)
     if (name.contains('oli mesin') ||
         name.contains('engine oil') ||
+        name.contains('pelumas')) {
+      return 'assets/maintenance/part_engine_oil.svg';
+    }
+
+    // 2. Gear Oil / Transmisi (Oli Gardan / CVTF / ATF)
+    if (name.contains('gardan') ||
+        name.contains('gear oil') ||
+        name.contains('transmisi') ||
+        name.contains('atf') ||
+        name.contains('cvtf')) {
+      return 'assets/maintenance/part_gear_oil.svg';
+    }
+
+    // 3. CVT / Belt / Roller
+    if (name.contains('cvt') ||
+        name.contains('roller') ||
+        name.contains('slider') ||
+        name.contains('belt') ||
+        name.contains('v-belt')) {
+      return 'assets/maintenance/part_cvt_transmission.svg';
+    }
+
+    // 4. Brake System (Rem / Kampas Rem / Minyak Rem)
+    if (name.contains('rem') ||
+        name.contains('brake') ||
+        name.contains('cakram') ||
+        name.contains('kampas') ||
+        name.contains('pad')) {
+      return 'assets/maintenance/part_brake_system.svg';
+    }
+
+    // 5. Spark Plug (Busi)
+    if (name.contains('busi') || name.contains('spark')) {
+      return 'assets/maintenance/part_spark_plug.svg';
+    }
+
+    // 6. Air Filter (Filter Udara)
+    if (name.contains('filter udara') ||
+        name.contains('air filter') ||
+        name.contains('saringan udara')) {
+      return 'assets/maintenance/part_air_filter.svg';
+    }
+
+    // 7. Battery / Accumulator (Aki / Baterai)
+    if (name.contains('aki') ||
+        name.contains('battery') ||
+        name.contains('accu') ||
+        name.contains('baterai')) {
+      return 'assets/maintenance/part_battery_accumulator.svg';
+    }
+
+    // 8. Radiator Coolant (Air Radiator / Pendingin)
+    if (name.contains('radiator') ||
+        name.contains('coolant') ||
+        name.contains('air radiator')) {
+      return 'assets/maintenance/part_radiator_coolant.svg';
+    }
+
+    // 9. Drive Chain & Sprocket (Rantai & Gir)
+    if (name.contains('rantai') ||
+        name.contains('chain') ||
+        name.contains('sprocket') ||
+        name.contains('gir')) {
+      return 'assets/maintenance/part_drive_chain.svg';
+    }
+
+    // 10. Tires (Ban)
+    if (name.contains('ban') ||
+        name.contains('tire') ||
+        name.contains('roda')) {
+      return 'assets/maintenance/part_tires.svg';
+    }
+
+    // Categorical fallbacks
+    if (cat.contains('transmisi') || cat.contains('drivetrain')) {
+      return 'assets/maintenance/part_cvt_transmission.svg';
+    }
+    if (cat.contains('mesin')) {
+      return 'assets/maintenance/part_engine_oil.svg';
+    }
+    if (cat.contains('kelistrikan')) {
+      return 'assets/maintenance/part_battery_accumulator.svg';
+    }
+
+    return 'assets/maintenance/part_engine_oil.svg';
+  }
+
+  /// Resolves the specific visual identity for a given component name or ID
+  static VehiclePartVisualInfo resolve(String rawName, {String? category}) {
+    final name = rawName.toLowerCase();
+
+    // 1. Engine Oil
+    if (name.contains('oli mesin') ||
+        name.contains('engine oil') ||
         name.contains('pelumas mesin')) {
       return const VehiclePartVisualInfo(
         icon: Icons.water_drop_rounded,
-        accentColor: Color(0xFFF59E0B), // Warm Amber
+        accentColor: Color(0xFFF59E0B),
         label: 'Oli Mesin',
       );
     }
 
-    // 2. Transmission / Gear Oil (Oli Gardan / CVTF / ATF)
+    // 2. Transmission / Gear Oil
     if (name.contains('gardan') ||
         name.contains('gear oil') ||
         name.contains('transmisi') ||
@@ -37,177 +133,92 @@ class VehiclePartVisualInfo {
         name.contains('cvtf')) {
       return const VehiclePartVisualInfo(
         icon: Icons.settings_suggest_rounded,
-        accentColor: Color(0xFF6366F1), // Modern Indigo
+        accentColor: Color(0xFF334E68),
         label: 'Gardan / Transmisi',
       );
     }
 
-    // 3. Spark Plug (Busi)
+    // 3. Spark Plug
     if (name.contains('busi') || name.contains('spark plug')) {
       return const VehiclePartVisualInfo(
         icon: Icons.electric_bolt_rounded,
-        accentColor: Color(0xFFEAB308), // Electric Gold
+        accentColor: Color(0xFFEAB308),
         label: 'Busi',
       );
     }
 
-    // 4. Roller & Slider CVT
-    if (name.contains('roller') || name.contains('slider')) {
-      return const VehiclePartVisualInfo(
-        icon: Icons.motion_photos_on_rounded,
-        accentColor: Color(0xFFA855F7), // Vibrant Purple
-        label: 'Roller CVT',
-      );
-    }
-
-    // 5. CVT Belt / V-Belt
-    if (name.contains('belt') || name.contains('cvt') || name.contains('v-belt')) {
+    // 4. Roller & Slider CVT / Belt
+    if (name.contains('roller') || name.contains('slider') || name.contains('cvt') || name.contains('belt')) {
       return const VehiclePartVisualInfo(
         icon: Icons.all_inclusive_rounded,
-        accentColor: Color(0xFF8B5CF6), // Deep Violet
-        label: 'Drive Belt',
+        accentColor: Color(0xFF8B5CF6),
+        label: 'Transmisi CVT',
       );
     }
 
-    // 6. Brake Pads & Fluids (Rem & Kampas)
+    // 5. Brake System
     if (name.contains('rem') || name.contains('brake')) {
-      if (name.contains('minyak')) {
-        return const VehiclePartVisualInfo(
-          icon: Icons.opacity_rounded,
-          accentColor: Color(0xFFE11D48), // Rose Red
-          label: 'Minyak Rem',
-        );
-      }
       return const VehiclePartVisualInfo(
         icon: Icons.disc_full_rounded,
-        accentColor: Color(0xFFEF4444), // Crimson Red
-        label: 'Kampas Rem',
+        accentColor: Color(0xFFDC2626),
+        label: 'Sistem Rem',
       );
     }
 
-    // 7. Air Filter (Filter Udara)
+    // 6. Air Filter
     if (name.contains('filter udara') || name.contains('air filter')) {
       return const VehiclePartVisualInfo(
         icon: Icons.air_rounded,
-        accentColor: Color(0xFF10B981), // Fresh Emerald
+        accentColor: Color(0xFF10B981),
         label: 'Filter Udara',
       );
     }
 
-    // 8. Cabin Filter (Filter AC / Kabin)
-    if (name.contains('kabin') || name.contains('cabin') || name.contains('ac')) {
-      return const VehiclePartVisualInfo(
-        icon: Icons.ac_unit_rounded,
-        accentColor: Color(0xFF0284C7), // Sky Blue
-        label: 'Filter AC',
-      );
-    }
-
-    // 9. Fuel Filter (Filter Bensin / Solar)
-    if (name.contains('bensin') || name.contains('fuel') || name.contains('solar')) {
-      return const VehiclePartVisualInfo(
-        icon: Icons.local_gas_station_rounded,
-        accentColor: Color(0xFFE11D48), // Ruby
-        label: 'Filter Bahan Bakar',
-      );
-    }
-
-    // 10. Oil Filter (Filter Oli)
-    if (name.contains('filter oli') || name.contains('oil filter')) {
-      return const VehiclePartVisualInfo(
-        icon: Icons.filter_alt_rounded,
-        accentColor: Color(0xFFD97706), // Amber Bronze
-        label: 'Filter Oli',
-      );
-    }
-
-    // 11. Coolant / Radiator
-    if (name.contains('coolant') ||
-        name.contains('radiator') ||
-        name.contains('air radiator')) {
-      return const VehiclePartVisualInfo(
-        icon: Icons.thermostat_rounded,
-        accentColor: Color(0xFF06B6D4), // Cyan
-        label: 'Coolant',
-      );
-    }
-
-    // 12. Battery / Aki
-    if (name.contains('aki') ||
-        name.contains('battery') ||
-        name.contains('baterai') ||
-        name.contains('accu')) {
+    // 7. Battery
+    if (name.contains('aki') || name.contains('battery') || name.contains('baterai') || name.contains('accu')) {
       return const VehiclePartVisualInfo(
         icon: Icons.battery_charging_full_rounded,
-        accentColor: Color(0xFFF97316), // Dynamic Orange
+        accentColor: Color(0xFFF97316),
         label: 'Aki',
       );
     }
 
-    // 13. Drive Chain & Sprocket (Rantai & Gir)
-    if (name.contains('rantai') ||
-        name.contains('chain') ||
-        name.contains('gir') ||
-        name.contains('sprocket')) {
+    // 8. Coolant
+    if (name.contains('coolant') || name.contains('radiator') || name.contains('air radiator')) {
+      return const VehiclePartVisualInfo(
+        icon: Icons.thermostat_rounded,
+        accentColor: Color(0xFF00A6A6),
+        label: 'Air Radiator',
+      );
+    }
+
+    // 9. Drive Chain
+    if (name.contains('rantai') || name.contains('chain') || name.contains('gir') || name.contains('sprocket')) {
       return const VehiclePartVisualInfo(
         icon: Icons.link_rounded,
-        accentColor: Color(0xFF14B8A6), // Teal
+        accentColor: Color(0xFF00A6A6),
         label: 'Rantai & Gir',
       );
     }
 
-    // 14. Clutch (Kopling)
-    if (name.contains('kopling') || name.contains('clutch')) {
-      return const VehiclePartVisualInfo(
-        icon: Icons.donut_large_rounded,
-        accentColor: Color(0xFFB45309), // Earth Amber
-        label: 'Kopling',
-      );
-    }
-
-    // 15. Tires (Ban)
+    // 10. Tires
     if (name.contains('ban') || name.contains('tire')) {
       return const VehiclePartVisualInfo(
         icon: Icons.album_rounded,
-        accentColor: Color(0xFF475569), // Slate
+        accentColor: Color(0xFF475569),
         label: 'Ban',
       );
     }
 
-    // 16. Suspension / Shockbreaker
-    if (name.contains('shock') || name.contains('suspensi') || name.contains('fork')) {
-      return const VehiclePartVisualInfo(
-        icon: Icons.swap_vert_rounded,
-        accentColor: Color(0xFF64748B), // Steel Grey
-        label: 'Suspensi',
-      );
-    }
-
-    // Fallback by category
-    if (cat.contains('mesin')) {
-      return const VehiclePartVisualInfo(
-        icon: Icons.engineering_rounded,
-        accentColor: Color(0xFFF59E0B),
-        label: 'Mesin',
-      );
-    } else if (cat.contains('kelistrikan')) {
-      return const VehiclePartVisualInfo(
-        icon: Icons.bolt_rounded,
-        accentColor: Color(0xFFEAB308),
-        label: 'Kelistrikan',
-      );
-    }
-
-    // Default universal spare part icon
     return const VehiclePartVisualInfo(
       icon: Icons.build_circle_rounded,
-      accentColor: Color(0xFF2563EB), // Primary Blue
+      accentColor: AppColors.primaryNavy,
       label: 'Komponen',
     );
   }
 }
 
-/// Interactive Vehicle Part Icon Badge powered by the signature DynamicFillIcon (100% to 0% fill) system.
+/// Interactive Vehicle Part Icon Badge powered by the genuine maintenance SVG assets
 /// Keeps visual identity 100% consistent across Dashboard, Maintenance Screen, and Detail Sheets.
 class VehiclePartIconBadge extends StatelessWidget {
   final String componentName;
@@ -218,17 +229,19 @@ class VehiclePartIconBadge extends StatelessWidget {
   final VoidCallback? onTap;
   final bool showStatusDot;
   final double? healthPercentage;
+  final bool useSvgAsset;
 
   const VehiclePartIconBadge({
     super.key,
     required this.componentName,
     this.category,
     this.status,
-    this.size = 44,
-    this.iconSize = 24,
+    this.size = 48,
+    this.iconSize = 28,
     this.onTap,
     this.showStatusDot = false,
     this.healthPercentage,
+    this.useSvgAsset = true,
   });
 
   double _resolvePercentage() {
@@ -250,23 +263,62 @@ class VehiclePartIconBadge extends StatelessWidget {
     final pct = _resolvePercentage();
     final type = category != null && category!.isNotEmpty ? category! : componentName;
 
-    Widget dynamicIcon = DynamicFillIcon(
-      componentType: type,
-      percentage: pct,
-      size: size,
-    );
+    Widget badgeWidget;
+
+    if (useSvgAsset) {
+      final svgPath = VehiclePartVisualInfo.resolveSvgAsset(componentName, category: category);
+
+      final Color statusColor;
+      if (pct < 0.2 || (status != null && status!.toUpperCase().contains('OVERDUE'))) {
+        statusColor = AppColors.dangerRed;
+      } else if (pct < 0.5 || (status != null && status!.toUpperCase().contains('DUE'))) {
+        statusColor = AppColors.warningAmber;
+      } else {
+        statusColor = AppColors.safeGreen;
+      }
+
+      badgeWidget = Container(
+        width: size,
+        height: size,
+        padding: EdgeInsets.all(size * 0.18),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(size * 0.28),
+          border: Border.all(
+            color: (statusColor == AppColors.dangerRed)
+                ? const Color(0xFFFECACA)
+                : AppColors.borderSubtle,
+            width: 1.2,
+          ),
+        ),
+        child: Center(
+          child: SvgPicture.asset(
+            svgPath,
+            width: iconSize,
+            height: iconSize,
+            fit: BoxFit.contain,
+          ),
+        ),
+      );
+    } else {
+      badgeWidget = DynamicFillIcon(
+        componentType: type,
+        percentage: pct,
+        size: size,
+      );
+    }
 
     if (onTap != null) {
-      dynamicIcon = InkWell(
+      badgeWidget = InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(size * 0.25),
-        child: dynamicIcon,
+        borderRadius: BorderRadius.circular(size * 0.28),
+        child: badgeWidget,
       );
     }
 
     return Semantics(
       label: 'Status $componentName: ${(pct * 100).toInt().clamp(0, 100)}%',
-      child: dynamicIcon,
+      child: badgeWidget,
     );
   }
 }

@@ -6,7 +6,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../vehicle/providers/vehicle_provider.dart';
 import '../../domain/maintenance_prediction_service.dart';
-import '../pages/add_service_page.dart';
+import 'record_service_sheet.dart';
 import 'vehicle_part_icon_badge.dart';
 
 /// Simplified Human-First Maintenance Detail Bottom Sheet
@@ -183,14 +183,12 @@ class MaintenanceDetailBottomSheet extends ConsumerWidget {
                         .firstOrNull;
 
                     if (vehicle != null) {
-                      Navigator.push(
+                      RecordServiceSheet.show(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => AddServicePage(
-                            vehicle: vehicle,
-                            preselectedItem: prediction.item,
-                          ),
-                        ),
+                        vehicle: vehicle,
+                        componentType: prediction.item.itemKey,
+                        componentName: prediction.componentName,
+                        lastServiceKm: prediction.item.lastServiceOdometer.toDouble(),
                       );
                     }
                   },

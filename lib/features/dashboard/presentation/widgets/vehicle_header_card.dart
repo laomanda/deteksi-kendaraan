@@ -68,8 +68,8 @@ class VehicleHeaderCard extends ConsumerWidget {
                       height: 26,
                       child: SvgPicture.asset(
                         activeVehicle.isMotorcycle
-                            ? 'assets/illustrations/motorcycle.svg'
-                            : 'assets/illustrations/car.svg',
+                            ? 'assets/vehicles/vehicle_silhouette_scooter.svg'
+                            : 'assets/vehicles/vehicle_silhouette_car.svg',
                         fit: BoxFit.contain,
                       ),
                     ),

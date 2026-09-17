@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hugeicons/hugeicons.dart';
 import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/constants/app_typography.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../../vehicle/data/models/vehicle_model.dart';
@@ -31,29 +32,36 @@ class DashboardVehicleSelector extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: const Color(0xFFF1F5F9),
+          color: AppColors.surfaceWhite,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: AppColors.borderSubtle),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x06102A43),
+              blurRadius: 6,
+              offset: Offset(0, 1),
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              activeVehicle.isMotorcycle
-                  ? Icons.two_wheeler_rounded
-                  : Icons.directions_car_rounded,
+            HugeIcon(
+              icon: activeVehicle.isMotorcycle
+                  ? HugeIcons.strokeRoundedMotorbike01
+                  : HugeIcons.strokeRoundedCar01,
               size: 16,
-              color: const Color(0xFF2563EB),
+              color: AppColors.primaryNavy,
             ),
             const SizedBox(width: 6),
             ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 140),
+              constraints: const BoxConstraints(maxWidth: 130),
               child: Text(
                 activeVehicle.displayName,
-                style: const TextStyle(
+                style: GoogleFonts.plusJakartaSans(
                   fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  color: Color(0xFF0F172A),
+                  fontSize: 12,
+                  color: AppColors.primaryNavy,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -64,7 +72,7 @@ class DashboardVehicleSelector extends ConsumerWidget {
               const Icon(
                 Icons.arrow_drop_down_rounded,
                 size: 18,
-                color: Color(0xFF64748B),
+                color: AppColors.secondarySteel,
               ),
             ],
           ],
@@ -114,10 +122,21 @@ class DashboardVehicleSelector extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Pilih Kendaraan Aktif', style: AppTypography.heading2),
+                    Text(
+                      'Pilih Kendaraan Aktif',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primaryNavy,
+                      ),
+                    ),
                     Text(
                       '${vehicles.length} Kendaraan',
-                      style: AppTypography.captionSubtle,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -128,69 +147,72 @@ class DashboardVehicleSelector extends ConsumerWidget {
                     itemCount: vehicles.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (_, index) {
-                    final v = vehicles[index];
-                    final isSelected = v.id == activeVehicle.id;
+                      final v = vehicles[index];
+                      final isSelected = v.id == activeVehicle.id;
 
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppSpacing.cardBorderRadius,
-                        side: BorderSide(
-                          color: isSelected
-                              ? AppColors.primaryBlue
-                              : AppColors.borderSubtle,
-                          width: isSelected ? 1.5 : 1.0,
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 4,
                         ),
-                      ),
-                      tileColor: isSelected
-                          ? AppColors.primaryBlue.withValues(alpha: 0.05)
-                          : AppColors.surfaceWhite,
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: v.isMotorcycle
-                              ? AppColors.primaryBlue.withValues(alpha: 0.1)
-                              : AppColors.secondaryTeal.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          side: BorderSide(
+                            color: isSelected
+                                ? AppColors.primaryNavy
+                                : AppColors.borderSubtle,
+                            width: isSelected ? 1.5 : 1.0,
+                          ),
                         ),
-                        child: Icon(
-                          v.isMotorcycle
-                              ? Icons.two_wheeler_rounded
-                              : Icons.directions_car_rounded,
-                          color: v.isMotorcycle
-                              ? AppColors.primaryBlue
-                              : AppColors.secondaryTeal,
-                          size: 20,
+                        tileColor: isSelected
+                            ? AppColors.primaryNavy.withValues(alpha: 0.04)
+                            : AppColors.surfaceWhite,
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.background,
+                            shape: BoxShape.circle,
+                          ),
+                          child: HugeIcon(
+                            icon: v.isMotorcycle
+                                ? HugeIcons.strokeRoundedMotorbike01
+                                : HugeIcons.strokeRoundedCar01,
+                            color: AppColors.primaryNavy,
+                            size: 20,
+                          ),
                         ),
-                      ),
-                      title: Text(
-                        v.displayName,
-                        style: AppTypography.bodyMedium.copyWith(
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.w600,
+                        title: Text(
+                          v.displayName,
+                          style: GoogleFonts.plusJakartaSans(
+                            color: AppColors.primaryNavy,
+                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                      subtitle: Text(
-                        '${v.year} • ${DateFormatter.formatKm(v.currentKilometer)}',
-                        style: AppTypography.captionSubtle,
-                      ),
-                      trailing: isSelected
-                          ? const Icon(Icons.check_circle_rounded,
-                              color: AppColors.primaryBlue)
-                          : null,
-                      onTap: () {
-                        ref
-                            .read(activeVehicleProvider.notifier)
-                            .setActiveVehicle(v.id);
-                        Navigator.pop(ctx);
-                      },
-                    );
-                      },
-                    ),
+                        subtitle: Text(
+                          '${v.year} • ${DateFormatter.formatKm(v.currentKilometer)} KM',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: AppColors.secondarySteel,
+                            fontSize: 11,
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? const Icon(
+                                Icons.check_circle_rounded,
+                                color: AppColors.safeGreen,
+                                size: 20,
+                              )
+                            : null,
+                        onTap: () {
+                          ref
+                              .read(activeVehicleProvider.notifier)
+                              .setActiveVehicle(v.id);
+                          Navigator.pop(ctx);
+                        },
+                      );
+                    },
                   ),
+                ),
                 const SizedBox(height: AppSpacing.space16),
                 SizedBox(
                   width: double.infinity,
@@ -198,12 +220,18 @@ class DashboardVehicleSelector extends ConsumerWidget {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: AppSpacing.buttonBorderRadius,
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       side: const BorderSide(color: AppColors.borderSubtle),
                     ),
-                    icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('Tambah Kendaraan Lain'),
+                    icon: const Icon(Icons.add_rounded, size: 18, color: AppColors.primaryNavy),
+                    label: Text(
+                      'Tambah Kendaraan Lain',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppColors.primaryNavy,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     onPressed: () {
                       Navigator.pop(ctx);
                       Navigator.push(

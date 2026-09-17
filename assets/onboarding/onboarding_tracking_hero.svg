@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320" width="400" height="320">
+  <defs>
+    <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00A6A6"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ground Plane Perspective Grid (Midnight Navy & Warm White Canvas) -->
+  <g stroke="#334E68" stroke-opacity="0.12" stroke-width="1.5">
+    <ellipse cx="200" cy="220" rx="170" ry="60" fill="#102A43" fill-opacity="0.04"/>
+    <path d="M40 220 C100 180, 300 180, 360 220" fill="none"/>
+    <path d="M60 240 C120 200, 280 200, 340 240" fill="none"/>
+    <line x1="80" y1="210" x2="320" y2="210"/>
+    <line x1="120" y1="180" x2="280" y2="180"/>
+  </g>
+
+  <!-- Continuous Dynamic 3D GPS Ribbon / Route Wave (Electric Cyan) -->
+  <!-- Shadow of Route Ribbon on Ground -->
+  <path d="M70 240 C120 230, 150 170, 200 190 C250 210, 280 150, 330 160" 
+        fill="none" stroke="#102A43" stroke-opacity="0.15" stroke-width="12" stroke-linecap="round"/>
+
+  <!-- Main Elevated 3D Route Line -->
+  <path d="M70 224 C120 214, 150 154, 200 174 C250 194, 280 134, 330 144" 
+        fill="none" stroke="#102A43" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M70 220 C120 210, 150 150, 200 170 C250 190, 280 130, 330 140" 
+        fill="none" stroke="url(#routeGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Starting Node Pin (Safe Green Solid) -->
+  <g transform="translate(70, 220)">
+    <ellipse cx="0" cy="8" rx="10" ry="4" fill="#102A43" fill-opacity="0.2"/>
+    <path d="M0 -22 C-9 -22, -14 -16, -14 -7 C-14 3, 0 10, 0 10 C0 10, 14 3, 14 -7 C14 -16, 9 -22, 0 -22 Z" 
+          fill="#16A34A" stroke="#F7F5EF" stroke-width="1.5"/>
+    <circle cx="0" cy="-9" r="4.5" fill="#FFFFFF"/>
+    <!-- Start Tag -->
+    <rect x="-24" y="-38" width="48" height="14" rx="4" fill="#102A43"/>
+    <text x="0" y="-28" fill="#F7F5EF" font-family="sans-serif" font-size="7" font-weight="700" text-anchor="middle">MULAI</text>
+  </g>
+
+  <!-- Moving Vehicle Beacon on Route (Positioned at apex x=200, y=170) -->
+  <g transform="translate(200, 170)">
+    <!-- Radar Wave Rings -->
+    <circle cx="0" cy="0" r="24" fill="#00A6A6" fill-opacity="0.15"/>
+    <circle cx="0" cy="0" r="14" fill="#00A6A6" fill-opacity="0.3"/>
+    <!-- Center Vehicle Dot with Directional Arrow -->
+    <circle cx="0" cy="0" r="7" fill="#00A6A6" stroke="#F7F5EF" stroke-width="2"/>
+    <polygon points="0,-4 3,3 -3,3" fill="#102A43"/>
+
+    <!-- Floating Live Telemetry HUD Tag (Speedometer in Space Grotesk) -->
+    <g transform="translate(0, -42)">
+      <rect x="-42" y="-14" width="84" height="28" rx="8" fill="#102A43" stroke="#00A6A6" stroke-width="1.5"/>
+      <text x="0" y="4" fill="#F7F5EF" font-family="monospace" font-size="11" font-weight="700" text-anchor="middle">64 KM/H</text>
+      <!-- Downward Indicator Arrow -->
+      <polygon points="0,18 -4,14 4,14" fill="#00A6A6"/>
+    </g>
+  </g>
+
+  <!-- Destination Node Pin (Danger Red Solid Finish Pin) -->
+  <g transform="translate(330, 140)">
+    <ellipse cx="0" cy="8" rx="10" ry="4" fill="#102A43" fill-opacity="0.2"/>
+    <path d="M0 -22 C-9 -22, -14 -16, -14 -7 C-14 3, 0 10, 0 10 C0 10, 14 3, 14 -7 C14 -16, 9 -22, 0 -22 Z" 
+          fill="#DC2626" stroke="#F7F5EF" stroke-width="1.5"/>
+    <!-- Checkered Flag Motif inside Pin -->
+    <rect x="-4" y="-13" width="4" height="4" fill="#FFFFFF"/>
+    <rect x="0" y="-9" width="4" height="4" fill="#FFFFFF"/>
+    <!-- Finish Tag -->
+    <rect x="-24" y="-38" width="48" height="14" rx="4" fill="#102A43"/>
+    <text x="0" y="-28" fill="#F7F5EF" font-family="sans-serif" font-size="7" font-weight="700" text-anchor="middle">TUJUAN</text>
+  </g>
+
+  <!-- Bottom Metric Pill: Jarak Tempuh Otomatis -->
+  <g transform="translate(200, 276)">
+    <rect x="-90" y="-16" width="180" height="32" rx="16" fill="#102A43" stroke="#334E68" stroke-width="1.5"/>
+    <text x="0" y="4" fill="#F7F5EF" font-family="monospace" font-size="10" font-weight="700" text-anchor="middle" letter-spacing="1">
+      TOTAL: 18.4 KM
+    </text>
+  </g>
+</svg>

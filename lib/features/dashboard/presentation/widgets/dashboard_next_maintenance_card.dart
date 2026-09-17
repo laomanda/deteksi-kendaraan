@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_spacing.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../../maintenance/presentation/widgets/maintenance_detail_bottom_sheet.dart';
 import '../../../maintenance/presentation/widgets/vehicle_part_icon_badge.dart';
 import '../../../maintenance/providers/maintenance_prediction_providers.dart';
 
-/// Single Source of Truth for Nearest / Urgent Maintenance Action
-/// Cohesive, harmonious color styling without conflicting hues
+/// Intelligent Warning Experience Card for RideCare Dashboard (DESIGN.md Section 14)
+/// Highlights nearest recommended maintenance without looking like an alarm siren
 class DashboardNextMaintenanceCard extends ConsumerWidget {
   final VoidCallback? onNavigateToMaintenance;
 
@@ -33,37 +33,52 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
       data: (items) {
         if (items.isEmpty) {
           return Container(
-            padding: const EdgeInsets.all(AppSpacing.space16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: const Color(0xFFF0FDF4),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFBBF7D0)),
-            ),
-            child: const Row(
-              children: [
-                Icon(
-                  Icons.check_circle_rounded,
-                  color: Color(0xFF16A34A),
-                  size: 22,
+              color: AppColors.surfaceWhite,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: AppColors.borderSubtle),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x06102A43),
+                  blurRadius: 10,
+                  offset: Offset(0, 2),
                 ),
-                SizedBox(width: 12),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF0FDF4),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppColors.safeGreen,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Semua Komponen Terawat',
-                        style: TextStyle(
-                          color: Color(0xFF166534),
+                        'Semua Komponen Prima',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: AppColors.primaryNavy,
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 1),
                       Text(
-                        'Tidak ada jadwal servis mendesak saat ini.',
-                        style: TextStyle(
-                          color: Color(0xFF15803D),
+                        'Tidak ada jadwal perawatan mendesak saat ini.',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: AppColors.secondarySteel,
                           fontSize: 11,
                         ),
                       ),
@@ -79,31 +94,36 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
         final isOverdue = nextItem.isOverdue;
         final isDueSoon = nextItem.isDueSoon;
 
-        // Scoped unified color scheme for this card to prevent clashing
-        final Color themeColor;
-        final Color themeLightBg;
-        final Color themeBorder;
-        final IconData headerIcon;
-        final String statusLabel;
+        final Color statusColor;
+        final Color statusLightBg;
+        final Color statusBorder;
+        final String statusPillLabel;
+        final String recommendationText;
 
         if (isOverdue) {
-          themeColor = const Color(0xFFDC2626);
-          themeLightBg = const Color(0xFFFEF2F2);
-          themeBorder = const Color(0xFFFECACA);
-          headerIcon = Icons.error_outline_rounded;
-          statusLabel = 'Lewat Jadwal';
+          statusColor = AppColors.dangerRed;
+          statusLightBg = const Color(0xFFFEF2F2);
+          statusBorder = const Color(0xFFFECACA);
+          statusPillLabel = 'Lewat Jadwal';
+          recommendationText = 'Disarankan ganti segera (0 KM lagi)';
         } else if (isDueSoon) {
-          themeColor = const Color(0xFFD97706);
-          themeLightBg = const Color(0xFFFFFBEB);
-          themeBorder = const Color(0xFFFDE68A);
-          headerIcon = Icons.warning_amber_rounded;
-          statusLabel = 'Perlu Perhatian';
+          statusColor = AppColors.warningAmber;
+          statusLightBg = const Color(0xFFFFFBEB);
+          statusBorder = const Color(0xFFFDE68A);
+          statusPillLabel = 'Perlu Perhatian';
+          final kmText = nextItem.remainingKm > 0
+              ? '${DateFormatter.formatKm(nextItem.remainingKm.toDouble())} KM'
+              : '0 KM';
+          recommendationText = 'Disarankan dalam $kmText lagi';
         } else {
-          themeColor = const Color(0xFF2563EB);
-          themeLightBg = const Color(0xFFEFF6FF);
-          themeBorder = const Color(0xFFBFDBFE);
-          headerIcon = Icons.event_note_rounded;
-          statusLabel = 'Jadwal Berkala';
+          statusColor = AppColors.accentCyan;
+          statusLightBg = const Color(0xFFF0FDFA);
+          statusBorder = const Color(0xFFCCFBF1);
+          statusPillLabel = 'Jadwal Berkala';
+          final kmText = nextItem.remainingKm > 0
+              ? '${DateFormatter.formatKm(nextItem.remainingKm.toDouble())} KM'
+              : '0 KM';
+          recommendationText = 'Disarankan dalam $kmText lagi';
         }
 
         return Container(
@@ -111,14 +131,14 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
             color: AppColors.surfaceWhite,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: isOverdue ? themeBorder : const Color(0xFFE2E8F0),
-              width: isOverdue ? 1.2 : 1.0,
+              color: isOverdue ? const Color(0xFFFECACA) : AppColors.borderSubtle,
+              width: isOverdue ? 1.4 : 1.0,
             ),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x06000000),
-                blurRadius: 10,
-                offset: Offset(0, 2),
+                color: Color(0x08102A43),
+                blurRadius: 12,
+                offset: Offset(0, 3),
               ),
             ],
           ),
@@ -134,26 +154,29 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
               },
               borderRadius: BorderRadius.circular(18),
               child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.space16),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header row: Section title & status pill
+                    // Header: Section label & Status Tag
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              headerIcon,
-                              size: 17,
-                              color: themeColor,
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: statusColor,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                             const SizedBox(width: 8),
-                            const Text(
-                              'Tindakan Disarankan',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
+                            Text(
+                              'Perawatan Berikutnya',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: AppColors.primaryNavy,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -166,14 +189,14 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: themeLightBg,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: themeBorder),
+                            color: statusLightBg,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: statusBorder),
                           ),
                           child: Text(
-                            statusLabel,
-                            style: TextStyle(
-                              color: themeColor,
+                            statusPillLabel,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: statusColor,
                               fontWeight: FontWeight.w700,
                               fontSize: 11,
                             ),
@@ -182,9 +205,9 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                       ],
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
 
-                    // Component Name & Icon (Both themed harmoniously)
+                    // Component Details & Icon Badge
                     Row(
                       children: [
                         VehiclePartIconBadge(
@@ -192,7 +215,7 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                           category: nextItem.category,
                           status: nextItem.status,
                           healthPercentage: nextItem.currentHealth,
-                          size: 44,
+                          size: 46,
                           iconSize: 24,
                         ),
                         const SizedBox(width: 14),
@@ -202,24 +225,19 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                             children: [
                               Text(
                                 nextItem.componentName,
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: AppColors.primaryNavy,
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 3),
                               Text(
-                                isOverdue
-                                    ? 'Sudah melewati batas pemakaian. Segera servis.'
-                                    : 'Perkiraan: ${nextItem.remainingKm > 0 ? DateFormatter.formatKm(nextItem.remainingKm.toDouble()) : '0 km'} lagi (${nextItem.remainingDays > 0 ? '${nextItem.remainingDays} hari' : 'segera'})',
-                                style: TextStyle(
-                                  color: isOverdue
-                                      ? const Color(0xFFDC2626)
-                                      : AppColors.textSecondary,
+                                recommendationText,
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: isOverdue ? AppColors.dangerRed : AppColors.secondarySteel,
                                   fontSize: 12,
-                                  fontWeight:
-                                      isOverdue ? FontWeight.w500 : FontWeight.normal,
+                                  fontWeight: isOverdue ? FontWeight.w600 : FontWeight.w500,
                                 ),
                               ),
                             ],
@@ -229,18 +247,18 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                     ),
 
                     const SizedBox(height: 14),
-                    const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                    const Divider(height: 1, color: Color(0xFFF1EFE9)),
                     const SizedBox(height: 12),
 
-                    // Bottom Row: Action
+                    // Bottom Row: Clear Companion CTA
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const Text(
-                          'Jadwal Servis Berkala',
-                          style: TextStyle(
-                            color: Color(0xFF64748B),
+                        Text(
+                          'Rekomendasi Servis',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: AppColors.textMuted,
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
@@ -251,26 +269,26 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                             vertical: 7,
                           ),
                           decoration: BoxDecoration(
-                            color: themeLightBg,
+                            color: AppColors.background,
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: themeBorder),
+                            border: Border.all(color: AppColors.borderSubtle),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Lihat Detail',
-                                style: TextStyle(
-                                  color: themeColor,
+                                'Lihat Perawatan',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: AppColors.primaryNavy,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              Icon(
+                              const Icon(
                                 Icons.arrow_forward_rounded,
                                 size: 14,
-                                color: themeColor,
+                                color: AppColors.primaryNavy,
                               ),
                             ],
                           ),

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Geometric Shield Gradients with Strict Palette (No excessive gradients) -->
+    <linearGradient id="shieldRim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#334E68" />
+      <stop offset="100%" stop-color="#102A43" />
+    </linearGradient>
+    <linearGradient id="cyanAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00A6A6" />
+      <stop offset="100%" stop-color="#14B8A6" />
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Protective Shield Contour (Midnight Navy & Steel Blue) -->
+  <path d="M256 36 L436 96 C436 260 360 392 256 476 C152 392 76 260 76 96 Z" 
+        fill="#102A43" stroke="#334E68" stroke-width="8" stroke-linejoin="round"/>
+
+  <!-- Inner Recessed Shield Plate -->
+  <path d="M256 64 L410 116 C410 252 344 366 256 442 C168 366 102 252 102 116 Z" 
+        fill="#0D1F33" stroke="#1E3851" stroke-width="3"/>
+
+  <!-- Dynamic Road Curve / Horizon Silhouette (Aerodynamic Trajectory) -->
+  <path d="M120 340 C170 300 210 240 256 160 C302 240 342 300 392 340 C340 330 290 320 256 320 C222 320 172 330 120 340 Z" 
+        fill="url(#cyanAccent)"/>
+
+  <!-- Center Vehicle Wing / Companion Shield Crest -->
+  <path d="M256 140 L330 260 L290 260 L256 200 L222 260 L182 260 Z" 
+        fill="#F7F5EF"/>
+
+  <!-- Telemetry Pulse Wave / Heartbeat of Engine (Safe Green Accent) -->
+  <path d="M180 376 L220 376 L238 346 L256 406 L274 360 L292 376 L332 376" 
+        fill="none" stroke="#16A34A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Core Apex Sensor Point -->
+  <circle cx="256" cy="136" r="8" fill="#00A6A6" stroke="#F7F5EF" stroke-width="3"/>
+
+  <!-- Precision Technical Calibration Tick Marks -->
+  <line x1="256" y1="74" x2="256" y2="86" stroke="#334E68" stroke-width="4" stroke-linecap="round"/>
+  <line x1="170" y1="102" x2="178" y2="112" stroke="#334E68" stroke-width="3" stroke-linecap="round"/>
+  <line x1="342" y1="102" x2="334" y2="112" stroke="#334E68" stroke-width="3" stroke-linecap="round"/>
+</svg>

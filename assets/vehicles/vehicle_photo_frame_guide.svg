@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <defs>
+    <!-- Viewfinder Dimmer Mask (Semi-transparent dark boundary) -->
+    <mask id="frameHole">
+      <rect x="0" y="0" width="800" height="450" fill="#FFFFFF"/>
+      <rect x="60" y="40" width="680" height="370" rx="16" fill="#000000"/>
+    </mask>
+  </defs>
+
+  <!-- Outside Scrim Mask -->
+  <rect x="0" y="0" width="800" height="450" fill="#102A43" fill-opacity="0.45" mask="url(#frameHole)"/>
+
+  <!-- Viewfinder Outer Safe Area Border -->
+  <rect x="60" y="40" width="680" height="370" rx="16" fill="none" stroke="#334E68" stroke-width="2" stroke-opacity="0.6"/>
+
+  <!-- High-Precision Precision Corner Brackets (Electric Cyan) -->
+  <!-- Top-Left -->
+  <path d="M60 80 L60 40 L100 40" fill="none" stroke="#00A6A6" stroke-width="5" stroke-linecap="round"/>
+  <!-- Top-Right -->
+  <path d="M700 40 L740 40 L740 80" fill="none" stroke="#00A6A6" stroke-width="5" stroke-linecap="round"/>
+  <!-- Bottom-Left -->
+  <path d="M60 370 L60 410 L100 410" fill="none" stroke="#00A6A6" stroke-width="5" stroke-linecap="round"/>
+  <!-- Bottom-Right -->
+  <path d="M700 410 L740 410 L740 370" fill="none" stroke="#00A6A6" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Level Horizon Guideline (Pitch & Roll Alignment) -->
+  <g stroke="#00A6A6" stroke-opacity="0.4" stroke-width="1.5" stroke-dasharray="6 6">
+    <line x1="60" y1="225" x2="360" y2="225"/>
+    <line x1="440" y1="225" x2="740" y2="225"/>
+  </g>
+
+  <!-- Center Focal Target Reticle -->
+  <circle cx="400" cy="225" r="14" fill="none" stroke="#00A6A6" stroke-width="2"/>
+  <circle cx="400" cy="225" r="3" fill="#00A6A6"/>
+  <line x1="400" y1="202" x2="400" y2="211" stroke="#00A6A6" stroke-width="2"/>
+  <line x1="400" y1="239" x2="400" y2="248" stroke="#00A6A6" stroke-width="2"/>
+  <line x1="377" y1="225" x2="386" y2="225" stroke="#00A6A6" stroke-width="2"/>
+  <line x1="414" y1="225" x2="423" y2="225" stroke="#00A6A6" stroke-width="2"/>
+
+  <!-- Vehicle Wheelbase Base Alignment Markers -->
+  <!-- Left Wheel Well Indicator -->
+  <g transform="translate(210, 340)">
+    <circle cx="0" cy="0" r="32" fill="none" stroke="#00A6A6" stroke-opacity="0.5" stroke-width="2" stroke-dasharray="4 4"/>
+    <line x1="-12" y1="0" x2="12" y2="0" stroke="#00A6A6" stroke-opacity="0.6" stroke-width="2"/>
+    <text x="-36" y="44" fill="#F7F5EF" font-family="sans-serif" font-size="10" font-weight="600" opacity="0.8">RODA BLK</text>
+  </g>
+
+  <!-- Right Wheel Well Indicator -->
+  <g transform="translate(590, 340)">
+    <circle cx="0" cy="0" r="32" fill="none" stroke="#00A6A6" stroke-opacity="0.5" stroke-width="2" stroke-dasharray="4 4"/>
+    <line x1="-12" y1="0" x2="12" y2="0" stroke="#00A6A6" stroke-opacity="0.6" stroke-width="2"/>
+    <text x="-36" y="44" fill="#F7F5EF" font-family="sans-serif" font-size="10" font-weight="600" opacity="0.8">RODA DPN</text>
+  </g>
+
+  <!-- Top Viewfinder Guidance Badge -->
+  <g transform="translate(400, 70)">
+    <rect x="-130" y="-14" width="260" height="28" rx="14" fill="#102A43" fill-opacity="0.85" stroke="#334E68" stroke-width="1.5"/>
+    <text x="0" y="4" fill="#F7F5EF" font-family="sans-serif" font-size="11" font-weight="600" text-anchor="middle">
+      Posisikan kendaraan pas di dalam bingkai
+    </text>
+  </g>
+</svg>

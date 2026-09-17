@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hugeicons/hugeicons.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../../maintenance/presentation/pages/add_service_page.dart';
 import '../../../maintenance/presentation/pages/maintenance_page.dart';
 
-/// Cohesive Action Deck with Unified Brand Palette (No clashing colors)
+/// Cockpit Action Area for RideCare Dashboard
+/// Premium automotive action deck using HugeIcons and cohesive brand hierarchy
 class DashboardQuickActions extends ConsumerWidget {
   final VoidCallback? onStartRide;
   final VoidCallback? onNavigateToMaintenance;
@@ -25,29 +28,33 @@ class DashboardQuickActions extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Primary Action: Mulai Perjalanan (Clean Royal Blue)
+        // 1. Primary Action: Mulai Perjalanan (Midnight Navy Cockpit Button)
         SizedBox(
           width: double.infinity,
-          height: 50,
+          height: 52,
           child: ElevatedButton(
             onPressed: onStartRide,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryBlue,
+              backgroundColor: AppColors.primaryNavy,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 18),
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.play_arrow_rounded, size: 22, color: Colors.white),
-                SizedBox(width: 8),
+                const HugeIcon(
+                  icon: HugeIcons.strokeRoundedRoute01,
+                  color: Colors.white,
+                  size: 22,
+                ),
+                const SizedBox(width: 10),
                 Text(
                   'Mulai Perjalanan',
-                  style: TextStyle(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.2,
@@ -59,16 +66,16 @@ class DashboardQuickActions extends ConsumerWidget {
           ),
         ),
 
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
 
-        // 2 & 3: Companion Cards ([Catat Servis] & [Kondisi Komponen])
+        // 2. Secondary Interactive Action Tiles
         Row(
           children: [
             // Catat Servis
             Expanded(
               child: _buildActionTile(
                 context: context,
-                icon: Icons.build_circle_outlined,
+                icon: HugeIcons.strokeRoundedWrench01,
                 title: 'Catat Servis',
                 subtitle: 'Riwayat perawatan',
                 onTap: () {
@@ -89,14 +96,15 @@ class DashboardQuickActions extends ConsumerWidget {
                 },
               ),
             ),
-            const SizedBox(width: 10),
-            // Kondisi Komponen
+            const SizedBox(width: 12),
+
+            // Cek Kendaraan / Kondisi Komponen
             Expanded(
               child: _buildActionTile(
                 context: context,
-                icon: Icons.health_and_safety_outlined,
-                title: 'Kondisi Komponen',
-                subtitle: 'Cek status mesin',
+                icon: HugeIcons.strokeRoundedShield01,
+                title: 'Cek Kendaraan',
+                subtitle: 'Status komponen',
                 onTap: () {
                   if (onNavigateToMaintenance != null) {
                     onNavigateToMaintenance!();
@@ -121,7 +129,7 @@ class DashboardQuickActions extends ConsumerWidget {
 
   Widget _buildActionTile({
     required BuildContext context,
-    required IconData icon,
+    required dynamic icon,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
@@ -129,13 +137,13 @@ class DashboardQuickActions extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderSubtle),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x05000000),
-            blurRadius: 6,
-            offset: Offset(0, 1),
+            color: Color(0x08102A43),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -143,19 +151,26 @@ class DashboardQuickActions extends ConsumerWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             child: Row(
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF), // Soft clean blue
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.borderSubtle),
                   ),
-                  child: Icon(icon, color: const Color(0xFF2563EB), size: 20),
+                  child: Center(
+                    child: HugeIcon(
+                      icon: icon,
+                      color: AppColors.primaryNavy,
+                      size: 20,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -165,20 +180,20 @@ class DashboardQuickActions extends ConsumerWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: AppColors.primaryNavy,
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 1),
+                      const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 10,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: AppColors.secondarySteel,
+                          fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 1,

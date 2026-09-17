@@ -286,6 +286,14 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
     final currentKm = double.tryParse(_odometerController.text.trim()) ?? 0.0;
     final engineCc = int.tryParse(_engineCcController.text.trim());
 
+    final effectiveTransmission = _allowedTransmissions.contains(_selectedTransmission)
+        ? _selectedTransmission
+        : (_allowedTransmissions.isNotEmpty ? _allowedTransmissions.first : null);
+
+    final effectiveFuelType = _allowedFuelTypes.contains(_selectedFuelType)
+        ? _selectedFuelType
+        : (_allowedFuelTypes.isNotEmpty ? _allowedFuelTypes.first : null);
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -303,8 +311,8 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
               : null,
           engineCc: engineCc,
           color: _colorController.text.trim().isNotEmpty ? _colorController.text.trim() : null,
-          transmission: _selectedTransmission,
-          fuelType: _selectedFuelType,
+          transmission: effectiveTransmission,
+          fuelType: effectiveFuelType,
         ),
       ),
     );
@@ -357,81 +365,6 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top Restore Data Banner Card
-                Container(
-                  margin: const EdgeInsets.only(bottom: AppSpacing.space16),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.15)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.restore_page_outlined,
-                          color: AppColors.primaryBlue,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Sudah punya data cadangan?',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            const Text(
-                              'Pulihkan profil kendaraan & riwayat servis dari berkas JSON ekspor.',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: _isImporting ? null : _importBackup,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryBlue,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: _isImporting
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Text(
-                                'Impor',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                              ),
-                      ),
-                    ],
-                  ),
-                ),
                 // Vehicle Photo Avatar Picker
                 Center(
                   child: Column(
@@ -720,102 +653,114 @@ class _FirstVehicleSetupScreenState extends State<FirstVehicleSetupScreen> {
                                 ],
                               ),
                               const SizedBox(height: AppSpacing.space12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: DropdownButtonFormField<String>(
-                                      key: ValueKey('trans_${_selectedVehicleType}_${_selectedCategory}_$_selectedTransmission'),
-                                      initialValue: _selectedTransmission,
-                                      disabledHint: Text(
-                                        _transmissionLabel(_selectedTransmission),
-                                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                                      ),
-                                      decoration: InputDecoration(
-                                        labelText: 'Transmisi',
-                                        helperText: _transmissionHelperText,
-                                        helperMaxLines: 1,
-                                        prefixIcon: const Icon(Icons.tune_rounded, size: 20),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(10),
-                                          borderSide: const BorderSide(color: AppColors.borderSubtle),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(10),
-                                          borderSide: const BorderSide(color: AppColors.borderSubtle),
-                                        ),
-                                        disabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(10),
-                                          borderSide: BorderSide(color: AppColors.borderSubtle.withValues(alpha: 0.6)),
-                                        ),
-                                        filled: _isTransmissionLocked,
-                                        fillColor: _isTransmissionLocked ? AppColors.surfaceSubtle : null,
-                                      ),
-                                      items: _allowedTransmissions.map((t) {
-                                        return DropdownMenuItem(
-                                          value: t,
-                                          child: Text(_transmissionLabel(t)),
-                                        );
-                                      }).toList(),
-                                      onChanged: _isTransmissionLocked
-                                          ? null
-                                          : (val) => setState(() => _selectedTransmission = val),
-                                    ),
-                                  ),
-                                  const SizedBox(width: AppSpacing.space12),
-                                  Expanded(
-                                    child: DropdownButtonFormField<String>(
-                                      key: ValueKey('fuel_${_selectedCategory}_$_selectedFuelType'),
-                                      initialValue: _selectedFuelType,
-                                      disabledHint: Text(
-                                        _selectedFuelType == 'Diesel'
-                                            ? 'Diesel'
-                                            : _selectedFuelType == 'Hybrid'
-                                                ? 'Hybrid'
-                                                : _selectedFuelType == 'Electric'
-                                                    ? 'Listrik'
-                                                    : 'Bensin',
-                                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                                      ),
-                                      decoration: InputDecoration(
-                                        labelText: 'Bahan Bakar',
-                                        helperText: _fuelTypeHelperText,
-                                        helperMaxLines: 1,
-                                        prefixIcon: const Icon(Icons.local_gas_station_rounded, size: 20),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(10),
-                                          borderSide: const BorderSide(color: AppColors.borderSubtle),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(10),
-                                          borderSide: const BorderSide(color: AppColors.borderSubtle),
-                                        ),
-                                        disabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(10),
-                                          borderSide: BorderSide(color: AppColors.borderSubtle.withValues(alpha: 0.6)),
-                                        ),
-                                        filled: _isFuelTypeLocked,
-                                        fillColor: _isFuelTypeLocked ? AppColors.surfaceSubtle : null,
-                                      ),
-                                      items: _allowedFuelTypes.map((f) {
-                                        return DropdownMenuItem(
-                                          value: f,
-                                          child: Text(
-                                            f == 'Gasoline'
-                                                ? 'Bensin'
-                                                : f == 'Diesel'
-                                                    ? 'Diesel'
-                                                    : f == 'Hybrid'
-                                                        ? 'Hybrid'
-                                                        : 'Listrik',
+                              Builder(
+                                builder: (context) {
+                                  final effectiveTransmission = _allowedTransmissions.contains(_selectedTransmission)
+                                      ? _selectedTransmission
+                                      : (_allowedTransmissions.isNotEmpty ? _allowedTransmissions.first : null);
+
+                                  final effectiveFuelType = _allowedFuelTypes.contains(_selectedFuelType)
+                                      ? _selectedFuelType
+                                      : (_allowedFuelTypes.isNotEmpty ? _allowedFuelTypes.first : null);
+
+                                  return Row(
+                                    children: [
+                                      Expanded(
+                                        child: DropdownButtonFormField<String>(
+                                          key: ValueKey('trans_${_selectedVehicleType}_${_selectedCategory}_$effectiveTransmission'),
+                                          initialValue: effectiveTransmission,
+                                          disabledHint: Text(
+                                            _transmissionLabel(effectiveTransmission),
+                                            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
                                           ),
-                                        );
-                                      }).toList(),
-                                      onChanged: _isFuelTypeLocked
-                                          ? null
-                                          : (val) => setState(() => _selectedFuelType = val),
-                                    ),
-                                  ),
-                                ],
+                                          decoration: InputDecoration(
+                                            labelText: 'Transmisi',
+                                            helperText: _transmissionHelperText,
+                                            helperMaxLines: 1,
+                                            prefixIcon: const Icon(Icons.tune_rounded, size: 20),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                              borderSide: const BorderSide(color: AppColors.borderSubtle),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                              borderSide: const BorderSide(color: AppColors.borderSubtle),
+                                            ),
+                                            disabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                              borderSide: BorderSide(color: AppColors.borderSubtle.withValues(alpha: 0.6)),
+                                            ),
+                                            filled: _isTransmissionLocked,
+                                            fillColor: _isTransmissionLocked ? AppColors.surfaceSubtle : null,
+                                          ),
+                                          items: _allowedTransmissions.map((t) {
+                                            return DropdownMenuItem(
+                                              value: t,
+                                              child: Text(_transmissionLabel(t)),
+                                            );
+                                          }).toList(),
+                                          onChanged: _isTransmissionLocked
+                                              ? null
+                                              : (val) => setState(() => _selectedTransmission = val),
+                                        ),
+                                      ),
+                                      const SizedBox(width: AppSpacing.space12),
+                                      Expanded(
+                                        child: DropdownButtonFormField<String>(
+                                          key: ValueKey('fuel_${_selectedCategory}_$effectiveFuelType'),
+                                          initialValue: effectiveFuelType,
+                                          disabledHint: Text(
+                                            effectiveFuelType == 'Diesel'
+                                                ? 'Diesel'
+                                                : effectiveFuelType == 'Hybrid'
+                                                    ? 'Hybrid'
+                                                    : effectiveFuelType == 'Electric'
+                                                        ? 'Listrik'
+                                                        : 'Bensin',
+                                            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                                          ),
+                                          decoration: InputDecoration(
+                                            labelText: 'Bahan Bakar',
+                                            helperText: _fuelTypeHelperText,
+                                            helperMaxLines: 1,
+                                            prefixIcon: const Icon(Icons.local_gas_station_rounded, size: 20),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                              borderSide: const BorderSide(color: AppColors.borderSubtle),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                              borderSide: const BorderSide(color: AppColors.borderSubtle),
+                                            ),
+                                            disabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                              borderSide: BorderSide(color: AppColors.borderSubtle.withValues(alpha: 0.6)),
+                                            ),
+                                            filled: _isFuelTypeLocked,
+                                            fillColor: _isFuelTypeLocked ? AppColors.surfaceSubtle : null,
+                                          ),
+                                          items: _allowedFuelTypes.map((f) {
+                                            return DropdownMenuItem(
+                                              value: f,
+                                              child: Text(
+                                                f == 'Gasoline'
+                                                    ? 'Bensin'
+                                                    : f == 'Diesel'
+                                                        ? 'Diesel'
+                                                        : f == 'Hybrid'
+                                                            ? 'Hybrid'
+                                                            : 'Listrik',
+                                              ),
+                                            );
+                                          }).toList(),
+                                          onChanged: _isFuelTypeLocked
+                                              ? null
+                                              : (val) => setState(() => _selectedFuelType = val),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
                             ],
                           ),

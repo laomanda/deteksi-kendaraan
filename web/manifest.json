@@ -1,11 +1,11 @@
 {
-    "name": "ridecare",
-    "short_name": "ridecare",
+    "name": "RideCare - Personal Vehicle Companion",
+    "short_name": "RideCare",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#102A43",
+    "theme_color": "#102A43",
+    "description": "Personal Vehicle Companion - Smart maintenance, journey tracking, and vehicle health monitor.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/constants/app_typography.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hugeicons/hugeicons.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../controllers/ride_tracking_controller.dart';
 
-/// StartRideButton with hold-to-finish interaction (DSS Section 8.5)
-
+/// StartRideButton with hold-to-finish interaction (DESIGN.md & DSS Section 8.5)
+/// Styled for Personal Vehicle Companion experience
 class StartRideButton extends ConsumerStatefulWidget {
   final VoidCallback? onStart;
   final Function(RideCompletionResult? result)? onFinished;
@@ -17,7 +17,6 @@ class StartRideButton extends ConsumerStatefulWidget {
     this.onStart,
     this.onFinished,
   });
-
 
   @override
   ConsumerState<StartRideButton> createState() => _StartRideButtonState();
@@ -53,37 +52,74 @@ class _StartRideButtonState extends ConsumerState<StartRideButton>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceWhite,
         shape: RoundedRectangleBorder(
-          borderRadius: AppSpacing.cardBorderRadius,
+          borderRadius: BorderRadius.circular(20),
         ),
         title: Row(
-          children: const [
-            Icon(Icons.flag_rounded, color: AppColors.primaryBlue),
-            SizedBox(width: 8),
-            Text('Selesaikan Perjalanan?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: const BoxDecoration(
+                color: Color(0xFFFEF2F2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.flag_rounded, color: AppColors.dangerRed, size: 20),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Selesaikan Perjalanan?',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primaryNavy,
+                ),
+              ),
+            ),
           ],
         ),
-        content: const Text(
-          'Perjalanan akan disimpan dan jarak tempuh akan otomatis ditambahkan ke total kilometer kendaraan.',
+        content: Text(
+          'Perjalanan akan disimpan dan jarak tempuh otomatis ditambahkan ke total kilometer kendaraan Anda.',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 13,
+            color: AppColors.secondarySteel,
+            height: 1.4,
+          ),
         ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
+            child: Text(
+              'Lanjutkan Perjalanan',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w600,
+                color: AppColors.secondarySteel,
+              ),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.healthCritical,
+              backgroundColor: AppColors.dangerRed,
               foregroundColor: Colors.white,
+              elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: AppSpacing.chipBorderRadius,
+                borderRadius: BorderRadius.circular(12),
               ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             ),
             onPressed: () {
               Navigator.pop(ctx);
               _executeFinish();
             },
-            child: const Text('Ya, Selesaikan'),
+            child: Text(
+              'Ya, Selesaikan',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
           ),
         ],
       ),
@@ -115,45 +151,92 @@ class _StartRideButtonState extends ConsumerState<StartRideButton>
 
   Widget _buildIdleButton() {
     return Container(
-      decoration: const BoxDecoration(
-        boxShadow: AppSpacing.floatingShadow,
-      ),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryBlue,
-          minimumSize: const Size.fromHeight(56),
-          shape: RoundedRectangleBorder(
-            borderRadius: AppSpacing.buttonBorderRadius,
+      decoration: BoxDecoration(
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x18102A43),
+            blurRadius: 16,
+            offset: Offset(0, 4),
           ),
-        ),
-        onPressed: () async {
-          final started =
-              await ref.read(rideTrackingProvider.notifier).startRide();
-          if (started) {
-            widget.onStart?.call();
-          } else {
-            final err = ref.read(rideTrackingProvider).errorMessage;
-            if (err != null && mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(err),
-                  backgroundColor: AppColors.healthWarning,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+        ],
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Material(
+        color: AppColors.primaryNavy,
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          onTap: () async {
+            final started =
+                await ref.read(rideTrackingProvider.notifier).startRide();
+            if (started) {
+              widget.onStart?.call();
+            } else {
+              final err = ref.read(rideTrackingProvider).errorMessage;
+              if (err != null && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(err),
+                    backgroundColor: AppColors.warningAmber,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
             }
-          }
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.navigation_rounded, color: Colors.white, size: 22),
-            const SizedBox(width: AppSpacing.space8),
-            Text(
-              'Mulai Perjalanan',
-              style: AppTypography.heading3.copyWith(color: Colors.white),
+          },
+          borderRadius: BorderRadius.circular(18),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: HugeIcon(
+                      icon: HugeIcons.strokeRoundedRoute01,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Mulai Rekam Perjalanan',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Catat rute, jarak, dan waktu perjalanan',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFFCBD2D9),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -166,13 +249,19 @@ class _StartRideButtonState extends ConsumerState<StartRideButton>
         onTap: () {
           ref.read(rideTrackingProvider.notifier).forceStartNow();
         },
-        borderRadius: AppSpacing.buttonBorderRadius,
+        borderRadius: BorderRadius.circular(18),
         child: Container(
-          height: 56,
+          height: 60,
           decoration: BoxDecoration(
-            color: AppColors.primaryBlue,
-            borderRadius: AppSpacing.buttonBorderRadius,
-            boxShadow: AppSpacing.floatingShadow,
+            color: AppColors.primaryNavy,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x14102A43),
+                blurRadius: 12,
+                offset: Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -185,12 +274,13 @@ class _StartRideButtonState extends ConsumerState<StartRideButton>
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
-              const SizedBox(width: AppSpacing.space12),
+              const SizedBox(width: 12),
               Text(
-                'Mengunci Sinyal... (Ketuk untuk Mulai)',
-                style: AppTypography.heading3.copyWith(
+                'Mengunci Sinyal GPS... (Ketuk untuk Mulai)',
+                style: GoogleFonts.plusJakartaSans(
                   color: Colors.white,
-                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
                 ),
               ),
             ],
@@ -210,12 +300,12 @@ class _StartRideButtonState extends ConsumerState<StartRideButton>
           flex: 1,
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.surfaceSubtle,
-              foregroundColor: AppColors.textPrimary,
+              backgroundColor: AppColors.background,
+              foregroundColor: AppColors.primaryNavy,
               elevation: 0,
               minimumSize: const Size.fromHeight(56),
               shape: RoundedRectangleBorder(
-                borderRadius: AppSpacing.buttonBorderRadius,
+                borderRadius: BorderRadius.circular(16),
                 side: const BorderSide(color: AppColors.borderSubtle, width: 1),
               ),
             ),
@@ -228,19 +318,20 @@ class _StartRideButtonState extends ConsumerState<StartRideButton>
             },
             icon: Icon(
               isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-              size: 24,
-              color: AppColors.textPrimary,
+              size: 22,
+              color: AppColors.primaryNavy,
             ),
             label: Text(
               isPaused ? 'Lanjut' : 'Jeda',
-              style: AppTypography.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                color: AppColors.primaryNavy,
               ),
             ),
           ),
         ),
-        const SizedBox(width: AppSpacing.space12),
+        const SizedBox(width: 12),
 
         // 2. Finish Button (Click to prompt confirmation, or hold to finish directly)
         Expanded(
@@ -266,24 +357,30 @@ class _StartRideButtonState extends ConsumerState<StartRideButton>
                     Container(
                       height: 56,
                       decoration: BoxDecoration(
-                        color: AppColors.healthCritical,
-                        borderRadius: AppSpacing.buttonBorderRadius,
-                        boxShadow: AppSpacing.floatingShadow,
+                        color: AppColors.dangerRed,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x20DC2626),
+                            blurRadius: 10,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
                       ),
                       alignment: Alignment.center,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.stop_rounded, color: Colors.white, size: 24),
-                          const SizedBox(width: AppSpacing.space8),
+                          const Icon(Icons.stop_rounded, color: Colors.white, size: 22),
+                          const SizedBox(width: 8),
                           Text(
                             _holdController.value > 0.05
                                 ? 'Menyelesaikan...'
-                                : 'Selesai',
-                            style: AppTypography.bodyMedium.copyWith(
+                                : 'Selesaikan Perjalanan',
+                            style: GoogleFonts.plusJakartaSans(
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
-                              fontSize: 15,
+                              fontSize: 14,
                             ),
                           ),
                         ],
@@ -292,14 +389,14 @@ class _StartRideButtonState extends ConsumerState<StartRideButton>
                     // Hold progress overlay
                     if (_holdController.value > 0)
                       ClipRRect(
-                        borderRadius: AppSpacing.buttonBorderRadius,
+                        borderRadius: BorderRadius.circular(16),
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: FractionallySizedBox(
                             widthFactor: _holdController.value,
                             heightFactor: 1.0,
                             child: Container(
-                              color: Colors.white.withValues(alpha: 0.3),
+                              color: Colors.white.withValues(alpha: 0.35),
                             ),
                           ),
                         ),

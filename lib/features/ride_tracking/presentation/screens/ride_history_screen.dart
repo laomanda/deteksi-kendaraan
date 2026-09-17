@@ -162,7 +162,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen> {
           Row(
             children: [
               SvgPicture.asset(
-                'assets/share_card/badge_achievement.svg',
+                'assets/experience/badge_health_perfect.svg',
                 width: 28,
                 height: 28,
               ),
@@ -197,7 +197,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen> {
           Row(
             children: [
               SvgPicture.asset(
-                'assets/share_card/badge_distance.svg',
+                'assets/experience/badge_distance_milestone.svg',
                 width: 28,
                 height: 28,
               ),
@@ -296,8 +296,8 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen> {
                 children: [
                   SvgPicture.asset(
                     (activeVehicle.isMotorcycle as bool)
-                        ? 'assets/share_card/badge_motorcycle.svg'
-                        : 'assets/share_card/badge_vehicle.svg',
+                        ? 'assets/vehicles/vehicle_silhouette_scooter.svg'
+                        : 'assets/vehicles/vehicle_silhouette_car.svg',
                     width: 16,
                     height: 16,
                   ),

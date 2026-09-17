@@ -11,19 +11,28 @@ import '../controllers/maintenance_status_controller.dart';
 
 /// Modal Bottom Sheet for recording maintenance service (DSS Section 8.3 & 10.3)
 class RecordServiceSheet extends ConsumerStatefulWidget {
-  final ComponentHealthResult result;
+  final ComponentHealthResult? result;
   final VehicleModel vehicle;
+  final String? componentType;
+  final String? componentName;
+  final double? lastServiceKm;
 
   const RecordServiceSheet({
     super.key,
-    required this.result,
+    this.result,
     required this.vehicle,
-  });
+    this.componentType,
+    this.componentName,
+    this.lastServiceKm,
+  }) : assert(result != null || componentType != null, 'Either result or componentType must be provided');
 
   static Future<void> show(
     BuildContext context, {
-    required ComponentHealthResult result,
+    ComponentHealthResult? result,
     required VehicleModel vehicle,
+    String? componentType,
+    String? componentName,
+    double? lastServiceKm,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -32,7 +41,13 @@ class RecordServiceSheet extends ConsumerStatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: AppSpacing.modalTopRadius,
       ),
-      builder: (_) => RecordServiceSheet(result: result, vehicle: vehicle),
+      builder: (_) => RecordServiceSheet(
+        result: result,
+        vehicle: vehicle,
+        componentType: componentType,
+        componentName: componentName,
+        lastServiceKm: lastServiceKm,
+      ),
     );
   }
 
@@ -46,6 +61,27 @@ class _RecordServiceSheetState extends ConsumerState<RecordServiceSheet> {
   late final TextEditingController _notesController;
   late DateTime _selectedDate;
   bool _isSaving = false;
+
+  String get _effectiveComponentType =>
+      widget.componentType ??
+      widget.result?.item.componentType ??
+      '';
+
+  String get _effectiveComponentName {
+    if (widget.componentName != null && widget.componentName!.isNotEmpty) {
+      return widget.componentName!;
+    }
+    final meta = ComponentCatalog.findMetadata(
+      widget.vehicle.vehicleType,
+      _effectiveComponentType,
+    );
+    return meta?.displayName ?? _effectiveComponentType;
+  }
+
+  double get _effectiveLastServiceKm =>
+      widget.lastServiceKm ??
+      widget.result?.item.lastServiceKm ??
+      0.0;
 
   @override
   void initState() {
@@ -66,11 +102,7 @@ class _RecordServiceSheetState extends ConsumerState<RecordServiceSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final meta = ComponentCatalog.findMetadata(
-      widget.vehicle.vehicleType,
-      widget.result.item.componentType,
-    );
-    final componentName = meta?.displayName ?? widget.result.item.componentType;
+    final componentName = _effectiveComponentName;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -128,8 +160,8 @@ class _RecordServiceSheetState extends ConsumerState<RecordServiceSheet> {
                 if (parsed == null || parsed < 0) {
                   return 'Masukkan angka kilometer valid';
                 }
-                if (parsed < widget.result.item.lastServiceKm) {
-                  return 'Tidak boleh lebih kecil dari servis sebelumnya (${widget.result.item.lastServiceKm.toInt()} km)';
+                if (_effectiveLastServiceKm > 0 && parsed < _effectiveLastServiceKm) {
+                  return 'Tidak boleh lebih kecil dari servis sebelumnya (${_effectiveLastServiceKm.toInt()} km)';
                 }
                 return null;
               },
@@ -245,11 +277,12 @@ class _RecordServiceSheetState extends ConsumerState<RecordServiceSheet> {
       final notes = _notesController.text.trim();
 
       await ref.read(maintenanceStatusProvider.notifier).recordService(
-            componentType: widget.result.item.componentType,
+            componentType: _effectiveComponentType,
             serviceKm: km,
             serviceDate: _selectedDate,
             cost: 0.0,
             notes: notes,
+            vehicleId: widget.vehicle.id,
           );
 
       if (mounted) {

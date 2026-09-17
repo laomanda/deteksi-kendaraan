@@ -541,7 +541,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: Column(
                 children: [
                   SvgPicture.asset(
-                    'assets/icons/app_logo.svg',
+                    'assets/branding/app_logo_emblem.svg',
                     width: 42,
                     height: 42,
                   ),

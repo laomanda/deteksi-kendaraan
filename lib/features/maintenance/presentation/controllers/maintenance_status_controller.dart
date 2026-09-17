@@ -8,6 +8,8 @@ import '../../domain/health_calculation_service.dart';
 import '../../domain/maintenance_prediction_service.dart';
 import '../../providers/maintenance_intelligence_providers.dart';
 import '../../providers/maintenance_prediction_providers.dart';
+import '../../../shared/providers/repository_providers.dart'
+    hide maintenanceRepositoryProvider;
 
 class MaintenanceStatusState {
   final List<ComponentHealthResult> results;
@@ -150,16 +152,20 @@ class MaintenanceStatusNotifier
     required DateTime serviceDate,
     required double cost,
     required String notes,
+    String? vehicleId,
   }) async {
-    final activeVehicle = ref.read(activeVehicleProvider);
-    if (activeVehicle == null) return;
+    final targetVehicleId = vehicleId ?? ref.read(activeVehicleProvider)?.id;
+    if (targetVehicleId == null) return;
 
     final repo = ref.read(maintenanceRepositoryProvider);
-    final vmNotifier = ref.read(vehicleMaintenanceProvider(activeVehicle.id).notifier);
+    final vmNotifier = ref.read(vehicleMaintenanceProvider(targetVehicleId).notifier);
     final activeNotifier = ref.read(activeVehicleProvider.notifier);
+    final vehicle = ref.read(vehicleListProvider).where((v) => v.id == targetVehicleId).firstOrNull;
+    final vehicleRepo = ref.read(vehicleRepositoryProvider);
+    final isActive = ref.read(activeVehicleProvider)?.id == targetVehicleId;
 
     await repo.recordService(
-      vehicleId: activeVehicle.id,
+      vehicleId: targetVehicleId,
       componentType: componentType,
       serviceKm: serviceKm,
       serviceDate: serviceDate,
@@ -170,17 +176,21 @@ class MaintenanceStatusNotifier
     // Refresh VehicleMaintenance StateNotifier
     await vmNotifier.refresh();
 
+    // If serviceKm is greater than current vehicle odometer, update vehicle odometer
+    if (vehicle != null && serviceKm > vehicle.currentKilometer) {
+      await vehicleRepo.updateOdometer(targetVehicleId, serviceKm);
+      if (isActive) {
+        await activeNotifier.updateOdometer(serviceKm);
+      }
+    }
+
     // Invalidate dependent providers so Dasbor and Tab Kesehatan update synchronously
-    ref.invalidate(maintenancePredictionProvider(activeVehicle.id));
-    ref.invalidate(upcomingMaintenanceProvider(activeVehicle.id));
-    ref.invalidate(maintenanceHealthProvider(activeVehicle.id));
+    ref.invalidate(vehicleListProvider);
+    ref.invalidate(maintenancePredictionProvider(targetVehicleId));
+    ref.invalidate(upcomingMaintenanceProvider(targetVehicleId));
+    ref.invalidate(maintenanceHealthProvider(targetVehicleId));
     ref.invalidate(dashboardSummaryProvider);
     ref.invalidateSelf();
-
-    // If serviceKm is greater than current vehicle odometer, update vehicle odometer last
-    if (serviceKm > activeVehicle.currentKilometer) {
-      await activeNotifier.updateOdometer(serviceKm);
-    }
   }
 }
 
