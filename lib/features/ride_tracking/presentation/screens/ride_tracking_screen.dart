@@ -395,7 +395,7 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Total Odometer: ${DateFormatter.formatKm(vehicle.currentKilometer)} KM',
+                  'Total Odometer: ${DateFormatter.formatKm(vehicle.currentKilometer, includeUnit: false)} KM',
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 11,
                     color: AppColors.textMuted,
@@ -790,7 +790,7 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                         ),
                       ),
                       subtitle: Text(
-                        '${v.year} • ${DateFormatter.formatKm(v.currentKilometer)} KM',
+                        '${v.year} • ${DateFormatter.formatKm(v.currentKilometer, includeUnit: false)} KM',
                         style: GoogleFonts.plusJakartaSans(
                           color: AppColors.secondarySteel,
                           fontSize: 11,

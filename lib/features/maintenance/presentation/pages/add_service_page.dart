@@ -429,7 +429,7 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
                         const SizedBox(height: 2),
                         Text(
                           widget.preselectedItem?.intervalKm != null
-                              ? 'Interval: ${DateFormatter.formatKm(widget.preselectedItem!.intervalKm!.toDouble())} KM'
+                              ? 'Interval: ${DateFormatter.formatKm(widget.preselectedItem!.intervalKm!.toDouble(), includeUnit: false)} KM'
                               : 'Komponen Terjadwal',
                           style: AppTypography.captionSubtle.copyWith(color: AppColors.textSecondary),
                         ),

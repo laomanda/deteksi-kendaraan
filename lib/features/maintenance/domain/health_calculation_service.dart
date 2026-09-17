@@ -120,23 +120,38 @@ class HealthCalculationService {
     required int currentOdometer,
     required int defaultIntervalKm,
     MaintenancePriceModel? priceEstimate,
+    DateTime? currentDate,
   }) {
-    final usedKm = math.max(0, currentOdometer - item.lastServiceOdometer);
-    final remainingKm = math.max(0, defaultIntervalKm - usedKm);
-    final healthPercentage = defaultIntervalKm > 0
-        ? ((remainingKm / defaultIntervalKm) * 100.0).clamp(0.0, 100.0)
-        : 100.0;
+    final now = currentDate ?? DateTime.now();
+    final isTimeOnly = defaultIntervalKm <= 0;
+    final usedKm = isTimeOnly ? 0 : math.max(0, currentOdometer - item.lastServiceOdometer);
+    final remainingKm = isTimeOnly ? 0 : math.max(0, defaultIntervalKm - usedKm);
+
+    double healthPercentage;
+    if (isTimeOnly) {
+      if (item.intervalMonth != null && item.intervalMonth! > 0) {
+        final lastDate = item.lastServiceDate ?? now;
+        final daysInInterval = item.intervalMonth! * 30;
+        final elapsedDays = math.max(0, now.difference(lastDate).inDays);
+        final remainingDays = math.max(0, daysInInterval - elapsedDays);
+        healthPercentage = ((remainingDays / daysInInterval) * 100.0).clamp(0.0, 100.0);
+      } else {
+        healthPercentage = 100.0;
+      }
+    } else {
+      healthPercentage = ((remainingKm / defaultIntervalKm) * 100.0).clamp(0.0, 100.0);
+    }
 
     String status;
-    if (remainingKm == 0 || healthPercentage <= 0) {
+    if (healthPercentage <= 0.0 || (!isTimeOnly && remainingKm <= 0)) {
       status = 'OVERDUE';
-    } else if (remainingKm <= (0.25 * defaultIntervalKm) || healthPercentage <= 25.0) {
+    } else if (healthPercentage <= 25.0 || (!isTimeOnly && remainingKm <= (0.25 * defaultIntervalKm))) {
       status = 'DUE SOON';
     } else {
       status = 'GOOD';
     }
 
-    final nextServiceOdo = item.lastServiceOdometer + defaultIntervalKm;
+    final nextServiceOdo = isTimeOnly ? currentOdometer : item.lastServiceOdometer + defaultIntervalKm;
 
     return VehicleMaintenanceHealth(
       item: item,

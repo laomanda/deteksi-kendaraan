@@ -190,7 +190,7 @@ class DashboardVehicleSelector extends ConsumerWidget {
                           ),
                         ),
                         subtitle: Text(
-                          '${v.year} • ${DateFormatter.formatKm(v.currentKilometer)} KM',
+                          '${v.year} • ${DateFormatter.formatKm(v.currentKilometer, includeUnit: false)} KM',
                           style: GoogleFonts.plusJakartaSans(
                             color: AppColors.secondarySteel,
                             fontSize: 11,

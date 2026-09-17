@@ -189,7 +189,7 @@ final maintenanceHealthProvider =
       final repo = ref.read(maintenanceRepositoryProvider);
 
       final healthList = vmList.map((vm) {
-        final intervalKm = vm.intervalKm ?? 3000;
+        final intervalKm = vm.intervalKm ?? (vm.itemCategory == 'battery' || vm.maintenanceId.contains('battery') || vm.maintenanceId.contains('aki') ? 0 : 3000);
         final priceEstimate = repo.getEstimatedPrice(
           vm.itemName ?? vm.maintenanceId,
           vehicleType: vType,

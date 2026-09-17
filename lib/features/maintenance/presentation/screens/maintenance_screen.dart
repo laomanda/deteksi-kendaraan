@@ -321,7 +321,7 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
 
                 // Total Odometer in Space Grotesk
                 Text(
-                  '${DateFormatter.formatKm(vehicle.currentKilometer)} KM • $totalComponents Komponen Dipantau',
+                  '${DateFormatter.formatKm(vehicle.currentKilometer, includeUnit: false)} KM • $totalComponents Komponen Dipantau',
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 12,
                     color: AppColors.secondarySteel,

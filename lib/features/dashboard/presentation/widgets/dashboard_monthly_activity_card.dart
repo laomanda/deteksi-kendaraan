@@ -125,7 +125,7 @@ class DashboardMonthlyActivityCard extends ConsumerWidget {
                 child: _buildMetricItem(
                   icon: HugeIcons.strokeRoundedRoute01,
                   label: 'Jarak Tempuh',
-                  value: '${stats.formattedDistance} KM',
+                  value: stats.formattedDistance.toUpperCase(),
                 ),
               ),
               Container(

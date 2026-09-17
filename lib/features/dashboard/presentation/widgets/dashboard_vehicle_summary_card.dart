@@ -230,7 +230,7 @@ class DashboardVehicleSummaryCard extends ConsumerWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                '${DateFormatter.formatKm(vehicle.currentKilometer)} KM',
+                                '${DateFormatter.formatKm(vehicle.currentKilometer, includeUnit: false)} KM',
                                 style: GoogleFonts.spaceGrotesk(
                                   color: AppColors.primaryNavy,
                                   fontSize: 24,

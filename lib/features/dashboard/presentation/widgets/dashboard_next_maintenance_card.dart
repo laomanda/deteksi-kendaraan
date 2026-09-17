@@ -112,7 +112,7 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
           statusBorder = const Color(0xFFFDE68A);
           statusPillLabel = 'Perlu Perhatian';
           final kmText = nextItem.remainingKm > 0
-              ? '${DateFormatter.formatKm(nextItem.remainingKm.toDouble())} KM'
+              ? '${DateFormatter.formatKm(nextItem.remainingKm.toDouble(), includeUnit: false)} KM'
               : '0 KM';
           recommendationText = 'Disarankan dalam $kmText lagi';
         } else {
@@ -121,7 +121,7 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
           statusBorder = const Color(0xFFCCFBF1);
           statusPillLabel = 'Jadwal Berkala';
           final kmText = nextItem.remainingKm > 0
-              ? '${DateFormatter.formatKm(nextItem.remainingKm.toDouble())} KM'
+              ? '${DateFormatter.formatKm(nextItem.remainingKm.toDouble(), includeUnit: false)} KM'
               : '0 KM';
           recommendationText = 'Disarankan dalam $kmText lagi';
         }
