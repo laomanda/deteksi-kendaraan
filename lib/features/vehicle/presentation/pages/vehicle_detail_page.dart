@@ -8,7 +8,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../maintenance/domain/maintenance_prediction_service.dart';
-import '../../../maintenance/presentation/pages/add_service_page.dart';
 import '../../../maintenance/presentation/pages/maintenance_page.dart';
 import '../../../maintenance/presentation/widgets/maintenance_detail_bottom_sheet.dart';
 import '../../../maintenance/presentation/widgets/vehicle_part_icon_badge.dart';
@@ -246,10 +245,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
 
               // 6. JOURNEY HISTORY ("Riwayat Perjalanan")
               _buildJourneyHistorySection(),
-              const SizedBox(height: 28),
-
-              // 7. ACTIONS (Contextual Primary CTA)
-              _buildBottomAction(context),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -1292,43 +1288,6 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
           ),
         ],
       ],
-    );
-  }
-
-  // ==================================================
-  // 7. ACTION DESIGN (Contextual Primary CTA)
-  // ==================================================
-  Widget _buildBottomAction(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryNavy,
-          foregroundColor: Colors.white,
-          elevation: 2,
-          padding: const EdgeInsets.symmetric(vertical: 15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => AddServicePage(vehicle: _vehicle),
-            ),
-          );
-        },
-        icon: const Icon(Icons.add_circle_outline_rounded, size: 20, color: AppColors.accentCyan),
-        label: Text(
-          'Catat Servis Baru',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
-      ),
     );
   }
 }

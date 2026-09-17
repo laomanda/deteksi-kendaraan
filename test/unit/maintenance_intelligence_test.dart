@@ -11,6 +11,7 @@ import 'package:ridecare/features/maintenance/data/models/service_record_model.d
 import 'package:ridecare/features/maintenance/data/models/vehicle_maintenance_model.dart';
 import 'package:ridecare/features/maintenance/data/repositories/maintenance_repository.dart';
 import 'package:ridecare/features/maintenance/domain/health_calculation_service.dart';
+import 'package:ridecare/features/maintenance/domain/maintenance_prediction_service.dart';
 import 'package:ridecare/features/vehicle/data/models/vehicle_model.dart';
 import 'package:ridecare/features/vehicle/data/repositories/vehicle_repository.dart';
 
@@ -340,6 +341,69 @@ void main() {
       expect(srvJson.containsKey('cost'), isTrue);
       expect(srvJson.containsKey('workshop'), isTrue);
       expect(srvJson.containsKey('notes'), isTrue);
+    });
+
+    // -------------------------------------------------------------
+    // TEST 7: Custom Jangkauan Oli (Misal 1.500 KM pada motor 600.000 KM)
+    // -------------------------------------------------------------
+    test('TEST 7: Custom Jangkauan Oli (Misal 1.500 KM pada 600.000 KM) -> Target Servis & Degradasi Akurat', () async {
+      final vehicleId = 'honda-high-km-001';
+
+      // Inisialisasi item kendaraan
+      await maintenanceRepository.getVehicleMaintenance(vehicleId, vehicleType: 'motorcycle');
+
+      // Catat servis oli dengan jangkauan custom 1.500 KM pada Odometer 600.000 KM
+      final record = ServiceRecordModel(
+        id: 'srv-record-custom-oil',
+        vehicleId: vehicleId,
+        maintenanceId: 'mc-01-engine-oil',
+        maintenanceName: 'Engine Oil',
+        serviceDate: DateTime(2026, 9, 1),
+        odometer: 600000,
+        cost: 65000,
+        notes: 'Oli Mineral Jangkauan 1.500 KM',
+      );
+
+      await maintenanceRepository.addServiceRecord(record, customIntervalKm: 1500);
+
+      // Verifikasi intervalKm terupdate ke 1.500 KM di vehicle_maintenance
+      final updatedItems = await maintenanceRepository.getVehicleMaintenance(vehicleId);
+      final oilItem = updatedItems.firstWhere((it) =>
+          it.maintenanceId == 'mc-01-engine-oil' ||
+          (it.itemCategory ?? '').contains('engine_oil'));
+
+      expect(oilItem.lastServiceOdometer, 600000);
+      expect(oilItem.intervalKm, 1500);
+      expect(oilItem.healthPercentage, 100);
+
+      // Verifikasi prediksi target servis berikutnya: 600.000 + 1.500 = 601.500 KM
+      final prediction = MaintenancePredictionService.predictItem(
+        item: oilItem,
+        currentOdometer: 600000,
+        currentDate: DateTime(2026, 9, 1),
+      );
+
+      expect(prediction.nextServiceOdometer, 601500);
+      expect(prediction.remainingKm, 1500);
+      expect(prediction.status, 'GOOD');
+
+      // Saat odometer bertambah 1.000 KM (menjadi 601.000 KM)
+      final midPrediction = MaintenancePredictionService.predictItem(
+        item: oilItem,
+        currentOdometer: 601000,
+        currentDate: DateTime(2026, 9, 1),
+      );
+      expect(midPrediction.remainingKm, 500);
+      expect(midPrediction.status, 'DUE SOON');
+
+      // Saat odometer mencapai batas 601.500 KM
+      final duePrediction = MaintenancePredictionService.predictItem(
+        item: oilItem,
+        currentOdometer: 601500,
+        currentDate: DateTime(2026, 9, 1),
+      );
+      expect(duePrediction.remainingKm, 0);
+      expect(duePrediction.status, 'OVERDUE');
     });
   });
 }

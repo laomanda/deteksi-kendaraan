@@ -189,6 +189,7 @@ class MaintenanceDetailBottomSheet extends ConsumerWidget {
                         componentType: prediction.item.itemKey,
                         componentName: prediction.componentName,
                         lastServiceKm: prediction.item.lastServiceOdometer.toDouble(),
+                        intervalKm: prediction.item.intervalKm?.toDouble(),
                       );
                     }
                   },

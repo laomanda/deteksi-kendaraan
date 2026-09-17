@@ -153,6 +153,7 @@ class MaintenanceStatusNotifier
     required double cost,
     required String notes,
     String? vehicleId,
+    int? customIntervalKm,
   }) async {
     final targetVehicleId = vehicleId ?? ref.read(activeVehicleProvider)?.id;
     if (targetVehicleId == null) return;
@@ -171,6 +172,7 @@ class MaintenanceStatusNotifier
       serviceDate: serviceDate,
       cost: cost,
       notes: notes,
+      customIntervalKm: customIntervalKm,
     );
 
     // Refresh VehicleMaintenance StateNotifier

@@ -9,6 +9,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../vehicle/data/models/vehicle_category_model.dart';
 import '../../../vehicle/data/models/vehicle_model.dart';
+import '../../../vehicle/domain/vehicle_intelligence_service.dart';
 import '../../../vehicle/providers/vehicle_provider.dart'
     hide maintenanceRepositoryProvider;
 import '../../data/models/service_record_model.dart';
@@ -691,13 +692,9 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
   }
 
   Widget _buildFallbackDropdown() {
-    const fallbackActions = [
-      'Ganti Oli Mesin',
-      'Ganti Oli Gardan / Transmisi',
-      'Servis Rem & Kampas',
-      'Servis CVT / V-Belt',
-      'Ganti Busi & Filter',
-      'Ganti Ban',
+    final templates = VehicleIntelligenceService.getTemplatesForVehicle(widget.vehicle);
+    final fallbackActions = [
+      ...templates.map((t) => t.componentName),
       'Servis Rutin Berkala',
       'Lainnya',
     ];

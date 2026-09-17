@@ -6,6 +6,8 @@ import '../data/models/service_record_model.dart';
 import '../data/models/vehicle_maintenance_model.dart';
 import '../data/repositories/maintenance_repository.dart';
 import '../domain/health_calculation_service.dart';
+import '../domain/vehicle_maintenance_service.dart';
+import '../../vehicle/data/models/vehicle_model.dart';
 
 /// Provider instance singleton untuk MaintenanceRepository
 final maintenanceRepositoryProvider = Provider<MaintenanceRepository>((ref) {
@@ -99,6 +101,33 @@ final vehicleMaintenanceProvider = StateNotifierProvider.family<
     vehicleType: vehicleType,
     vehicleCategoryId: vehicleCategoryId,
   );
+});
+
+/// Provider exposing structured VehicleMaintenanceComponentDto list from vehicle maintenance profile
+final vehicleMaintenanceComponentsProvider = Provider.family<
+    AsyncValue<List<VehicleMaintenanceComponentDto>>,
+    String>((ref, vehicleId) {
+  final vmAsync = ref.watch(vehicleMaintenanceProvider(vehicleId));
+  final vehiclesState = ref.watch(vehicleListProvider);
+
+  return vmAsync.whenData((items) {
+    VehicleModel? vehicle;
+    vehiclesState.whenData((list) {
+      vehicle = list.where((v) => v.id == vehicleId).firstOrNull;
+    });
+
+    final targetVehicle = vehicle ??
+        ref.read(vehicleRepositoryProvider).getAllVehicles().where((v) => v.id == vehicleId).firstOrNull ??
+        VehicleModel(
+          id: vehicleId,
+          vehicleType: 'motorcycle',
+          brand: 'Vehicle',
+          model: 'Model',
+          year: DateTime.now().year,
+        );
+
+    return VehicleMaintenanceService.getVehicleMaintenanceComponents(targetVehicle, items);
+  });
 });
 
 /// StateNotifier untuk mengelola riwayat servis per vehicleId
