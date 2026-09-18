@@ -475,7 +475,7 @@ class RideTrackingNotifier extends StateNotifier<RideTrackingState> {
 
     // Refresh Vehicle and Maintenance Providers
     _ref.read(activeVehicleProvider.notifier).refresh();
-    _ref.read(vehicleListProvider.notifier).refresh();
+    _ref.read(vehicleProvider.notifier).refresh();
     _ref.invalidate(recentRideProvider);
     _ref.invalidate(rideHistoryListProvider);
 

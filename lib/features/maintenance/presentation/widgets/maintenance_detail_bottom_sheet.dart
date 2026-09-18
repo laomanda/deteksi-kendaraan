@@ -39,27 +39,25 @@ class MaintenanceDetailBottomSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Color statusColor;
-    String statusTitle;
+    final String statusTitle = prediction.userFacingStatusLabel;
 
     if (prediction.isOverdue) {
       statusColor = AppColors.healthCritical;
-      statusTitle = 'Perlu Servis Sekarang';
     } else if (prediction.isDueSoon) {
       statusColor = AppColors.healthWarning;
-      statusTitle = 'Segera Lakukan Pengecekan';
     } else {
       statusColor = AppColors.healthOptimal;
-      statusTitle = 'Kondisi Komponen Baik';
     }
 
     final String reasonText;
     if (prediction.isOverdue) {
-      reasonText = 'Sudah melewati batas pemakaian yang disarankan.';
+      reasonText = 'Perlu dilakukan segera karena sudah melewati batas pemakaian.';
     } else if (prediction.isDueSoon) {
       reasonText =
-          'Sudah mendekati batas pemakaian (${DateFormatter.formatKm(prediction.remainingKm.toDouble())} lagi).';
+          'Mendekati jadwal perawatan. Disarankan dalam ${DateFormatter.formatKm(prediction.remainingKm.toDouble())} lagi.';
     } else {
-      reasonText = 'Masih dalam batas pemakaian yang aman.';
+      reasonText =
+          'Kondisi prima. Disarankan dalam ${DateFormatter.formatKm(prediction.remainingKm.toDouble())} lagi.';
     }
 
     return Container(
@@ -178,8 +176,7 @@ class MaintenanceDetailBottomSheet extends ConsumerWidget {
                     Navigator.pop(context);
                     final vehicle = ref
                         .read(vehicleListProvider)
-                        .value
-                        ?.where((v) => v.id == vehicleId)
+                        .where((v) => v.id == vehicleId)
                         .firstOrNull;
 
                     if (vehicle != null) {
@@ -188,7 +185,9 @@ class MaintenanceDetailBottomSheet extends ConsumerWidget {
                         vehicle: vehicle,
                         componentType: prediction.item.itemKey,
                         componentName: prediction.componentName,
-                        lastServiceKm: prediction.item.lastServiceOdometer.toDouble(),
+                        lastServiceKm: prediction.item.hasServiceHistory
+                            ? prediction.item.lastServiceOdometer.toDouble()
+                            : vehicle.currentKilometer,
                         intervalKm: prediction.item.intervalKm?.toDouble(),
                       );
                     }
@@ -234,8 +233,23 @@ class MaintenanceDetailBottomSheet extends ConsumerWidget {
                       child: Column(
                         children: [
                           _buildInfoRow(
-                            'Rekomendasi Servis',
+                            'Status Catatan',
+                            prediction.userFacingHistoryStateTitle,
+                          ),
+                          const SizedBox(height: 6),
+                          _buildInfoRow(
+                            'Titik Acuan',
+                            prediction.userFacingHistoryText,
+                          ),
+                          const SizedBox(height: 6),
+                          _buildInfoRow(
+                            'Target Odometer',
                             DateFormatter.formatKm(prediction.nextServiceOdometer.toDouble()),
+                          ),
+                          const SizedBox(height: 6),
+                          _buildInfoRow(
+                            'Status Jadwal',
+                            prediction.userFacingRemainingText,
                           ),
                           const SizedBox(height: 6),
                           _buildInfoRow(

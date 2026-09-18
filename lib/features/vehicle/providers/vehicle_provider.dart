@@ -113,4 +113,4 @@ final vehicleProvider =
 });
 
 /// Alias for vehicleProvider
-final vehicleListProvider = vehicleProvider;
+final vehicleAsyncListProvider = vehicleProvider;

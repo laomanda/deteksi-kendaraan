@@ -3,19 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/component_catalog.dart';
 import '../../../garage/data/models/vehicle_model.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
-import '../../../maintenance/data/models/maintenance_item_model.dart';
-import '../../../maintenance/domain/health_calculation_service.dart';
 import '../../../navigation/main_navigation_screen.dart';
 import '../../../shared/providers/repository_providers.dart';
-
-enum InitialConditionOption {
-  brandNew,
-  existingHeuristic,
-  existingManual,
-}
 
 /// Initial Condition Setup Screen (PRD Section 7.2 & DSS Section 10.1)
 /// Simple, clear, and elegant initial maintenance condition selector
@@ -58,48 +49,31 @@ class InitialConditionSetupScreen extends ConsumerStatefulWidget {
 
 class _InitialConditionSetupScreenState
     extends ConsumerState<InitialConditionSetupScreen> {
-  late InitialConditionOption _selectedOption;
+  late VehicleInitialCondition _selectedOption;
+  late final TextEditingController _lastServiceKmController;
+  DateTime? _lastServiceDate;
   bool _isSaving = false;
-
-  // For manual input per component (if user chooses manual)
-  late final Map<String, TextEditingController> _kmControllers;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    // Intelligent default: if vehicle has mileage, default to automated estimation
-    if (widget.currentKilometer > 0) {
-      _selectedOption = InitialConditionOption.existingHeuristic;
-    } else {
-      _selectedOption = InitialConditionOption.brandNew;
-    }
-
-    final catalog = ComponentCatalog.getCatalogForCategory(
-      widget.vehicleCategoryId,
-      vehicleType: widget.vehicleType,
-    );
-    _kmControllers = {
-      for (final comp in catalog)
-        comp.key: TextEditingController(
-          text: comp.intervalKm > 0
-              ? (widget.currentKilometer - (0.75 * comp.intervalKm))
-                  .clamp(0.0, widget.currentKilometer)
-                  .toInt()
-                  .toString()
-              : '0',
-        ),
-    };
+    _selectedOption = VehicleInitialCondition.autoPrediction;
+    _lastServiceKmController = TextEditingController();
   }
 
   @override
   void dispose() {
-    for (final c in _kmControllers.values) {
-      c.dispose();
-    }
+    _lastServiceKmController.dispose();
     super.dispose();
   }
 
   Future<void> _completeSetup() async {
+    if (_selectedOption == VehicleInitialCondition.serviceHistory &&
+        !(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+
     setState(() => _isSaving = true);
     try {
       const uuid = Uuid();
@@ -124,63 +98,22 @@ class _InitialConditionSetupScreenState
         photoPath: widget.photoPath,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        initialCondition: _selectedOption.name,
       );
 
-      final catalog = ComponentCatalog.getCatalogForCategory(
-        widget.vehicleCategoryId,
-        vehicleType: widget.vehicleType,
-      );
-      final now = DateTime.now();
-
-      final List<MaintenanceItemModel> items = [];
-
-      for (final meta in catalog) {
-        double lastKm;
-        DateTime lastDate;
-
-        if (_selectedOption == InitialConditionOption.brandNew) {
-          // Kondisi A: Kendaraan Baru / Fresh -> 100% health
-          lastKm = widget.currentKilometer;
-          lastDate = now;
-        } else if (_selectedOption == InitialConditionOption.existingHeuristic) {
-          // Kondisi B (Heuristic Default): calculate based on current odometer
-          final heuristic =
-              HealthCalculationService.calculateUnknownHistoryInitialCondition(
-            currentOdometer: widget.currentKilometer,
-            intervalKm: meta.intervalKm,
-            intervalDays: meta.intervalDays,
-            now: now,
-          );
-          lastKm = heuristic.lastServiceKm;
-          lastDate = heuristic.lastServiceDate;
-        } else {
-          // Manual input per component
-          final inputVal = double.tryParse(_kmControllers[meta.key]?.text ?? '');
-          lastKm = inputVal ??
-              (widget.currentKilometer - (0.75 * meta.intervalKm))
-                  .clamp(0.0, widget.currentKilometer);
-          lastDate = now.subtract(Duration(days: (meta.intervalDays * 0.75).round()));
-        }
-
-        items.add(
-          MaintenanceItemModel(
-            id: uuid.v4(),
-            vehicleId: vehicleId,
-            componentType: meta.key,
-            intervalKm: meta.intervalKm,
-            intervalDays: meta.intervalDays,
-            lastServiceKm: lastKm,
-            lastServiceDate: lastDate,
-          ),
-        );
-      }
-
-      // Save vehicle & maintenance items
       final vehicleRepo = ref.read(vehicleRepositoryProvider);
       final maintenanceRepo = ref.read(maintenanceRepositoryProvider);
 
       await vehicleRepo.saveVehicle(vehicle);
-      await maintenanceRepo.saveItems(items);
+
+      final lastKm = int.tryParse(_lastServiceKmController.text.trim());
+      await maintenanceRepo.initializeVehicleMaintenance(
+        vehicle: vehicle,
+        initialCondition: _selectedOption,
+        lastServiceOdometer: lastKm,
+        lastServiceDate: _lastServiceDate,
+      );
+
       await ref.read(activeVehicleProvider.notifier).setActiveVehicle(vehicleId);
 
       if (mounted) {
@@ -188,6 +121,16 @@ class _InitialConditionSetupScreenState
           context,
           MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
           (route) => false,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error in _completeSetup: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Terjadi kesalahan: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } finally {
@@ -198,6 +141,7 @@ class _InitialConditionSetupScreenState
   @override
   Widget build(BuildContext context) {
     final vehicleTitle = '${widget.brand} ${widget.model}';
+    final currentKmInt = widget.currentKilometer.toInt();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -217,179 +161,189 @@ class _InitialConditionSetupScreenState
             constraints: const BoxConstraints(maxWidth: 460),
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title & Subtitle
-                  const Text(
-                    'Kondisi Servis Awal',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                      letterSpacing: -0.4,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Tentukan riwayat awal untuk mulai memantau servis $vehicleTitle.',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Option: Estimasi Otomatis (Recommmended if has mileage)
-                  if (widget.currentKilometer > 0) ...[
-                    _buildOptionTile(
-                      option: InitialConditionOption.existingHeuristic,
-                      title: 'Estimasi Otomatis',
-                      subtitle:
-                          'Cocok jika lupa riwayat servis. Sistem memperkirakan waktu servis terdekat dari ${widget.currentKilometer.toInt()} km.',
-                      accentColor: const Color(0xFF2563EB),
-                      tag: 'Paling Praktis',
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-
-                  // Option: Baru / Fresh
-                  _buildOptionTile(
-                    option: InitialConditionOption.brandNew,
-                    title: widget.currentKilometer == 0
-                        ? 'Kendaraan Baru dari Dealer'
-                        : 'Baru Saja Servis Total',
-                    subtitle: widget.currentKilometer == 0
-                        ? 'Semua komponen 100% prima dan mulai dipantau dari nol.'
-                        : 'Semua oli dan komponen direset ke 100% prima (baru diganti).',
-                    accentColor: const Color(0xFF10B981),
-                    tag: widget.currentKilometer == 0 ? 'Paling Pas' : '100% Prima',
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Option: Catat Manual
-                  _buildOptionTile(
-                    option: InitialConditionOption.existingManual,
-                    title: 'Atur Manual Tiap Komponen',
-                    subtitle:
-                        'Tentukan sendiri kilometer terakhir saat ganti oli, rem, aki, atau ban.',
-                    accentColor: const Color(0xFF8B5CF6),
-                    tag: 'Kustom',
-                  ),
-
-                  // If manual is selected, show clean component rows
-                  if (_selectedOption == InitialConditionOption.existingManual) ...[
-                    const SizedBox(height: 24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title & Subtitle
                     const Text(
-                      'Kilometer Terakhir Servis',
+                      'Kondisi Servis Awal',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
+                        letterSpacing: -0.4,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Masukkan angka kilometer saat komponen terakhir diganti:',
-                      style: TextStyle(
-                        fontSize: 13,
+                    const SizedBox(height: 6),
+                    Text(
+                      'Tentukan riwayat awal untuk mulai memantau servis $vehicleTitle tanpa membuat status langsung terlambat.',
+                      style: const TextStyle(
+                        fontSize: 14,
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    ...ComponentCatalog.getCatalogForCategory(widget.vehicleCategoryId, vehicleType: widget.vehicleType).map((m) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Row(
+                    const SizedBox(height: 24),
+
+                    // Option 1: Prediksi Otomatis
+                    _buildOptionTile(
+                      option: VehicleInitialCondition.autoPrediction,
+                      title: 'Prediksi Otomatis',
+                      subtitle:
+                          'Kendaraan dianggap sehat. Tracking dimulai dari KM saat ini ($currentKmInt km) dengan kondisi prima 100%.',
+                      accentColor: const Color(0xFF2563EB),
+                      tag: 'Rekomendasi',
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Option 2: Input Riwayat Servis
+                    _buildOptionTile(
+                      option: VehicleInitialCondition.serviceHistory,
+                      title: 'Input Riwayat Servis',
+                      subtitle:
+                          'Masukkan angka kilometer saat servis terakhir untuk kalkulasi jadwal yang sesuai histori riil.',
+                      accentColor: const Color(0xFF8B5CF6),
+                      tag: 'Histori Riil',
+                    ),
+                    if (_selectedOption == VehicleInitialCondition.serviceHistory) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.3)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    m.displayName,
-                                    style: const TextStyle(
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Interval: ${m.intervalKm > 0 ? "${m.intervalKm} km" : "${m.intervalDays} hari"}',
-                                    style: const TextStyle(
-                                      fontSize: 11.5,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
+                            const Text(
+                              'DETAIL SERVIS TERAKHIR',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF8B5CF6),
+                                letterSpacing: 0.5,
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              flex: 2,
-                              child: TextFormField(
-                                controller: _kmControllers[m.key],
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                decoration: InputDecoration(
-                                  suffixText: 'km',
-                                  suffixStyle: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                                  filled: true,
-                                  fillColor: const Color(0xFFF8FAFC),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
-                                  ),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _lastServiceKmController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              decoration: InputDecoration(
+                                labelText: 'Kilometer Servis Terakhir',
+                                hintText: 'Contoh: ${currentKmInt > 3000 ? currentKmInt - 2000 : 0}',
+                                suffixText: 'KM',
+                                prefixIcon: const Icon(Icons.speed_rounded, size: 20, color: Color(0xFF8B5CF6)),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                filled: true,
+                                fillColor: Colors.white,
+                              ),
+                              validator: (val) {
+                                if (_selectedOption == VehicleInitialCondition.serviceHistory) {
+                                  if (val == null || val.trim().isEmpty) {
+                                    return 'Masukkan kilometer servis terakhir';
+                                  }
+                                  final numVal = int.tryParse(val.trim());
+                                  if (numVal == null || numVal < 0) {
+                                    return 'Kilometer servis tidak valid';
+                                  }
+                                  if (numVal > currentKmInt) {
+                                    return 'KM servis tidak boleh melebihi KM saat ini ($currentKmInt KM)';
+                                  }
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            InkWell(
+                              onTap: () async {
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: _lastServiceDate ?? DateTime.now(),
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime.now(),
+                                );
+                                if (picked != null) {
+                                  setState(() => _lastServiceDate = picked);
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.calendar_today_rounded, size: 18, color: Color(0xFF8B5CF6)),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _lastServiceDate != null
+                                          ? 'Tanggal: ${_lastServiceDate!.day}/${_lastServiceDate!.month}/${_lastServiceDate!.year}'
+                                          : 'Pilih Tanggal Servis (Opsional)',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: _lastServiceDate != null ? AppColors.textPrimary : AppColors.textSecondary,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
+                                  ],
                                 ),
                               ),
                             ),
                           ],
                         ),
-                      );
-                    }),
-                  ],
-
-                  const SizedBox(height: 32),
-
-                  // Submit Button
-                  FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primaryBlue,
-                      minimumSize: const Size.fromHeight(50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
                       ),
+                    ],
+                    const SizedBox(height: 12),
+
+                    // Option 3: Semua Komponen Kondisi Baik
+                    _buildOptionTile(
+                      option: VehicleInitialCondition.allGood,
+                      title: 'Semua Komponen Kondisi Baik',
+                      subtitle:
+                          'Semua komponen dalam kondisi prima (100%). Baseline servis dicatat di $currentKmInt km.',
+                      accentColor: const Color(0xFF10B981),
+                      tag: '100% Prima',
                     ),
-                    onPressed: _isSaving ? null : _completeSetup,
-                    child: _isSaving
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+
+                    const SizedBox(height: 32),
+
+                    // Submit Button
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primaryBlue,
+                        minimumSize: const Size.fromHeight(50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: _isSaving ? null : _completeSetup,
+                      child: _isSaving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Text(
+                              'Selesai & Buka Dashboard',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          )
-                        : const Text(
-                            'Selesai & Buka Dashboard',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
           ),
@@ -399,7 +353,7 @@ class _InitialConditionSetupScreenState
   }
 
   Widget _buildOptionTile({
-    required InitialConditionOption option,
+    required VehicleInitialCondition option,
     required String title,
     required String subtitle,
     required Color accentColor,

@@ -24,6 +24,7 @@ class VehicleMaintenanceModel {
   final String? itemCategory;
   final int? intervalKm;
   final int? intervalMonth;
+  final bool? hasServiceHistoryFlag;
 
   const VehicleMaintenanceModel({
     required this.id,
@@ -41,7 +42,25 @@ class VehicleMaintenanceModel {
     this.itemCategory,
     this.intervalKm,
     this.intervalMonth,
-  });
+    bool? hasServiceHistory,
+  }) : hasServiceHistoryFlag = hasServiceHistory;
+
+  /// Returns true if this maintenance item has an established service history.
+  /// If false, calculations use vehicle current_odometer as the baseline.
+  bool get hasServiceHistory =>
+      hasServiceHistoryFlag ?? (lastServiceOdometer > 0);
+
+  /// Resolves the base kilometer for maintenance calculation:
+  /// if maintenance history exists:
+  ///     baseKm = last_service_odometer
+  /// else:
+  ///     baseKm = vehicle.current_odometer
+  int resolveBaseOdometer(int currentOdometer) {
+    if (hasServiceHistory) {
+      return lastServiceOdometer;
+    }
+    return currentOdometer;
+  }
 
   bool get isGood => status.toUpperCase() == 'GOOD';
   bool get isWarning =>
@@ -81,6 +100,7 @@ class VehicleMaintenanceModel {
     String? itemCategory,
     int? intervalKm,
     int? intervalMonth,
+    bool? hasServiceHistory,
   }) {
     return VehicleMaintenanceModel(
       id: id ?? this.id,
@@ -98,6 +118,7 @@ class VehicleMaintenanceModel {
       itemCategory: itemCategory ?? this.itemCategory,
       intervalKm: intervalKm ?? this.intervalKm,
       intervalMonth: intervalMonth ?? this.intervalMonth,
+      hasServiceHistory: hasServiceHistory ?? hasServiceHistoryFlag,
     );
   }
 
@@ -123,6 +144,7 @@ class VehicleMaintenanceModel {
     if (itemCategory != null) map['item_category'] = itemCategory;
     if (intervalKm != null) map['interval_km'] = intervalKm;
     if (intervalMonth != null) map['interval_month'] = intervalMonth;
+    if (hasServiceHistoryFlag != null) map['has_service_history'] = hasServiceHistoryFlag;
     if (maintenanceRule != null) map['maintenance_rules'] = maintenanceRule!.toJson();
     return map;
   }
@@ -138,6 +160,12 @@ class VehicleMaintenanceModel {
 
     final odo = json['last_service_odometer'];
     final int odoVal = odo is num ? odo.round() : int.tryParse(odo.toString()) ?? 0;
+
+    final bool? hasHistory = json['has_service_history'] is bool
+        ? json['has_service_history'] as bool
+        : (json['has_service_history'] != null
+            ? json['has_service_history'].toString().toLowerCase() == 'true'
+            : null);
 
     MaintenanceRuleModel? rule;
     if (json['maintenance_rules'] is Map<String, dynamic>) {
@@ -171,6 +199,7 @@ class VehicleMaintenanceModel {
       itemCategory: json['item_category'] as String? ?? rule?.component?.category,
       intervalKm: (json['interval_km'] as num?)?.toInt() ?? rule?.intervalKm,
       intervalMonth: (json['interval_month'] as num?)?.toInt(),
+      hasServiceHistory: hasHistory,
     );
   }
 

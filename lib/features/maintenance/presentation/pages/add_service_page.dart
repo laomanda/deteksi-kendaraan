@@ -131,7 +131,7 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
       if (odo > widget.vehicle.currentOdometer) {
         final vehicleRepo = ref.read(vehicleRepositoryProvider);
         await vehicleRepo.updateOdometer(widget.vehicle.id, odo.toDouble());
-        ref.read(vehicleListProvider.notifier).refresh();
+        ref.read(vehicleProvider.notifier).refresh();
       }
 
       // 3. Refresh status maintenance
@@ -493,7 +493,7 @@ class _AddServicePageState extends ConsumerState<AddServicePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Perlu Servis Segera:',
+                    'Perlu dilakukan segera:',
                     style: AppTypography.captionBadge.copyWith(
                       color: AppColors.healthCritical,
                       fontWeight: FontWeight.bold,

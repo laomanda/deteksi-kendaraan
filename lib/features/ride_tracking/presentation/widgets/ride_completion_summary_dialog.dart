@@ -292,17 +292,14 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
 
                 if (mostUrgent == null) return const SizedBox.shrink();
 
-                Color statusColor;
-                String statusBadgeText;
+                final Color statusColor;
+                final String statusBadgeText = mostUrgent.userFacingStatusLabel;
                 if (mostUrgent.isOverdue) {
                   statusColor = AppColors.healthCritical;
-                  statusBadgeText = 'Lewat Jadwal';
                 } else if (mostUrgent.isDueSoon) {
                   statusColor = AppColors.healthWarning;
-                  statusBadgeText = 'Segera Diganti';
                 } else {
                   statusColor = AppColors.healthOptimal;
-                  statusBadgeText = 'Kondisi Baik';
                 }
 
                 return Container(
@@ -369,9 +366,7 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            mostUrgent.isOverdue
-                                ? 'Terlewat ${DateFormatter.formatKm(mostUrgent.remainingKm.abs().toDouble())}'
-                                : '${DateFormatter.formatKm(mostUrgent.remainingKm.toDouble())} lagi',
+                            mostUrgent.userFacingRemainingText,
                             style: AppTypography.bodyMedium.copyWith(
                               fontWeight: FontWeight.bold,
                               color: statusColor,

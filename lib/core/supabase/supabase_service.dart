@@ -17,8 +17,8 @@ class SupabaseService {
   }
 
   /// Checks connection to Supabase by querying the specified table.
-  /// Defaults to 'maintenance_catalog'.
-  Future<bool> checkConnection({String table = 'maintenance_catalog'}) async {
+  /// Defaults to 'vehicles'.
+  Future<bool> checkConnection({String table = 'vehicles'}) async {
     try {
       if (!SupabaseConfig.isInitialized && _client == null) return false;
       final response = await client.from(table).select().limit(1);

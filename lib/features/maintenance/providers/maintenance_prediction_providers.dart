@@ -9,7 +9,7 @@ import 'maintenance_intelligence_providers.dart';
 final maintenancePredictionProvider = Provider.family<
     AsyncValue<List<MaintenancePrediction>>, String>((ref, vehicleId) {
   final vmAsync = ref.watch(vehicleMaintenanceProvider(vehicleId));
-  final vehiclesAsync = ref.watch(vehicleListProvider);
+  final vehiclesAsync = ref.watch(vehicleAsyncListProvider);
 
   return vmAsync.when(
     loading: () => const AsyncValue.loading(),

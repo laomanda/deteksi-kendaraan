@@ -28,16 +28,10 @@ class SyncManager {
       final vehiclesBox = HiveRegistrar.vehiclesBox;
       for (final vehicle in vehiclesBox.values) {
         try {
-          await _supabaseService.client.from('vehicles').upsert({
-            'id': vehicle.id,
-            'brand': vehicle.brand,
-            'model': vehicle.model,
-            'year': vehicle.year,
-            'vehicle_type': vehicle.vehicleType,
-            'current_odometer': vehicle.currentKilometer.round(),
-            'photo_url': vehicle.photoPath,
-            'created_at': vehicle.createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
-          }, onConflict: 'id');
+          await _supabaseService.client.from('vehicles').upsert(
+            vehicle.toJson(),
+            onConflict: 'id',
+          );
           syncedCount++;
         } catch (e) {
           debugPrint('Error uploading vehicle ${vehicle.id}: $e');
@@ -117,16 +111,7 @@ class SyncManager {
         for (final item in remoteVehicles) {
           final id = item['id']?.toString();
           if (id != null) {
-            final vehicle = VehicleModel(
-              id: id,
-              vehicleType: item['vehicle_type']?.toString() ?? 'motorcycle',
-              brand: item['brand']?.toString() ?? '',
-              model: item['model']?.toString() ?? '',
-              year: int.tryParse(item['year']?.toString() ?? '2024') ?? 2024,
-              currentKilometer: double.tryParse((item['current_odometer'] ?? item['current_kilometer'] ?? '0').toString()) ?? 0.0,
-              photoPath: (item['photo_url'] ?? item['photo_path'])?.toString(),
-              createdAt: DateTime.tryParse(item['created_at']?.toString() ?? '') ?? DateTime.now(),
-            );
+            final vehicle = VehicleModel.fromJson(Map<String, dynamic>.from(item as Map));
             await vehiclesBox.put(vehicle.id, vehicle);
             importedCount++;
           }

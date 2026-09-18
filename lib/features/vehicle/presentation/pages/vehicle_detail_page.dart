@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/utils/date_formatter.dart';
 import '../../../maintenance/domain/maintenance_prediction_service.dart';
 import '../../../maintenance/presentation/pages/maintenance_page.dart';
 import '../../../maintenance/presentation/widgets/maintenance_detail_bottom_sheet.dart';
@@ -338,10 +337,10 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
     Color conditionColor = AppColors.success;
 
     if (summary != null && summary.overdueCount > 0) {
-      conditionBadge = 'Perlu Perhatian';
+      conditionBadge = 'Perlu Dilakukan Segera';
       conditionColor = AppColors.danger;
     } else if (summary != null && summary.dueSoonCount > 0) {
-      conditionBadge = 'Perlu Perhatian Ringan';
+      conditionBadge = 'Mendekati Jadwal';
       conditionColor = AppColors.warning;
     }
 
@@ -610,20 +609,20 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
     IconData conditionIcon = Icons.check_circle_outline_rounded;
 
     if (summary != null && summary.overdueCount > 0) {
-      headline = 'Perlu perhatian';
+      headline = 'Perlu dilakukan segera';
       conditionColor = AppColors.danger;
       conditionIcon = Icons.warning_amber_rounded;
       final overdueItem = upcomingList.where((p) => p.isOverdue).firstOrNull;
       description = overdueItem != null
-          ? '${overdueItem.componentName} melewati jadwal perawatan.'
-          : 'Ada komponen yang telah melewati jadwal perawatan berkala.';
+          ? '${overdueItem.componentName} perlu dilakukan segera.'
+          : 'Ada komponen yang perlu dilakukan perawatan segera.';
     } else if (summary != null && summary.dueSoonCount > 0) {
-      headline = 'Perlu perhatian ringan';
+      headline = 'Mendekati jadwal perawatan';
       conditionColor = AppColors.warning;
       conditionIcon = Icons.info_outline_rounded;
       final dueSoonItem = upcomingList.where((p) => p.isDueSoon).firstOrNull;
       description = dueSoonItem != null
-          ? '${dueSoonItem.componentName} mendekati jadwal servis berkala.'
+          ? '${dueSoonItem.componentName} mendekati jadwal perawatan.'
           : 'Beberapa komponen mendekati batas pemakaian wajar.';
     }
 
@@ -761,14 +760,12 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
     final topItem = upcomingList.first;
 
     String urgencyTitle = 'Perawatan Berikutnya';
-    String urgencyStatusText = 'Jadwal servis berkala';
+    final String urgencyStatusText = topItem.userFacingStatusLabel;
     Color urgencyColor = AppColors.success;
 
     if (topItem.isOverdue) {
-      urgencyStatusText = 'Sudah waktunya dilakukan';
       urgencyColor = AppColors.danger;
     } else if (topItem.isDueSoon) {
-      urgencyStatusText = 'Mendekati batas pemakaian';
       urgencyColor = AppColors.warning;
     }
 
@@ -867,9 +864,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                topItem.remainingKm <= 0
-                                    ? 'Perkiraan: Lewat jadwal'
-                                    : 'Perkiraan: ${DateFormatter.formatKm(topItem.remainingKm.toDouble())} lagi',
+                                topItem.userFacingRemainingText,
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 11,
                                   color: AppColors.secondarySteel,

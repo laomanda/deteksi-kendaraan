@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../../../core/constants/component_catalog.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/date_formatter.dart';
 import '../../../garage/data/models/vehicle_model.dart';
 import '../../data/models/maintenance_price_model.dart';
 import '../../data/models/vehicle_maintenance_model.dart';
@@ -37,36 +36,25 @@ class MaintenanceCard extends StatelessWidget {
     final Color statusColor;
     final Color statusLightBg;
     final Color statusBorder;
-    final String statusLabel;
-    final String remainingText;
+    final String statusLabel = result.userFacingStatusLabel;
+    final String remainingText = result.userFacingRemainingText;
 
     if (result.isCritical) {
       statusColor = AppColors.dangerRed;
       statusLightBg = const Color(0xFFFEF2F2);
       statusBorder = const Color(0xFFFECACA);
-      statusLabel = 'Waktunya melakukan perawatan';
-      remainingText = 'Perkiraan: 0 KM lagi (Lewat jadwal)';
     } else if (result.isWarning) {
       statusColor = AppColors.warningAmber;
       statusLightBg = const Color(0xFFFFFBEB);
       statusBorder = const Color(0xFFFDE68A);
-      statusLabel = 'Mendekati jadwal perawatan';
-      final remKmStr = DateFormatter.formatKm(result.remainingKm);
-      remainingText = 'Perkiraan: $remKmStr lagi';
     } else {
       statusColor = AppColors.safeGreen;
       statusLightBg = const Color(0xFFF0FDF4);
       statusBorder = const Color(0xFFBBF7D0);
-      statusLabel = 'Kondisi prima';
-      final remKmStr = DateFormatter.formatKm(result.remainingKm);
-      remainingText = result.item.intervalKm > 0
-          ? 'Perkiraan: $remKmStr lagi'
-          : 'Perkiraan: ≈ ${result.remainingDays} hari lagi';
     }
 
-    final lastServiceKmStr = DateFormatter.formatKm(result.item.lastServiceKm);
-    final lastServiceDateStr = DateFormatter.formatDate(result.item.lastServiceDate);
-    final lastServiceText = 'Riwayat perawatan terakhir: $lastServiceKmStr ($lastServiceDateStr)';
+    final lastServiceText = result.userFacingHistoryText;
+    final historyStateText = result.userFacingHistoryStateTitle;
 
     // Price forecast lookup
     final priceEstimate = MaintenancePriceModel.getPriceForMaintenance(
@@ -113,6 +101,7 @@ class MaintenanceCard extends StatelessWidget {
                   ? 'OVERDUE'
                   : (result.isWarning ? 'DUE SOON' : 'GOOD'),
               intervalKm: result.item.intervalKm.toInt(),
+              hasServiceHistory: result.hasServiceHistory,
             );
             final pred = MaintenancePrediction(
               item: vm,
@@ -300,14 +289,35 @@ class MaintenanceCard extends StatelessWidget {
                 const SizedBox(height: 6),
 
                 // 3. Service History Footnote
-                Text(
-                  lastServiceText,
-                  style: GoogleFonts.plusJakartaSans(
-                    color: AppColors.textMuted,
-                    fontSize: 10,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        lastServiceText,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: AppColors.textMuted,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      historyStateText,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: result.hasServiceHistory
+                            ? AppColors.primaryNavy
+                            : AppColors.textMuted,
+                        fontSize: 9.5,
+                        fontWeight: result.hasServiceHistory
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

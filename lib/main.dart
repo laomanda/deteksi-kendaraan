@@ -14,7 +14,11 @@ void main() async {
   await HiveRegistrar.init();
 
   // Initialize local notifications
-  await NotificationService.init();
+  try {
+    await NotificationService.init();
+  } catch (e) {
+    debugPrint('NotificationService init failed: $e');
+  }
 
   // Initialize Supabase client
   try {

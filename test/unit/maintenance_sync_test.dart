@@ -75,21 +75,30 @@ void main() {
       await vehicleRepository.createVehicle(vehicle);
       await vehicleRepository.setActiveVehicleId(vehicle.id);
 
-      // 2. Generate maintenance items (lastServiceOdometer = 0)
-      final items = await maintenanceRepository.getVehicleMaintenance(
+      // 2. Generate maintenance items with existing service history (lastServiceOdometer = 0, hasServiceHistory = true)
+      final rawItems = await maintenanceRepository.getVehicleMaintenance(
         vehicle.id,
         vehicleType: vehicle.vehicleType,
         vehicleCategoryId: vehicle.vehicleCategoryId,
         currentOdometer: vehicle.currentOdometer,
       );
 
+      final items = rawItems.map((it) {
+        if (it.itemCategory == 'radiator_coolant' || it.maintenanceId.contains('coolant')) {
+          return it.copyWith(hasServiceHistory: true, lastServiceOdometer: 0);
+        }
+        return it;
+      }).toList();
+      await HiveRegistrar.settingsBox.put('vehicle_maintenance_${vehicle.id}', items.map((it) => it.toLocalJson()).toList());
+
       expect(items.isNotEmpty, isTrue);
 
-      // Verify Radiator Coolant is in items with 12000 km interval
+      // Verify Radiator Coolant is in items with 12000 km interval and service history at 0 KM
       final coolantItem = items.firstWhere(
         (it) => it.itemCategory == 'radiator_coolant' || it.maintenanceId.contains('coolant'),
       );
       expect(coolantItem.lastServiceOdometer, equals(0));
+      expect(coolantItem.hasServiceHistory, isTrue);
       expect(coolantItem.intervalKm, equals(12000));
 
       // 3. Prediction service calculation
@@ -152,6 +161,44 @@ void main() {
       );
       expect(updatedCoolantVm.lastServiceOdometer, equals(13813));
       expect(updatedCoolantVm.healthPercentage, equals(100));
+    });
+
+    test('New vehicle without service history at 13.813 KM is NOT overdue (next service = 25.813 KM, health = 100%)', () async {
+      final vehicle = VehicleModel(
+        id: 'new-bike-168',
+        brand: 'Honda',
+        model: 'CBR150R',
+        year: 2025,
+        currentOdometer: 13813,
+        vehicleType: 'motorcycle',
+        vehicleCategoryId: 'sport_motorcycle',
+      );
+      await vehicleRepository.createVehicle(vehicle);
+
+      final items = await maintenanceRepository.getVehicleMaintenance(
+        vehicle.id,
+        vehicleType: vehicle.vehicleType,
+        vehicleCategoryId: vehicle.vehicleCategoryId,
+        currentOdometer: vehicle.currentOdometer,
+      );
+
+      final coolantItem = items.firstWhere(
+        (it) => it.itemCategory == 'radiator_coolant' || it.maintenanceId.contains('coolant'),
+      );
+      expect(coolantItem.hasServiceHistory, isFalse);
+
+      final predictions = MaintenancePredictionService.predictVehicleMaintenance(
+        vehicle: vehicle,
+        items: items,
+      );
+
+      final coolantPred = predictions.firstWhere(
+        (p) => p.category == 'radiator_coolant' || p.componentName.toLowerCase().contains('coolant'),
+      );
+      expect(coolantPred.status, equals('GOOD'));
+      expect(coolantPred.currentHealth, equals(100.0));
+      expect(coolantPred.nextServiceOdometer, equals(25813));
+      expect(coolantPred.remainingKm, equals(12000));
     });
   });
 }

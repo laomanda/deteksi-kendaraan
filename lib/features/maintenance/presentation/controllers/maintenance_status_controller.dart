@@ -80,8 +80,11 @@ class MaintenanceStatusNotifier
     // Map predictions to ComponentHealthResult ensuring 100% unified source of truth
     final results = predictions.map((p) {
       final fraction = (p.currentHealth / 100.0).clamp(0.0, 1.0);
-      final deltaKm = math.max(0.0, activeVehicle.currentKilometer - p.item.lastServiceOdometer);
-      final deltaDays = p.item.lastServiceDate != null
+      final baseKm = p.item.hasServiceHistory
+          ? p.item.lastServiceOdometer.toDouble()
+          : activeVehicle.currentKilometer;
+      final deltaKm = math.max(0.0, activeVehicle.currentKilometer - baseKm);
+      final deltaDays = (p.item.hasServiceHistory && p.item.lastServiceDate != null)
           ? math.max(0, now.difference(p.item.lastServiceDate!).inDays)
           : 0;
 
@@ -97,12 +100,15 @@ class MaintenanceStatusNotifier
         componentType: componentKey,
         intervalKm: (p.item.intervalKm ?? 3000).toDouble(),
         intervalDays: (p.item.intervalMonth ?? 3) * 30,
-        lastServiceKm: p.item.lastServiceOdometer.toDouble(),
-        lastServiceDate: p.item.lastServiceDate ?? now,
+        lastServiceKm: baseKm,
+        lastServiceDate: (p.item.hasServiceHistory && p.item.lastServiceDate != null)
+            ? p.item.lastServiceDate!
+            : now,
       );
 
       return ComponentHealthResult(
         item: itemModel,
+        baseKm: baseKm,
         deltaKm: deltaKm,
         deltaDays: deltaDays,
         rKm: fraction,
@@ -110,6 +116,7 @@ class MaintenanceStatusNotifier
         healthPercentage: p.currentHealth,
         remainingKm: p.remainingKm.toDouble(),
         remainingDays: p.remainingDays,
+        hasServiceHistory: p.item.hasServiceHistory,
       );
     }).toList();
 

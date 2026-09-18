@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:intl/intl.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../data/models/maintenance_price_model.dart';
 import '../data/models/maintenance_template_model.dart';
 import '../data/models/vehicle_maintenance_model.dart';
@@ -52,6 +53,48 @@ class MaintenancePrediction {
   bool get isOverdue => status == 'OVERDUE';
   bool get isDueSoon => status == 'DUE SOON';
   bool get isGood => status == 'GOOD';
+
+  /// User-facing status label adhering to UX consistency rules
+  String get userFacingStatusLabel {
+    if (isOverdue) return 'Perlu dilakukan segera';
+    if (isDueSoon) return 'Mendekati jadwal perawatan';
+    return 'Kondisi prima';
+  }
+
+  /// User-facing remaining recommendation adhering to UX consistency rules
+  String get userFacingRemainingText {
+    if (isOverdue) return 'Perlu dilakukan segera (Lewat jadwal)';
+    final kmFormatted = DateFormatter.formatKm(remainingKm.toDouble());
+    if (isDueSoon) return 'Disarankan dalam $kmFormatted lagi';
+    return item.effectiveIntervalKm > 0
+        ? 'Disarankan dalam $kmFormatted lagi'
+        : 'Disarankan dalam ≈ $remainingDays hari lagi';
+  }
+
+  /// User-facing history footnote distinguishing baseline vs recorded history
+  String get userFacingHistoryText {
+    final double rawKm = item.hasServiceHistory
+        ? item.lastServiceOdometer.toDouble()
+        : (item.lastServiceOdometer > 0
+            ? item.lastServiceOdometer.toDouble()
+            : (nextServiceOdometer - (item.intervalKm ?? 0)).toDouble().clamp(0.0, double.infinity));
+    final kmStr = DateFormatter.formatKm(rawKm);
+    final dateStr = item.lastServiceDate != null
+        ? DateFormatter.formatDate(item.lastServiceDate!)
+        : '-';
+    if (item.hasServiceHistory) {
+      return 'Servis terakhir: $kmStr ($dateStr)';
+    }
+    return 'Mulai pemantauan: $kmStr ($dateStr)';
+  }
+
+  /// Explicit semantic distinction title
+  String get userFacingHistoryStateTitle {
+    if (item.hasServiceHistory) {
+      return 'Servis terakhir tercatat';
+    }
+    return 'Pemantauan dimulai dari odometer kendaraan';
+  }
 
   static final NumberFormat _currencyFormat = NumberFormat.currency(
     locale: 'id_ID',
@@ -130,16 +173,28 @@ class MaintenancePredictionService {
     required int currentOdometer,
     MaintenancePriceModel? priceEstimate,
     DateTime? currentDate,
+    bool? hasMaintenanceHistory,
   }) {
     final now = currentDate ?? DateTime.now();
 
     // 1. KM-BASED CALCULATION
+    // Logic:
+    // if maintenance history exists:
+    //     baseKm = last_service_odometer
+    // else:
+    //     baseKm = vehicle.current_odometer
+    // nextServiceKm = baseKm + maintenanceRule.intervalKm
     final intervalKm = (item.intervalKm != null && item.intervalKm! > 0)
         ? item.intervalKm!
         : 3000;
-    final usedKm = math.max(0, currentOdometer - item.lastServiceOdometer);
-    final remainingKm = math.max(0, intervalKm - usedKm);
-    final nextServiceOdometer = item.lastServiceOdometer + intervalKm;
+    final bool historyExists = hasMaintenanceHistory ?? item.hasServiceHistory;
+    final int baseKm = historyExists
+        ? item.lastServiceOdometer
+        : currentOdometer;
+
+    final nextServiceOdometer = baseKm + intervalKm;
+    final usedKm = math.max(0, currentOdometer - baseKm);
+    final remainingKm = math.max(0, nextServiceOdometer - currentOdometer);
 
     String kmStatus;
     if (currentOdometer >= nextServiceOdometer || remainingKm <= 0) {
@@ -154,7 +209,9 @@ class MaintenancePredictionService {
     final intervalMonth = (item.intervalMonth != null && item.intervalMonth! > 0)
         ? item.intervalMonth!
         : 3;
-    final lastDate = item.lastServiceDate ?? now;
+    final lastDate = (historyExists && item.lastServiceDate != null)
+        ? item.lastServiceDate!
+        : now;
     final nextServiceDate = addMonthsSafely(lastDate, intervalMonth);
     final remainingDays = nextServiceDate.difference(now).inDays;
 

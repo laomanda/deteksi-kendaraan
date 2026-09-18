@@ -1,5 +1,53 @@
 import 'package:hive/hive.dart';
 
+/// Pilihan kondisi awal kendaraan saat ditambahkan
+enum VehicleInitialCondition {
+  /// 1. Prediksi Otomatis: kendaraan dianggap sehat, gunakan current_odometer sebagai baseline, health 100%, mulai tracking dari KM sekarang
+  autoPrediction,
+
+  /// 2. Input Riwayat Servis: user memasukkan servis terakhir, gunakan last_service_odometer, kalkulasi normal
+  serviceHistory,
+
+  /// 3. Semua Komponen Kondisi Baik: semua maintenance item dibuat health 100%, baseline servis = current_odometer
+  allGood;
+
+  String get id => name;
+
+  String get displayName {
+    switch (this) {
+      case VehicleInitialCondition.autoPrediction:
+        return 'Prediksi Otomatis';
+      case VehicleInitialCondition.serviceHistory:
+        return 'Input Riwayat Servis';
+      case VehicleInitialCondition.allGood:
+        return 'Semua Komponen Kondisi Baik';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case VehicleInitialCondition.autoPrediction:
+        return 'Kendaraan dianggap sehat, tracking mulai dari kilometer saat ini (Health 100%).';
+      case VehicleInitialCondition.serviceHistory:
+        return 'Masukkan angka kilometer saat servis terakhir untuk kalkulasi jadwal yang presisi.';
+      case VehicleInitialCondition.allGood:
+        return 'Semua komponen dalam kondisi prima 100% baru atau baru saja diservis total.';
+    }
+  }
+
+  static VehicleInitialCondition fromString(String? value) {
+    switch (value) {
+      case 'service_history':
+        return VehicleInitialCondition.serviceHistory;
+      case 'all_good':
+        return VehicleInitialCondition.allGood;
+      case 'auto_prediction':
+      default:
+        return VehicleInitialCondition.autoPrediction;
+    }
+  }
+}
+
 /// Vehicle entity and model according to Supabase 'vehicles' & 'vehicle_specs' tables
 class VehicleModel extends HiveObject {
   final String id;
@@ -27,6 +75,9 @@ class VehicleModel extends HiveObject {
   // Vehicle Category from Vehicle Intelligence Layer
   final String? vehicleCategoryId;
 
+  // Initial maintenance setup condition
+  final String? initialCondition;
+
   VehicleModel({
     required this.id,
     this.profileId,
@@ -50,8 +101,12 @@ class VehicleModel extends HiveObject {
     this.engineNumber,
     this.chassisNumber,
     this.vehicleCategoryId,
+    this.initialCondition,
   })  : currentOdometer = currentOdometer ?? (currentKilometer?.round() ?? 0),
         photoUrl = photoUrl ?? photoPath;
+
+  VehicleInitialCondition get initialConditionOption =>
+      VehicleInitialCondition.fromString(initialCondition);
 
   /// Display name combining brand and model, plus variant if present
   String get displayName =>
@@ -90,6 +145,7 @@ class VehicleModel extends HiveObject {
     String? engineNumber,
     String? chassisNumber,
     String? vehicleCategoryId,
+    String? initialCondition,
   }) {
     return VehicleModel(
       id: id ?? this.id,
@@ -112,10 +168,11 @@ class VehicleModel extends HiveObject {
       engineNumber: engineNumber ?? this.engineNumber,
       chassisNumber: chassisNumber ?? this.chassisNumber,
       vehicleCategoryId: vehicleCategoryId ?? this.vehicleCategoryId,
+      initialCondition: initialCondition ?? this.initialCondition,
     );
   }
 
-  /// Maps to Supabase 'vehicles' table schema
+  /// Maps to Supabase 'vehicles' table schema (excludes local-only fields)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -134,6 +191,13 @@ class VehicleModel extends HiveObject {
       if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
       if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
     };
+  }
+
+  /// Maps to local storage / Hive JSON representation
+  Map<String, dynamic> toLocalJson() {
+    final map = toJson();
+    if (initialCondition != null) map['initial_condition'] = initialCondition;
+    return map;
   }
 
   /// Maps to Supabase 'vehicle_specs' table schema
@@ -176,6 +240,7 @@ class VehicleModel extends HiveObject {
       currentOdometer: odo,
       photoUrl: json['photo_url'] as String? ?? json['photoPath'] as String?,
       vehicleCategoryId: json['vehicle_category_id'] as String? ?? json['vehicleCategoryId'] as String?,
+      initialCondition: json['initial_condition'] as String?,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString())
           : (json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null),
@@ -284,13 +349,14 @@ class VehicleModelAdapter extends TypeAdapter<VehicleModel> {
       transmission: fields.containsKey(13) ? fields[13] as String? : null,
       color: fields.containsKey(14) ? fields[14] as String? : null,
       vehicleCategoryId: fields.containsKey(15) ? fields[15] as String? : null,
+      initialCondition: fields.containsKey(16) ? fields[16] as String? : null,
     );
   }
 
   @override
   void write(BinaryWriter writer, VehicleModel obj) {
     writer
-      ..writeByte(16)
+      ..writeByte(17)
       ..writeByte(0)..write(obj.id)
       ..writeByte(1)..write(obj.vehicleType)
       ..writeByte(2)..write(obj.brand)
@@ -306,6 +372,7 @@ class VehicleModelAdapter extends TypeAdapter<VehicleModel> {
       ..writeByte(12)..write(obj.fuelType)
       ..writeByte(13)..write(obj.transmission)
       ..writeByte(14)..write(obj.color)
-      ..writeByte(15)..write(obj.vehicleCategoryId);
+      ..writeByte(15)..write(obj.vehicleCategoryId)
+      ..writeByte(16)..write(obj.initialCondition);
   }
 }

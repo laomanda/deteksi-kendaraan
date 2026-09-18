@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import '../../../../core/utils/date_formatter.dart';
 import '../data/models/maintenance_item_model.dart';
 import '../data/models/maintenance_price_model.dart';
 import '../data/models/vehicle_maintenance_model.dart';
@@ -6,6 +7,7 @@ import '../data/models/vehicle_maintenance_model.dart';
 /// Health calculation status wrapper containing computed metrics
 class ComponentHealthResult {
   final MaintenanceItemModel item;
+  final double baseKm;
   final double deltaKm;
   final int deltaDays;
   final double rKm;
@@ -13,9 +15,11 @@ class ComponentHealthResult {
   final double healthPercentage; // 0.0 to 100.0
   final double remainingKm;
   final int remainingDays;
+  final bool hasServiceHistory;
 
   const ComponentHealthResult({
     required this.item,
+    this.baseKm = 0.0,
     required this.deltaKm,
     required this.deltaDays,
     required this.rKm,
@@ -23,6 +27,7 @@ class ComponentHealthResult {
     required this.healthPercentage,
     required this.remainingKm,
     required this.remainingDays,
+    this.hasServiceHistory = false,
   });
 
   /// Fraction between 0.0 and 1.0 for UI Fill Icons
@@ -32,6 +37,44 @@ class ComponentHealthResult {
   bool get isModerate => healthPercentage >= 50.0 && healthPercentage < 80.0;
   bool get isWarning => healthPercentage >= 20.0 && healthPercentage < 50.0;
   bool get isCritical => healthPercentage < 20.0;
+
+  /// User-facing status label adhering to UX consistency rules
+  String get userFacingStatusLabel {
+    if (isCritical) return 'Perlu dilakukan segera';
+    if (isWarning) return 'Mendekati jadwal perawatan';
+    return 'Kondisi prima';
+  }
+
+  /// User-facing remaining text adhering to UX consistency rules
+  String get userFacingRemainingText {
+    final remKmStr = DateFormatter.formatKm(remainingKm);
+    if (isCritical) return 'Perlu dilakukan segera (Lewat jadwal)';
+    if (isWarning) return 'Disarankan dalam $remKmStr lagi';
+    return item.intervalKm > 0
+        ? 'Disarankan dalam $remKmStr lagi'
+        : 'Disarankan dalam ≈ $remainingDays hari lagi';
+  }
+
+  /// User-facing history footnote distinguishing baseline vs recorded history
+  String get userFacingHistoryText {
+    final double rawKm = hasServiceHistory
+        ? item.lastServiceKm
+        : (baseKm > 0 ? baseKm : (item.lastServiceKm > 0 ? item.lastServiceKm : 0.0));
+    final kmStr = DateFormatter.formatKm(rawKm);
+    final dateStr = DateFormatter.formatDate(item.lastServiceDate);
+    if (hasServiceHistory) {
+      return 'Servis terakhir: $kmStr ($dateStr)';
+    }
+    return 'Mulai pemantauan: $kmStr ($dateStr)';
+  }
+
+  /// Explicit semantic distinction title
+  String get userFacingHistoryStateTitle {
+    if (hasServiceHistory) {
+      return 'Servis terakhir tercatat';
+    }
+    return 'Pemantauan dimulai dari odometer kendaraan';
+  }
 }
 
 /// Service implementing PRD Section 7.3.3 formulas deterministically
@@ -39,23 +82,34 @@ class HealthCalculationService {
   HealthCalculationService._();
 
   /// Computes component health according to PRD formulas (2)-(6)
+  /// Logic:
+  /// if maintenance history exists:
+  ///     baseKm = last_service_odometer
+  /// else:
+  ///     baseKm = vehicle.current_odometer
+  /// nextServiceKm = baseKm + maintenanceRule.intervalKm
   static ComponentHealthResult calculateComponentHealth({
     required MaintenanceItemModel item,
     required double currentOdometer,
     DateTime? currentDate,
+    bool? hasMaintenanceHistory,
   }) {
     final now = currentDate ?? DateTime.now();
 
+    final bool historyExists = hasMaintenanceHistory ?? (item.lastServiceKm > 0);
+    final double baseKm = historyExists ? item.lastServiceKm : currentOdometer;
+
     // Delta KM and Delta Days
-    final deltaKm = math.max(0.0, currentOdometer - item.lastServiceKm);
+    final deltaKm = math.max(0.0, currentOdometer - baseKm);
     final deltaDays = math.max(0, now.difference(item.lastServiceDate).inDays);
 
     // R_KM: if intervalKm <= 0 (e.g. Battery), R_KM is considered 1.0
     double rKm = 1.0;
     double remainingKm = 0.0;
     if (item.intervalKm > 0) {
-      rKm = math.max(0.0, 1.0 - (deltaKm / item.intervalKm));
-      remainingKm = math.max(0.0, item.intervalKm - deltaKm);
+      final nextServiceKm = baseKm + item.intervalKm;
+      remainingKm = math.max(0.0, nextServiceKm - currentOdometer);
+      rKm = (remainingKm / item.intervalKm).clamp(0.0, 1.0);
     }
 
     // R_Waktu: calendar degradation
@@ -71,6 +125,7 @@ class HealthCalculationService {
 
     return ComponentHealthResult(
       item: item,
+      baseKm: baseKm,
       deltaKm: deltaKm,
       deltaDays: deltaDays,
       rKm: rKm,
@@ -78,6 +133,7 @@ class HealthCalculationService {
       healthPercentage: healthPercentage,
       remainingKm: remainingKm,
       remainingDays: remainingDays,
+      hasServiceHistory: historyExists,
     );
   }
 
@@ -115,22 +171,38 @@ class HealthCalculationService {
   }
 
   /// Kalkulasi Maintenance Health berdasarkan current_odometer, last_service_odometer, dan default_interval_km
+  /// Logic:
+  /// if maintenance history exists:
+  ///     baseKm = last_service_odometer
+  /// else:
+  ///     baseKm = vehicle.current_odometer
+  /// nextServiceKm = baseKm + defaultIntervalKm
   static VehicleMaintenanceHealth calculateItemHealth({
     required VehicleMaintenanceModel item,
     required int currentOdometer,
     required int defaultIntervalKm,
     MaintenancePriceModel? priceEstimate,
     DateTime? currentDate,
+    bool? hasMaintenanceHistory,
   }) {
     final now = currentDate ?? DateTime.now();
     final isTimeOnly = defaultIntervalKm <= 0;
-    final usedKm = isTimeOnly ? 0 : math.max(0, currentOdometer - item.lastServiceOdometer);
-    final remainingKm = isTimeOnly ? 0 : math.max(0, defaultIntervalKm - usedKm);
+
+    final bool historyExists = hasMaintenanceHistory ?? item.hasServiceHistory;
+    final int baseKm = historyExists
+        ? item.lastServiceOdometer
+        : currentOdometer;
+
+    final usedKm = isTimeOnly ? 0 : math.max(0, currentOdometer - baseKm);
+    final nextServiceOdo = isTimeOnly ? currentOdometer : baseKm + defaultIntervalKm;
+    final remainingKm = isTimeOnly ? 0 : math.max(0, nextServiceOdo - currentOdometer);
 
     double healthPercentage;
     if (isTimeOnly) {
       if (item.intervalMonth != null && item.intervalMonth! > 0) {
-        final lastDate = item.lastServiceDate ?? now;
+        final lastDate = (historyExists && item.lastServiceDate != null)
+            ? item.lastServiceDate!
+            : now;
         final daysInInterval = item.intervalMonth! * 30;
         final elapsedDays = math.max(0, now.difference(lastDate).inDays);
         final remainingDays = math.max(0, daysInInterval - elapsedDays);
@@ -150,8 +222,6 @@ class HealthCalculationService {
     } else {
       status = 'GOOD';
     }
-
-    final nextServiceOdo = isTimeOnly ? currentOdometer : item.lastServiceOdometer + defaultIntervalKm;
 
     return VehicleMaintenanceHealth(
       item: item,
@@ -195,4 +265,44 @@ class VehicleMaintenanceHealth {
   bool get isGood => status == 'GOOD';
   bool get isDueSoon => status == 'DUE SOON';
   bool get isOverdue => status == 'OVERDUE';
+
+  /// User-facing status label adhering to UX consistency rules
+  String get userFacingStatusLabel {
+    if (isOverdue) return 'Perlu dilakukan segera';
+    if (isDueSoon) return 'Mendekati jadwal perawatan';
+    return 'Kondisi prima';
+  }
+
+  /// User-facing remaining text adhering to UX consistency rules
+  String get userFacingRemainingText {
+    final remKmStr = DateFormatter.formatKm(remainingKm.toDouble());
+    if (isOverdue) return 'Perlu dilakukan segera (Lewat jadwal)';
+    if (isDueSoon) return 'Disarankan dalam $remKmStr lagi';
+    return 'Disarankan dalam $remKmStr lagi';
+  }
+
+  /// User-facing history footnote distinguishing baseline vs recorded history
+  String get userFacingHistoryText {
+    final double rawKm = item.hasServiceHistory
+        ? item.lastServiceOdometer.toDouble()
+        : (item.lastServiceOdometer > 0
+            ? item.lastServiceOdometer.toDouble()
+            : (nextServiceOdometer - (item.intervalKm ?? 0)).toDouble().clamp(0.0, double.infinity));
+    final kmStr = DateFormatter.formatKm(rawKm);
+    final dateStr = item.lastServiceDate != null
+        ? DateFormatter.formatDate(item.lastServiceDate!)
+        : '-';
+    if (item.hasServiceHistory) {
+      return 'Servis terakhir: $kmStr ($dateStr)';
+    }
+    return 'Mulai pemantauan: $kmStr ($dateStr)';
+  }
+
+  /// Explicit semantic distinction title
+  String get userFacingHistoryStateTitle {
+    if (item.hasServiceHistory) {
+      return 'Servis terakhir tercatat';
+    }
+    return 'Pemantauan dimulai dari odometer kendaraan';
+  }
 }

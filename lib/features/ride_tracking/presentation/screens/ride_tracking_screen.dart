@@ -76,7 +76,7 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
   Widget build(BuildContext context) {
     final trackingState = ref.watch(rideTrackingProvider);
     final activeVehicle = ref.watch(activeVehicleProvider);
-    final vehiclesAsync = ref.watch(vehicleListProvider);
+    final vehiclesAsync = ref.watch(vehicleAsyncListProvider);
 
     final vehiclesList = vehiclesAsync.maybeWhen(
       data: (list) => list,

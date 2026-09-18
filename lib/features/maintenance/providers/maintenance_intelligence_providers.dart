@@ -84,7 +84,7 @@ final vehicleMaintenanceProvider = StateNotifierProvider.family<
     AsyncValue<List<VehicleMaintenanceModel>>,
     String>((ref, vehicleId) {
   final repo = ref.watch(maintenanceRepositoryProvider);
-  final vehiclesState = ref.watch(vehicleListProvider);
+  final vehiclesState = ref.watch(vehicleAsyncListProvider);
 
   String vehicleType = 'motorcycle';
   String? vehicleCategoryId;
@@ -109,7 +109,7 @@ final vehicleMaintenanceComponentsProvider = Provider.family<
     AsyncValue<List<VehicleMaintenanceComponentDto>>,
     String>((ref, vehicleId) {
   final vmAsync = ref.watch(vehicleMaintenanceProvider(vehicleId));
-  final vehiclesState = ref.watch(vehicleListProvider);
+  final vehiclesState = ref.watch(vehicleAsyncListProvider);
 
   return vmAsync.whenData((items) {
     VehicleModel? vehicle;
@@ -213,7 +213,7 @@ class VehicleHealthSummary {
 final maintenanceHealthProvider =
     Provider.family<AsyncValue<VehicleHealthSummary>, String>((ref, vehicleId) {
   final vmAsync = ref.watch(vehicleMaintenanceProvider(vehicleId));
-  final vehiclesAsync = ref.watch(vehicleListProvider);
+  final vehiclesAsync = ref.watch(vehicleAsyncListProvider);
 
   return vmAsync.when(
     loading: () => const AsyncValue.loading(),

@@ -359,6 +359,7 @@ class MaintenanceRepository {
         currentOdometer: vehicle.currentOdometer,
         intervalKm: it.effectiveIntervalKm,
         lastServiceOdometer: it.lastServiceOdometer,
+        hasMaintenanceHistory: it.hasServiceHistory,
       );
       return it.copyWith(
         healthPercentage: calc.healthPercentage,
@@ -405,6 +406,7 @@ class MaintenanceRepository {
         currentOdometer: currentOdo,
         intervalKm: interval,
         lastServiceOdometer: vm.lastServiceOdometer,
+        hasMaintenanceHistory: vm.hasServiceHistory,
       );
 
       final name = vm.name.isNotEmpty ? vm.name : vm.maintenanceId;
@@ -444,10 +446,96 @@ class MaintenanceRepository {
     return sorted.first;
   }
 
+  /// Menginisialisasi item maintenance kendaraan baru berdasarkan kondisi awal yang dipilih:
+  /// 1. Prediksi Otomatis (health 100%, baseline = current_odometer)
+  /// 2. Input Riwayat Servis (kalkulasi normal berdasarkan last_service_odometer)
+  /// 3. Semua Komponen Kondisi Baik (health 100%, baseline = current_odometer)
+  Future<List<VehicleMaintenanceModel>> initializeVehicleMaintenance({
+    required VehicleModel vehicle,
+    VehicleInitialCondition? initialCondition,
+    int? lastServiceOdometer,
+    DateTime? lastServiceDate,
+  }) async {
+    final condition = initialCondition ??
+        vehicle.initialConditionOption;
+
+    final storageKey = 'vehicle_maintenance_${vehicle.id}';
+    final items = VehicleIntelligenceService.generateMaintenanceItems(
+      vehicle: vehicle,
+      initialCondition: condition,
+      lastServiceOdometer: lastServiceOdometer,
+      lastServiceDate: lastServiceDate,
+    );
+
+    // 1. Simpan ke Hive cache lokal
+    await _settingsBox.put(
+      storageKey,
+      items.map((it) => it.toLocalJson()).toList(),
+    );
+
+    // 2. Jika user memasukkan riwayat servis awal, buat ServiceRecord awal di histori
+    if (condition == VehicleInitialCondition.serviceHistory &&
+        lastServiceOdometer != null &&
+        lastServiceOdometer > 0) {
+      final initialRecord = ServiceRecordModel(
+        id: const Uuid().v4(),
+        vehicleId: vehicle.id,
+        serviceDate: lastServiceDate ?? DateTime.now(),
+        odometer: lastServiceOdometer,
+        maintenanceName: 'Servis Terakhir (Baseline Awal)',
+        cost: 0.0,
+        notes: 'Riwayat servis awal dimasukkan saat registrasi kendaraan.',
+        workshop: 'Bengkel Sebelumnya',
+      );
+      final recKey = 'service_records_${vehicle.id}';
+      final cachedRecs = _settingsBox.get(recKey);
+      List<Map<String, dynamic>> recordsList = [];
+      if (cachedRecs != null && cachedRecs is List) {
+        recordsList = cachedRecs.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+      recordsList.insert(0, initialRecord.toLocalJson());
+      await _settingsBox.put(recKey, recordsList);
+
+      if (SupabaseConfig.isInitialized) {
+        try {
+          await _supabaseService.insertData('service_records', initialRecord.toJson());
+        } catch (e) {
+          debugPrint('Supabase initial service record sync notice: $e');
+        }
+      }
+    }
+
+    // 3. Sinkronisasi ke Supabase jika terhubung (batch insert dengan timeout)
+    if (SupabaseConfig.isInitialized) {
+      try {
+        await _supabaseService
+            .deleteData(
+              'vehicle_maintenance',
+              matchColumn: 'vehicle_id',
+              matchValue: vehicle.id,
+            )
+            .timeout(const Duration(seconds: 4));
+
+        if (items.isNotEmpty) {
+          await _supabaseService
+              .insertData('vehicle_maintenance', items.map((it) => it.toJson()).toList())
+              .timeout(const Duration(seconds: 4));
+        }
+      } catch (e) {
+        debugPrint('Initialize vehicle_maintenance Supabase sync notice: $e');
+      }
+    }
+
+    return items;
+  }
+
   /// Meregenerasi item maintenance berdasarkan kategori kendaraan yang baru dipilih
   Future<List<VehicleMaintenanceModel>> regenerateVehicleMaintenance(VehicleModel vehicle) async {
     final storageKey = 'vehicle_maintenance_${vehicle.id}';
-    final newItems = VehicleIntelligenceService.generateMaintenanceItems(vehicle: vehicle);
+    final newItems = VehicleIntelligenceService.generateMaintenanceItems(
+      vehicle: vehicle,
+      initialCondition: vehicle.initialConditionOption,
+    );
 
     // Update ke Hive
     await _settingsBox.put(
@@ -650,6 +738,7 @@ class MaintenanceRepository {
         healthPercentage: 100,
         status: 'GOOD',
         updatedAt: DateTime.now(),
+        hasServiceHistory: true,
       );
       await updateVehicleMaintenance(updatedItem);
     }

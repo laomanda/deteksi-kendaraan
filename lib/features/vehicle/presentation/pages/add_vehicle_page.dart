@@ -34,6 +34,9 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
   late final TextEditingController _licensePlateController;
   late final TextEditingController _odometerController;
   late final TextEditingController _colorController;
+  late final TextEditingController _lastServiceKmController;
+  DateTime? _lastServiceDate;
+  VehicleInitialCondition _selectedInitialCondition = VehicleInitialCondition.autoPrediction;
 
   late String _selectedVehicleType;
   late String _selectedCategory;
@@ -57,6 +60,8 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
     _licensePlateController = TextEditingController(text: v?.licensePlate ?? '');
     _odometerController = TextEditingController(text: v != null ? v.currentOdometer.toString() : '0');
     _colorController = TextEditingController(text: v?.color ?? '');
+    _lastServiceKmController = TextEditingController();
+    _selectedInitialCondition = v?.initialConditionOption ?? VehicleInitialCondition.autoPrediction;
 
     _selectedVehicleType = v?.vehicleType.toLowerCase() == 'car' ? 'car' : 'motorcycle';
     final initialCategory = v?.vehicleCategoryId ??
@@ -77,6 +82,7 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
     _licensePlateController.dispose();
     _odometerController.dispose();
     _colorController.dispose();
+    _lastServiceKmController.dispose();
     super.dispose();
   }
 
@@ -157,6 +163,7 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
       final odo = int.tryParse(_odometerController.text.trim()) ?? 0;
       final year = _selectedYear ?? DateTime.now().year;
       final cc = int.tryParse(_engineCcController.text.trim());
+      final lastServiceKm = int.tryParse(_lastServiceKmController.text.trim());
 
       final vehicle = VehicleModel(
         id: widget.vehicleToEdit?.id ?? const Uuid().v4(),
@@ -178,12 +185,21 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
         transmission: _selectedTransmission,
         color: _colorController.text.trim().isNotEmpty ? _colorController.text.trim() : null,
         vehicleCategoryId: _selectedCategory,
+        initialCondition: _selectedInitialCondition.name,
       );
 
       if (_isEditing) {
         await ref.read(vehicleProvider.notifier).updateVehicle(vehicle);
       } else {
         await ref.read(vehicleProvider.notifier).addVehicle(vehicle);
+        // Inisialisasi item maintenance awal dengan opsi kondisi yang dipilih user
+        final maintenanceRepo = ref.read(maintenanceRepositoryProvider);
+        await maintenanceRepo.initializeVehicleMaintenance(
+          vehicle: vehicle,
+          initialCondition: _selectedInitialCondition,
+          lastServiceOdometer: lastServiceKm,
+          lastServiceDate: _lastServiceDate,
+        );
       }
 
       if (mounted) {
@@ -579,6 +595,14 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
                   ),
                 ),
 
+                // Section: Kondisi Awal Perawatan (Hanya saat registrasi kendaraan baru)
+                if (!_isEditing) ...[
+                  const SizedBox(height: AppSpacing.space24),
+                  Text('KONDISI AWAL PERAWATAN', style: AppTypography.captionBadge),
+                  const SizedBox(height: AppSpacing.space8),
+                  _buildInitialConditionSelector(),
+                ],
+
                 const SizedBox(height: AppSpacing.space24),
 
                 // Submit Button
@@ -794,6 +818,243 @@ class _AddVehiclePageState extends ConsumerState<AddVehiclePage> {
           borderSide: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+    );
+  }
+
+  Widget _buildInitialConditionSelector() {
+    final currentOdoText = _odometerController.text.trim().isNotEmpty ? _odometerController.text.trim() : '0';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: AppSpacing.cardBorderRadius,
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      padding: const EdgeInsets.all(AppSpacing.space16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Tentukan kondisi awal kendaraan untuk menginisialisasi jadwal servis tanpa membuat status langsung terlambat (overdue):',
+            style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.space16),
+
+          // Option 1: Prediksi Otomatis (Rekomendasi)
+          _buildConditionOptionTile(
+            option: VehicleInitialCondition.autoPrediction,
+            title: 'Prediksi Otomatis',
+            badge: 'Rekomendasi',
+            subtitle: 'Kendaraan dianggap sehat. Tracking dimulai dari KM saat ini ($currentOdoText KM) dengan kondisi prima 100%.',
+            icon: Icons.auto_awesome_rounded,
+          ),
+          const SizedBox(height: AppSpacing.space12),
+
+          // Option 2: Input Riwayat Servis
+          _buildConditionOptionTile(
+            option: VehicleInitialCondition.serviceHistory,
+            title: 'Input Riwayat Servis',
+            subtitle: 'Masukkan angka KM saat servis terakhir untuk kalkulasi jadwal yang sesuai histori riil kendaraan.',
+            icon: Icons.history_edu_rounded,
+          ),
+          if (_selectedInitialCondition == VehicleInitialCondition.serviceHistory) ...[
+            const SizedBox(height: AppSpacing.space12),
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.space12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceSubtle,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'DETAIL SERVIS TERAKHIR',
+                    style: AppTypography.captionBadge.copyWith(color: AppColors.primaryBlue),
+                  ),
+                  const SizedBox(height: AppSpacing.space8),
+                  TextFormField(
+                    controller: _lastServiceKmController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: InputDecoration(
+                      labelText: 'Kilometer Servis Terakhir',
+                      hintText: 'Contoh: 115000',
+                      suffixText: 'KM',
+                      prefixIcon: const Icon(Icons.speed_rounded, size: 20, color: AppColors.primaryBlue),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    validator: (val) {
+                      if (_selectedInitialCondition == VehicleInitialCondition.serviceHistory) {
+                        if (val == null || val.trim().isEmpty) {
+                          return 'Masukkan kilometer saat servis terakhir';
+                        }
+                        final numVal = int.tryParse(val.trim());
+                        if (numVal == null || numVal < 0) {
+                          return 'Kilometer servis tidak valid';
+                        }
+                        final currentKm = int.tryParse(_odometerController.text.trim()) ?? 0;
+                        if (numVal > currentKm) {
+                          return 'KM servis tidak boleh melebihi KM saat ini ($currentKm KM)';
+                        }
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.space8),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _lastServiceDate ?? DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        setState(() => _lastServiceDate = picked);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.borderSubtle),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today_rounded, size: 18, color: AppColors.primaryBlue),
+                          const SizedBox(width: 8),
+                          Text(
+                            _lastServiceDate != null
+                                ? 'Tanggal Servis: ${_lastServiceDate!.day}/${_lastServiceDate!.month}/${_lastServiceDate!.year}'
+                                : 'Pilih Tanggal Servis (Opsional)',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: _lastServiceDate != null ? AppColors.textPrimary : AppColors.textMuted,
+                            ),
+                          ),
+                          const Spacer(),
+                          const Icon(Icons.arrow_drop_down, color: AppColors.textMuted),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: AppSpacing.space12),
+
+          // Option 3: Semua Komponen Kondisi Baik
+          _buildConditionOptionTile(
+            option: VehicleInitialCondition.allGood,
+            title: 'Semua Komponen Kondisi Baik',
+            subtitle: 'Semua komponen dalam kondisi 100% prima baru atau baru servis total. Baseline servis = $currentOdoText KM.',
+            icon: Icons.verified_rounded,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConditionOptionTile({
+    required VehicleInitialCondition option,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    String? badge,
+  }) {
+    final isSelected = _selectedInitialCondition == option;
+    return InkWell(
+      onTap: () => setState(() => _selectedInitialCondition = option),
+      borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(AppSpacing.space12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryBlue.withValues(alpha: 0.05) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryBlue : AppColors.borderSubtle,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primaryBlue : AppColors.surfaceSubtle,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 18,
+                color: isSelected ? Colors.white : AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.space12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          style: AppTypography.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: isSelected ? AppColors.primaryBlue : AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      if (badge != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade100,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            badge,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.green.shade800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8, top: 4),
+              child: Icon(
+                isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                size: 20,
+                color: isSelected ? AppColors.primaryBlue : const Color(0xFFCBD5E1),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -651,14 +651,57 @@ void main() {
         currentDate: now,
       );
 
-      expect(prediction.nextServiceOdometer, equals(8000),
-          reason: 'Next service is 0 + 8.000 = 8.000 KM');
-      expect(prediction.remainingKm, equals(6500),
-          reason: 'Remaining KM is 8.000 - 1.500 = 6.500 KM');
+      expect(prediction.nextServiceOdometer, equals(9500),
+          reason: 'Next service uses baseKm = vehicle.current_odometer (1.500 + 8.000 = 9.500 KM)');
+      expect(prediction.remainingKm, equals(8000),
+          reason: 'Remaining KM is 9.500 - 1.500 = 8.000 KM');
       expect(prediction.remainingDays, greaterThan(0));
       expect(prediction.whicheverComesFirstText, isNotEmpty);
       expect(prediction.status, isNot(equals('OVERDUE')));
+      expect(prediction.status, equals('GOOD'));
       expect(prediction.formattedTotalRange, isNotEmpty);
+    });
+
+    test('TEST 13: Audit scenario - Honda Vario 160 ABS (119.371 km) with Oli Mesin (3.000 km) interval shows next service around 122.371 km, not overdue', () {
+      final now = DateTime(2026, 9, 18);
+      final vario = VehicleModel(
+        id: 'vario-160-abs',
+        brand: 'Honda',
+        model: 'Vario 160 ABS',
+        vehicleType: 'motorcycle',
+        year: 2024,
+        currentOdometer: 119371,
+        initialOdometer: 119371,
+        vehicleCategoryId: 'scooter_cvt',
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final oilItem = VehicleMaintenanceModel(
+        id: 'vm-oil-vario',
+        vehicleId: vario.id,
+        maintenanceId: 'm-oil-engine',
+        itemName: 'Oli Mesin',
+        itemCategory: 'engine_oil',
+        healthPercentage: 100,
+        lastServiceOdometer: 0,
+        lastServiceDate: null,
+        intervalKm: 3000,
+        intervalMonth: 3,
+        updatedAt: now,
+      );
+
+      final prediction = MaintenancePredictionService.predictItem(
+        item: oilItem,
+        currentOdometer: vario.currentOdometer,
+        currentDate: now,
+      );
+
+      expect(prediction.nextServiceOdometer, equals(122371));
+      expect(prediction.remainingKm, equals(3000));
+      expect(prediction.currentHealth, equals(100.0));
+      expect(prediction.status, equals('GOOD'));
+      expect(prediction.isOverdue, isFalse);
     });
   });
 }

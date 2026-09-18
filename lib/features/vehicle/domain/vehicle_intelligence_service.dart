@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 import '../../maintenance/data/models/maintenance_template_model.dart';
 import '../../maintenance/data/models/vehicle_maintenance_model.dart';
+import '../../maintenance/domain/maintenance_calculator.dart';
 import '../data/models/vehicle_category_model.dart';
 import '../data/models/vehicle_model.dart';
 
@@ -119,31 +120,92 @@ class VehicleIntelligenceService {
     return MaintenanceTemplateModel.getTemplatesForCategory(categoryId);
   }
 
-  /// Membuat instance `VehicleMaintenanceModel` spesifik dan terkurasi untuk kendaraan
+  /// Membuat instance `VehicleMaintenanceModel` spesifik dan terkurasi untuk kendaraan.
+  /// Mendukung 3 kondisi awal setup:
+  /// 1. Prediksi Otomatis: kendaraan sehat, baseline KM = current_odometer, health 100%.
+  /// 2. Input Riwayat Servis: user memasukkan servis terakhir, kalkulasi normal.
+  /// 3. Semua Komponen Kondisi Baik: semua item dibuat health 100%, baseline servis = current_odometer.
   static List<VehicleMaintenanceModel> generateMaintenanceItems({
     required VehicleModel vehicle,
     DateTime? now,
     String? overrideCategoryId,
     String? categoryId,
+    VehicleInitialCondition? initialCondition,
+    int? lastServiceOdometer,
+    DateTime? lastServiceDate,
   }) {
     final targetCategoryId = overrideCategoryId ?? categoryId ?? resolveCategoryId(vehicle);
     final templates = MaintenanceTemplateModel.getTemplatesForCategory(targetCategoryId);
     const uuid = Uuid();
     final timestamp = now ?? DateTime.now();
 
+    final condition = initialCondition ?? vehicle.initialConditionOption;
+
     return templates.map((tmpl) {
+      final int odo;
+      final bool hasHistory;
+      final int health;
+      final String status;
+      final DateTime? sDate;
+
+      switch (condition) {
+        case VehicleInitialCondition.autoPrediction:
+          // 1. Prediksi Otomatis:
+          // - kendaraan dianggap sehat
+          // - gunakan current_odometer sebagai baseline
+          // - health 100%
+          // - mulai tracking dari KM sekarang
+          odo = 0;
+          hasHistory = false;
+          health = 100;
+          status = 'GOOD';
+          sDate = timestamp;
+          break;
+
+        case VehicleInitialCondition.allGood:
+          // 3. Semua Komponen Kondisi Baik:
+          // - semua maintenance item dibuat health 100%
+          // - baseline servis = current_odometer
+          odo = vehicle.currentOdometer;
+          hasHistory = true;
+          health = 100;
+          status = 'GOOD';
+          sDate = timestamp;
+          break;
+
+        case VehicleInitialCondition.serviceHistory:
+          // 2. Input Riwayat Servis:
+          // - user memasukkan servis terakhir
+          // - gunakan last_service_odometer
+          // - kalkulasi normal
+          final inputOdo = lastServiceOdometer ?? 0;
+          final calc = MaintenanceCalculator.calculate(
+            currentOdometer: vehicle.currentOdometer,
+            intervalKm: tmpl.intervalKm,
+            lastServiceOdometer: inputOdo,
+            hasMaintenanceHistory: true,
+          );
+          odo = inputOdo;
+          hasHistory = true;
+          health = calc.healthPercentage;
+          status = calc.status;
+          sDate = lastServiceDate ?? timestamp;
+          break;
+      }
+
       return VehicleMaintenanceModel(
         id: uuid.v4(),
         vehicleId: vehicle.id,
         maintenanceId: tmpl.id,
-        lastServiceDate: timestamp,
-        lastServiceOdometer: 0,
-        healthPercentage: 100,
-        status: 'GOOD',
+        lastServiceDate: sDate,
+        lastServiceOdometer: odo,
+        healthPercentage: health,
+        status: status,
         itemName: tmpl.componentName,
         itemCategory: tmpl.componentKey,
         intervalKm: tmpl.intervalKm,
         intervalMonth: tmpl.intervalMonth,
+        hasServiceHistory: hasHistory,
       );
     }).toList();
   }

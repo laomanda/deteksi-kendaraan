@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../../maintenance/providers/maintenance_intelligence_providers.dart';
 import '../../../maintenance/providers/maintenance_prediction_providers.dart';
 import '../../data/models/vehicle_model.dart';
@@ -52,7 +53,7 @@ class VehicleCard extends ConsumerWidget {
     final healthSummaryAsync = ref.watch(maintenanceHealthProvider(vehicle.id));
 
     // Humanized condition derivation (DESIGN.md Section 4 & 5)
-    String conditionLabel = 'Kondisi baik';
+    String conditionLabel = 'Kondisi prima';
     String conditionReason = 'Siap digunakan';
     Color conditionColor = AppColors.success;
 
@@ -64,19 +65,20 @@ class VehicleCard extends ConsumerWidget {
       conditionColor = AppColors.danger;
       final overdueItem = upcomingList.where((p) => p.isOverdue).firstOrNull;
       conditionReason = overdueItem != null
-          ? '${overdueItem.componentName} lewat jadwal'
-          : 'Perawatan terlewat';
+          ? '${overdueItem.componentName}: perlu dilakukan segera'
+          : 'Perlu dilakukan segera';
     } else if (summary != null && summary.dueSoonCount > 0) {
       conditionLabel = 'Perlu perhatian';
       conditionColor = AppColors.warning;
       final dueSoonItem = upcomingList.where((p) => p.isDueSoon).firstOrNull;
       conditionReason = dueSoonItem != null
-          ? '${dueSoonItem.componentName} segera diservis'
-          : 'Jadwal servis dekat';
+          ? '${dueSoonItem.componentName}: mendekati jadwal perawatan'
+          : 'Mendekati jadwal perawatan';
     } else if (upcomingList.isNotEmpty) {
-      conditionLabel = 'Kondisi baik';
+      conditionLabel = 'Kondisi prima';
       conditionColor = AppColors.success;
-      conditionReason = 'Servis: ${upcomingList.first.componentName}';
+      final firstItem = upcomingList.first;
+      conditionReason = '${firstItem.componentName}: disarankan dalam ${DateFormatter.formatKm(firstItem.remainingKm.toDouble())}';
     }
 
     final silhouetteAsset = _getSilhouetteAsset(vehicle);

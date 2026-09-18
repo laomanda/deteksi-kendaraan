@@ -16,7 +16,8 @@ class MaintenanceCalculationResult {
   });
 
   bool get isGood => status == 'GOOD';
-  bool get isWarning => status == 'WARNING';
+  bool get isWarning => status == 'WARNING' || status == 'UPCOMING';
+  bool get isUpcoming => isWarning;
   bool get isOverdue => status == 'OVERDUE';
 
   Map<String, dynamic> toJson() => {
@@ -42,24 +43,32 @@ class MaintenanceCalculator {
   MaintenanceCalculator._();
 
   /// Calculates next service KM, remaining KM, and status
+  /// Logic:
+  /// if maintenance history exists:
+  ///     baseKm = last_service_odometer
+  /// else:
+  ///     baseKm = vehicle.current_odometer
+  /// nextServiceKm = baseKm + maintenanceRule.intervalKm
   static MaintenanceCalculationResult calculate({
     required int currentOdometer,
     required int intervalKm,
     int? lastServiceOdometer,
+    bool? hasMaintenanceHistory,
   }) {
-    // If last service is recorded and greater than 0, next service is lastServiceOdometer + intervalKm
-    // Otherwise fallback to formula: current_odometer + interval_km
-    final int nextServiceKm;
-    if (lastServiceOdometer != null && lastServiceOdometer > 0) {
-      nextServiceKm = lastServiceOdometer + intervalKm;
-    } else {
-      nextServiceKm = currentOdometer + intervalKm;
-    }
+    final bool historyExists = hasMaintenanceHistory ??
+        (lastServiceOdometer != null && lastServiceOdometer > 0);
 
+    final int baseKm = historyExists
+        ? (lastServiceOdometer ?? 0)
+        : currentOdometer;
+
+    final int nextServiceKm = baseKm + intervalKm;
     final int remainingKm = nextServiceKm - currentOdometer;
 
     final String status;
-    if (remainingKm <= 0) {
+    if (intervalKm <= 0) {
+      status = 'GOOD';
+    } else if (remainingKm <= 0) {
       status = 'OVERDUE';
     } else if (remainingKm <= 500) {
       status = 'WARNING';

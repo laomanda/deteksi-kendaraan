@@ -242,6 +242,7 @@ void main() {
         itemName: 'Filter Udara',
         intervalKm: 8000,
         lastServiceOdometer: 0,
+        hasServiceHistory: true,
       );
 
       final health = HealthCalculationService.calculateItemHealth(

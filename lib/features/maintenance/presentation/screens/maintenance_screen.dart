@@ -242,10 +242,10 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
     final Color conditionColor;
 
     if (overdueCount > 0) {
-      conditionTitle = 'Perlu Perawatan Segera';
+      conditionTitle = 'Perlu Dilakukan Segera';
       conditionColor = AppColors.dangerRed;
     } else if (dueSoonCount > 0) {
-      conditionTitle = 'Perlu Perhatian';
+      conditionTitle = 'Mendekati Jadwal Perawatan';
       conditionColor = AppColors.warningAmber;
     } else {
       conditionTitle = 'Kondisi Prima';

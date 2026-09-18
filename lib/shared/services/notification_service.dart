@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// NotificationService managing local alarms and critical triggers (PRD Section 12)
@@ -11,12 +12,17 @@ class NotificationService {
 
   static Future<void> init() async {
     if (_initialized) return;
+    if (kIsWeb) return;
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initSettings = InitializationSettings(android: androidSettings);
+    try {
+      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const initSettings = InitializationSettings(android: androidSettings);
 
-    await _notifications.initialize(initSettings);
-    _initialized = true;
+      await _notifications.initialize(initSettings);
+      _initialized = true;
+    } catch (e) {
+      debugPrint('NotificationService initialization failed: $e');
+    }
   }
 
   /// Sends a local notification immediately

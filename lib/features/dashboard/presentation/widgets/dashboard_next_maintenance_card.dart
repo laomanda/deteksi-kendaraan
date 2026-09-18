@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/date_formatter.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../../maintenance/presentation/widgets/maintenance_detail_bottom_sheet.dart';
 import '../../../maintenance/presentation/widgets/vehicle_part_icon_badge.dart';
@@ -97,33 +96,21 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
         final Color statusColor;
         final Color statusLightBg;
         final Color statusBorder;
-        final String statusPillLabel;
-        final String recommendationText;
+        final String statusPillLabel = nextItem.userFacingStatusLabel;
+        final String recommendationText = nextItem.userFacingRemainingText;
 
         if (isOverdue) {
           statusColor = AppColors.dangerRed;
           statusLightBg = const Color(0xFFFEF2F2);
           statusBorder = const Color(0xFFFECACA);
-          statusPillLabel = 'Lewat Jadwal';
-          recommendationText = 'Disarankan ganti segera (0 KM lagi)';
         } else if (isDueSoon) {
           statusColor = AppColors.warningAmber;
           statusLightBg = const Color(0xFFFFFBEB);
           statusBorder = const Color(0xFFFDE68A);
-          statusPillLabel = 'Perlu Perhatian';
-          final kmText = nextItem.remainingKm > 0
-              ? '${DateFormatter.formatKm(nextItem.remainingKm.toDouble(), includeUnit: false)} KM'
-              : '0 KM';
-          recommendationText = 'Disarankan dalam $kmText lagi';
         } else {
-          statusColor = AppColors.accentCyan;
-          statusLightBg = const Color(0xFFF0FDFA);
-          statusBorder = const Color(0xFFCCFBF1);
-          statusPillLabel = 'Jadwal Berkala';
-          final kmText = nextItem.remainingKm > 0
-              ? '${DateFormatter.formatKm(nextItem.remainingKm.toDouble(), includeUnit: false)} KM'
-              : '0 KM';
-          recommendationText = 'Disarankan dalam $kmText lagi';
+          statusColor = AppColors.safeGreen;
+          statusLightBg = const Color(0xFFF0FDF4);
+          statusBorder = const Color(0xFFBBF7D0);
         }
 
         return Container(
@@ -256,7 +243,7 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          'Rekomendasi Servis',
+                          nextItem.userFacingHistoryText,
                           style: GoogleFonts.plusJakartaSans(
                             color: AppColors.textMuted,
                             fontSize: 12,

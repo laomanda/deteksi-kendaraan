@@ -75,9 +75,9 @@ class MaintenanceRuleModel {
       other is MaintenanceRuleModel &&
           runtimeType == other.runtimeType &&
           id == other.id &&
-          profileId == profileId &&
-          componentId == componentId &&
-          intervalKm == intervalKm;
+          profileId == other.profileId &&
+          componentId == other.componentId &&
+          intervalKm == other.intervalKm;
 
   @override
   int get hashCode =>

@@ -81,38 +81,37 @@ class VehicleRepository {
 
   /// Create vehicle: saves to local Hive first, then syncs to Supabase
   Future<VehicleModel> createVehicle(VehicleModel vehicle) async {
-    try {
-      // 1. Save to local Hive database (offline-first guarantee)
-      await _box.put(vehicle.id, vehicle);
+    // 1. Save to local Hive database (offline-first guarantee)
+    await _box.put(vehicle.id, vehicle);
 
-      // Set active vehicle if none is active
-      if (getActiveVehicleId() == null) {
-        await setActiveVehicleId(vehicle.id);
-      }
-
-      // 2. Sync to Supabase
-      if (SupabaseConfig.isInitialized) {
-        try {
-          await _supabaseService.insertData('vehicles', vehicle.toJson());
-
-          // Insert specs if any are provided
-          if (vehicle.fuelType != null || vehicle.transmission != null || vehicle.color != null) {
-            try {
-              await _supabaseService.insertData('vehicle_specs', vehicle.toSpecsJson());
-            } catch (e) {
-              debugPrint('Warning: vehicle_specs insert failed: $e');
-            }
-          }
-        } on PostgrestException catch (e) {
-          throw 'Gagal sinkronisasi ke Supabase: ${e.message}';
-        }
-      }
-
-      return vehicle;
-    } catch (e) {
-      if (e is String) rethrow;
-      throw 'Terjadi kesalahan saat menambah kendaraan: $e';
+    // Set active vehicle if none is active
+    if (getActiveVehicleId() == null) {
+      await setActiveVehicleId(vehicle.id);
     }
+
+    // 2. Sync to Supabase in background/graceful try-catch
+    if (SupabaseConfig.isInitialized) {
+      try {
+        await _supabaseService
+            .insertData('vehicles', vehicle.toJson())
+            .timeout(const Duration(seconds: 4));
+
+        // Insert specs if any are provided
+        if (vehicle.fuelType != null || vehicle.transmission != null || vehicle.color != null) {
+          try {
+            await _supabaseService
+                .insertData('vehicle_specs', vehicle.toSpecsJson())
+                .timeout(const Duration(seconds: 4));
+          } catch (e) {
+            debugPrint('Warning: vehicle_specs insert failed: $e');
+          }
+        }
+      } catch (e) {
+        debugPrint('Supabase vehicle sync notice (offline/slow/skipped): $e');
+      }
+    }
+
+    return vehicle;
   }
 
   /// Alias for backward compatibility with legacy screen callers
