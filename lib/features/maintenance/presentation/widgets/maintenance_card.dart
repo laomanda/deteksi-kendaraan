@@ -30,7 +30,16 @@ class MaintenanceCard extends StatelessWidget {
       vehicle.vehicleType,
       result.item.componentType,
     );
-    final componentName = meta?.displayName ?? result.item.componentType;
+    final String componentName;
+    if (meta != null) {
+      componentName = meta.displayName;
+    } else if (result.item.componentType == 'cvt_roller') {
+      componentName = 'Roller CVT';
+    } else if (result.item.componentType == 'cvt_belt') {
+      componentName = 'V-Belt CVT';
+    } else {
+      componentName = result.item.componentType;
+    }
 
     // Resolve realistic status copy and colors
     final Color statusColor;
@@ -288,23 +297,21 @@ class MaintenanceCard extends StatelessWidget {
 
                 const SizedBox(height: 6),
 
-                // 3. Service History Footnote
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // 3. Service History Footnote (Pemisahan baris rapi & proporsional)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        lastServiceText,
-                        style: GoogleFonts.plusJakartaSans(
-                          color: AppColors.textMuted,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      lastServiceText,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppColors.textPrimary,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(height: 2),
                     Text(
                       historyStateText,
                       style: GoogleFonts.plusJakartaSans(
@@ -313,9 +320,11 @@ class MaintenanceCard extends StatelessWidget {
                             : AppColors.textMuted,
                         fontSize: 9.5,
                         fontWeight: result.hasServiceHistory
-                            ? FontWeight.w700
+                            ? FontWeight.w600
                             : FontWeight.w500,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

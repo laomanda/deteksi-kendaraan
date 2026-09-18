@@ -67,10 +67,17 @@ class ComponentCatalog {
     ),
     ComponentMetadata(
       key: 'cvt_belt',
-      displayName: 'CVT Belt & Roller',
-      intervalKm: 20000.0,
+      displayName: 'V-Belt CVT',
+      intervalKm: 24000.0,
       intervalDays: 730, // 24 Bulan
-      description: 'Keausan lebar sabuk & deformasi roller.',
+      description: 'Pemeriksaan keausan lebar sabuk dan keretakan sabuk penggerak V-Belt.',
+    ),
+    ComponentMetadata(
+      key: 'cvt_roller',
+      displayName: 'Roller CVT',
+      intervalKm: 12000.0,
+      intervalDays: 365, // 12 Bulan
+      description: 'Pemeriksaan keausan dan penggantian roller pemberat pulley primer CVT.',
     ),
     ComponentMetadata(
       key: 'drive_chain',
@@ -225,17 +232,20 @@ class ComponentCatalog {
 
       case 'motorcycle_manual':
         // Motor Manual: Wajib ada Oli Mesin, Rantai, Gir (Sprocket), Kampas Kopling, Rem, Ban, Busi, Aki, Filter Udara
-        // DILARANG: CVT Belt (cvt_belt), Oli Gardan (gear_oil), Radiator Coolant
+        // DILARANG: CVT Belt (cvt_belt), Roller CVT (cvt_roller), Oli Gardan (gear_oil), Radiator Coolant
         return motorcycleComponents.where((c) =>
             c.key != 'cvt_belt' &&
+            c.key != 'cvt_roller' &&
             c.key != 'gear_oil' &&
             c.key != 'radiator_coolant').toList();
 
       case 'sport_motorcycle':
         // Motor Sport: Wajib ada Oli Mesin, Rantai, Gir (Sprocket), Kampas Kopling, Coolant, Rem, Ban, Busi, Aki, Filter Udara
-        // DILARANG: CVT Belt (cvt_belt), Oli Gardan (gear_oil)
+        // DILARANG: CVT Belt (cvt_belt), Roller CVT (cvt_roller), Oli Gardan (gear_oil)
         return motorcycleComponents.where((c) =>
-            c.key != 'cvt_belt' && c.key != 'gear_oil').toList();
+            c.key != 'cvt_belt' &&
+            c.key != 'cvt_roller' &&
+            c.key != 'gear_oil').toList();
 
       case 'car_automatic':
         // Mobil Matic: DILARANG Kopling Manual (clutch_plate), MT Fluid (mt_fluid), Filter Solar (fuel_filter)

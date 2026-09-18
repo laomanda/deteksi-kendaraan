@@ -184,6 +184,15 @@ class MaintenancePriceModel {
       laborMax: 150000,
     ),
     MaintenancePriceModel(
+      id: 'price-mc-10-cvt-roller',
+      maintenanceId: 'mc-10-cvt-roller',
+      vehicleType: 'motorcycle',
+      minPrice: 50000,
+      maxPrice: 120000,
+      laborMin: 20000,
+      laborMax: 35000,
+    ),
+    MaintenancePriceModel(
       id: 'price-mc-11-cvt-belt',
       maintenanceId: 'mc-11-cvt-belt',
       vehicleType: 'motorcycle',
