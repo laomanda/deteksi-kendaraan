@@ -2,11 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/database/hive_registrar.dart';
+import '../../../../core/supabase/supabase_client.dart';
 import '../../../../core/supabase/supabase_config.dart';
 import '../../../../core/supabase/supabase_service.dart';
 import '../../../vehicle/data/models/vehicle_category_model.dart';
 import '../../../vehicle/data/models/vehicle_model.dart';
 import '../../../vehicle/domain/vehicle_intelligence_service.dart';
+import '../../domain/dashboard_maintenance_item.dart';
+import '../../domain/maintenance_calculator.dart';
 import '../../domain/vehicle_maintenance_service.dart';
 import '../models/maintenance_catalog_model.dart';
 import '../models/maintenance_item_model.dart';
@@ -273,12 +276,14 @@ class MaintenanceRepository {
     String vehicleType = 'motorcycle',
     String? vehicleCategoryId,
     int currentOdometer = 0,
+    bool forceRemote = false,
   }) async {
     final storageKey = 'vehicle_maintenance_$vehicleId';
     final cached = _settingsBox.get(storageKey);
 
     List<VehicleMaintenanceModel> items = [];
 
+    // 1. Offline-First: Baca dari Hive local cache terlebih dahulu
     if (cached != null && cached is List) {
       try {
         items = cached
@@ -301,37 +306,142 @@ class MaintenanceRepository {
           currentOdometer: currentOdometer,
         );
 
-    // Pipeline: Sanitize & Validate against vehicle maintenance profile rules
+    // 2. Jika online dan Supabase terhubung, jalankan Join Query:
+    // vehicle_maintenance JOIN vehicles JOIN maintenance_rules JOIN components
+    if (SupabaseConfig.isInitialized) {
+      try {
+        final query = AppSupabaseClient.instance.client
+            .from('vehicle_maintenance')
+            .select('''
+              id,
+              vehicle_id,
+              maintenance_id,
+              last_service_date,
+              last_service_odometer,
+              health_percentage,
+              status,
+              vehicles (id, brand, model, year, vehicle_type, current_odometer, vehicle_category_id),
+              maintenance_rules (
+                id,
+                profile_id,
+                component_id,
+                interval_km,
+                priority,
+                components (id, name, category, description)
+              )
+            ''')
+            .eq('vehicle_id', vehicleId);
+
+        final response = await query.timeout(const Duration(seconds: 5));
+        if (response.isNotEmpty) {
+          final remoteItems = response
+              .map((row) => VehicleMaintenanceModel.fromJson(Map<String, dynamic>.from(row as Map)))
+              .toList();
+          if (remoteItems.isNotEmpty) {
+            items = remoteItems;
+          }
+        }
+      } catch (e, st) {
+        final appEx = AppSupabaseClient.instance.handleException(e, st);
+        debugPrint('Supabase vehicle_maintenance fetch notice (offline/fallback): $appEx');
+      }
+    }
+
+    // 3. Pipeline: Sanitize & Validate against vehicle maintenance profile rules
     final sanitizedItems = VehicleMaintenanceService.sanitizeAndValidate(
       vehicle: vehicle,
       rawItems: items,
     );
 
-    // Jika cache kosong atau ada komponen terlarang yang dipurged / komponen hilang yang ditambahkan
-    if (items.isEmpty || sanitizedItems.length != items.length) {
-      items = sanitizedItems;
-
-      // Update ke Hive lokal
-      await _settingsBox.put(
-        storageKey,
-        items.map((it) => it.toLocalJson()).toList(),
+    // 4. Hitung status realtime menggunakan MaintenanceCalculator
+    final validatedList = sanitizedItems.map((it) {
+      final calc = MaintenanceCalculator.calculate(
+        currentOdometer: vehicle.currentOdometer,
+        intervalKm: it.effectiveIntervalKm,
+        lastServiceOdometer: it.lastServiceOdometer,
       );
+      return it.copyWith(
+        healthPercentage: calc.healthPercentage,
+        status: calc.status,
+      );
+    }).toList();
 
-      // Sinkronisasi insert ke Supabase jika terhubung
-      if (SupabaseConfig.isInitialized) {
-        for (final it in items) {
-          try {
-            await _supabaseService.insertData('vehicle_maintenance', it.toJson());
-          } catch (e) {
-            debugPrint('Background sync vehicle_maintenance skipped/failed: $e');
-          }
+    // 5. Simpan / perbarui ke Hive lokal
+    await _settingsBox.put(
+      storageKey,
+      validatedList.map((it) => it.toLocalJson()).toList(),
+    );
+
+    // 6. Sinkronisasi insert ke Supabase jika remote kosong
+    if (SupabaseConfig.isInitialized && items.isEmpty && validatedList.isNotEmpty) {
+      for (final it in validatedList) {
+        try {
+          await _supabaseService.insertData('vehicle_maintenance', it.toJson());
+        } catch (e) {
+          debugPrint('Background sync vehicle_maintenance insert notice: $e');
         }
       }
-    } else {
-      items = sanitizedItems;
     }
 
-    return items;
+    return validatedList;
+  }
+
+  /// Mengambil data maintenance dalam bentuk UI Data Contract (DashboardMaintenanceItem)
+  /// Menggunakan query join dan MaintenanceCalculator untuk status realtime
+  Future<List<DashboardMaintenanceItem>> getDashboardMaintenance(String vehicleId) async {
+    final vehicle = HiveRegistrar.vehiclesBox.get(vehicleId);
+    final vmList = await getVehicleMaintenance(
+      vehicleId,
+      vehicleType: vehicle?.vehicleType ?? 'motorcycle',
+      vehicleCategoryId: vehicle?.vehicleCategoryId,
+      currentOdometer: vehicle?.currentOdometer ?? 0,
+    );
+
+    final currentOdo = vehicle?.currentOdometer ?? 0;
+
+    return vmList.map((vm) {
+      final int interval = vm.effectiveIntervalKm;
+      final calc = MaintenanceCalculator.calculate(
+        currentOdometer: currentOdo,
+        intervalKm: interval,
+        lastServiceOdometer: vm.lastServiceOdometer,
+      );
+
+      final name = vm.name.isNotEmpty ? vm.name : vm.maintenanceId;
+      final desc = vm.maintenanceRule?.description ??
+          'Jadwal servis setiap $interval KM';
+
+      return DashboardMaintenanceItem(
+        componentName: name,
+        description: desc,
+        intervalKm: interval,
+        currentOdometer: currentOdo,
+        nextServiceKm: calc.nextServiceKm,
+        remainingKm: calc.remainingKm,
+        healthPercentage: calc.healthPercentage,
+        status: calc.status,
+        priority: vm.maintenanceRule?.priority ?? 'medium',
+        maintenanceId: vm.maintenanceId,
+      );
+    }).toList();
+  }
+
+  /// Mengambil detail maintenance untuk suatu kendaraan (Requirement 3)
+  Future<DashboardMaintenanceItem?> getMaintenanceDetail(
+    String vehicleId, [
+    String? maintenanceId,
+  ]) async {
+    final list = await getDashboardMaintenance(vehicleId);
+    if (list.isEmpty) return null;
+
+    if (maintenanceId != null && maintenanceId.isNotEmpty) {
+      return list.where((it) => it.maintenanceId == maintenanceId).firstOrNull ??
+          list.first;
+    }
+
+    // Default return item paling kritis / urgent (remaining km terkecil)
+    final sorted = [...list]..sort((a, b) => a.remainingKm.compareTo(b.remainingKm));
+    return sorted.first;
   }
 
   /// Meregenerasi item maintenance berdasarkan kategori kendaraan yang baru dipilih

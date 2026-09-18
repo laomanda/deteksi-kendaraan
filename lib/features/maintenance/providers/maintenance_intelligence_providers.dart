@@ -5,6 +5,7 @@ import '../data/models/maintenance_price_model.dart';
 import '../data/models/service_record_model.dart';
 import '../data/models/vehicle_maintenance_model.dart';
 import '../data/repositories/maintenance_repository.dart';
+import '../domain/dashboard_maintenance_item.dart';
 import '../domain/health_calculation_service.dart';
 import '../domain/vehicle_maintenance_service.dart';
 import '../../vehicle/data/models/vehicle_model.dart';
@@ -128,6 +129,21 @@ final vehicleMaintenanceComponentsProvider = Provider.family<
 
     return VehicleMaintenanceService.getVehicleMaintenanceComponents(targetVehicle, items);
   });
+});
+
+/// Production Riverpod Provider for Vehicle Maintenance (Section 6)
+/// Returns `AsyncValue<List<DashboardMaintenanceItem>>`
+final maintenanceProvider =
+    FutureProvider.family<List<DashboardMaintenanceItem>, String>((ref, vehicleId) async {
+  final repo = ref.watch(maintenanceRepositoryProvider);
+  return repo.getDashboardMaintenance(vehicleId);
+});
+
+/// Production Riverpod Provider for Maintenance Detail
+final maintenanceDetailProvider = FutureProvider.family<DashboardMaintenanceItem?,
+    ({String vehicleId, String? maintenanceId})>((ref, arg) async {
+  final repo = ref.watch(maintenanceRepositoryProvider);
+  return repo.getMaintenanceDetail(arg.vehicleId, arg.maintenanceId);
 });
 
 /// StateNotifier untuk mengelola riwayat servis per vehicleId

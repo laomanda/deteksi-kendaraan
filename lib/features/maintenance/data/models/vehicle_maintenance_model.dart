@@ -1,14 +1,23 @@
-/// Model representasi data dari tabel Supabase 'vehicle_maintenance'
+import 'package:flutter/foundation.dart';
+import '../../../vehicle/data/models/vehicle_model.dart';
+import 'maintenance_rule_model.dart';
+
+/// Immutable model representing a row in the Supabase 'vehicle_maintenance' table
+@immutable
 class VehicleMaintenanceModel {
   final String id;
   final String vehicleId;
   final String maintenanceId;
-  DateTime? lastServiceDate;
-  int lastServiceOdometer;
-  int healthPercentage; // 0 to 100
-  String status; // 'GOOD' | 'DUE_SOON' | 'OVERDUE'
+  final DateTime? lastServiceDate;
+  final int lastServiceOdometer;
+  final int healthPercentage; // 0 to 100
+  final String status; // 'GOOD' | 'WARNING' | 'OVERDUE'
   final DateTime? createdAt;
-  DateTime? updatedAt;
+  final DateTime? updatedAt;
+
+  // Joined relational data
+  final MaintenanceRuleModel? maintenanceRule;
+  final VehicleModel? vehicle;
 
   // Cached metadata for offline fast UI display
   final String? itemName;
@@ -16,7 +25,7 @@ class VehicleMaintenanceModel {
   final int? intervalKm;
   final int? intervalMonth;
 
-  VehicleMaintenanceModel({
+  const VehicleMaintenanceModel({
     required this.id,
     required this.vehicleId,
     required this.maintenanceId,
@@ -26,6 +35,8 @@ class VehicleMaintenanceModel {
     this.status = 'GOOD',
     this.createdAt,
     this.updatedAt,
+    this.maintenanceRule,
+    this.vehicle,
     this.itemName,
     this.itemCategory,
     this.intervalKm,
@@ -33,11 +44,26 @@ class VehicleMaintenanceModel {
   });
 
   bool get isGood => status.toUpperCase() == 'GOOD';
-  bool get isDueSoon =>
-      status.toUpperCase() == 'DUE_SOON' || status.toUpperCase() == 'DUE SOON';
+  bool get isWarning =>
+      status.toUpperCase() == 'WARNING' ||
+      status.toUpperCase() == 'DUE_SOON' ||
+      status.toUpperCase() == 'DUE SOON';
+  bool get isDueSoon => isWarning;
   bool get isOverdue => status.toUpperCase() == 'OVERDUE';
-  String get itemKey => itemCategory ?? maintenanceId;
-  String get name => itemName ?? '';
+
+  String get itemKey =>
+      itemCategory ??
+      maintenanceRule?.component?.category ??
+      maintenanceId;
+
+  String get name =>
+      itemName ??
+      maintenanceRule?.component?.name ??
+      maintenanceRule?.description ??
+      '';
+
+  int get effectiveIntervalKm =>
+      intervalKm ?? maintenanceRule?.intervalKm ?? 3000;
 
   VehicleMaintenanceModel copyWith({
     String? id,
@@ -49,6 +75,8 @@ class VehicleMaintenanceModel {
     String? status,
     DateTime? createdAt,
     DateTime? updatedAt,
+    MaintenanceRuleModel? maintenanceRule,
+    VehicleModel? vehicle,
     String? itemName,
     String? itemCategory,
     int? intervalKm,
@@ -64,6 +92,8 @@ class VehicleMaintenanceModel {
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      maintenanceRule: maintenanceRule ?? this.maintenanceRule,
+      vehicle: vehicle ?? this.vehicle,
       itemName: itemName ?? this.itemName,
       itemCategory: itemCategory ?? this.itemCategory,
       intervalKm: intervalKm ?? this.intervalKm,
@@ -86,13 +116,14 @@ class VehicleMaintenanceModel {
     };
   }
 
-  /// JSON for local Hive caching (with metadata)
+  /// JSON for local Hive caching (with metadata & relational joins)
   Map<String, dynamic> toLocalJson() {
     final map = toJson();
     if (itemName != null) map['item_name'] = itemName;
     if (itemCategory != null) map['item_category'] = itemCategory;
     if (intervalKm != null) map['interval_km'] = intervalKm;
     if (intervalMonth != null) map['interval_month'] = intervalMonth;
+    if (maintenanceRule != null) map['maintenance_rules'] = maintenanceRule!.toJson();
     return map;
   }
 
@@ -108,10 +139,22 @@ class VehicleMaintenanceModel {
     final odo = json['last_service_odometer'];
     final int odoVal = odo is num ? odo.round() : int.tryParse(odo.toString()) ?? 0;
 
+    MaintenanceRuleModel? rule;
+    if (json['maintenance_rules'] is Map<String, dynamic>) {
+      rule = MaintenanceRuleModel.fromJson(json['maintenance_rules'] as Map<String, dynamic>);
+    }
+
+    VehicleModel? vehicle;
+    if (json['vehicles'] is Map<String, dynamic>) {
+      vehicle = VehicleModel.fromJson(json['vehicles'] as Map<String, dynamic>);
+    }
+
+    final nameFromRule = rule?.component?.name ?? rule?.description;
+
     return VehicleMaintenanceModel(
-      id: json['id'] as String,
-      vehicleId: json['vehicle_id'] as String,
-      maintenanceId: json['maintenance_id'] as String,
+      id: json['id']?.toString() ?? '',
+      vehicleId: json['vehicle_id']?.toString() ?? '',
+      maintenanceId: json['maintenance_id']?.toString() ?? '',
       lastServiceDate: parsedDate,
       lastServiceOdometer: odoVal,
       healthPercentage: healthVal,
@@ -122,10 +165,27 @@ class VehicleMaintenanceModel {
       updatedAt: json['updated_at'] != null
           ? DateTime.tryParse(json['updated_at'].toString())
           : null,
-      itemName: json['item_name'] as String?,
-      itemCategory: json['item_category'] as String?,
-      intervalKm: (json['interval_km'] as num?)?.toInt(),
+      maintenanceRule: rule,
+      vehicle: vehicle,
+      itemName: json['item_name'] as String? ?? nameFromRule,
+      itemCategory: json['item_category'] as String? ?? rule?.component?.category,
+      intervalKm: (json['interval_km'] as num?)?.toInt() ?? rule?.intervalKm,
       intervalMonth: (json['interval_month'] as num?)?.toInt(),
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is VehicleMaintenanceModel &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          vehicleId == other.vehicleId &&
+          maintenanceId == other.maintenanceId &&
+          lastServiceOdometer == other.lastServiceOdometer &&
+          status == other.status;
+
+  @override
+  int get hashCode =>
+      id.hashCode ^ vehicleId.hashCode ^ maintenanceId.hashCode ^ status.hashCode;
 }

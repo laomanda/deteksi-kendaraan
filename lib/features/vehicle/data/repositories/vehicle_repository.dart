@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/database/hive_registrar.dart';
+import '../../../../core/supabase/supabase_client.dart';
 import '../../../../core/supabase/supabase_config.dart';
 import '../../../../core/supabase/supabase_service.dart';
 import '../../../maintenance/data/repositories/maintenance_repository.dart';
@@ -67,11 +68,9 @@ class VehicleRepository {
       }
 
       return getAllVehicles();
-    } on PostgrestException catch (e) {
-      debugPrint('Supabase getVehicles error: ${e.message}');
-      return localList;
-    } catch (e) {
-      debugPrint('VehicleRepository.getVehicles fallback to local: $e');
+    } catch (e, st) {
+      final appEx = AppSupabaseClient.instance.handleException(e, st);
+      debugPrint('VehicleRepository.getVehicles fallback to local ($appEx)');
       return localList;
     }
   }
