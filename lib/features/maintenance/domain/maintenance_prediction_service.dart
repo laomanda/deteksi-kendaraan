@@ -174,6 +174,7 @@ class MaintenancePredictionService {
     MaintenancePriceModel? priceEstimate,
     DateTime? currentDate,
     bool? hasMaintenanceHistory,
+    int? vehicleInitialOdometer,
   }) {
     final now = currentDate ?? DateTime.now();
 
@@ -182,7 +183,7 @@ class MaintenancePredictionService {
     // if maintenance history exists:
     //     baseKm = last_service_odometer
     // else:
-    //     baseKm = vehicle.current_odometer
+    //     baseKm = item.lastServiceOdometer > 0 ? item.lastServiceOdometer : (vehicleInitialOdometer > 0 ? vehicleInitialOdometer : vehicle.current_odometer)
     // nextServiceKm = baseKm + maintenanceRule.intervalKm
     final intervalKm = (item.intervalKm != null && item.intervalKm! > 0)
         ? item.intervalKm!
@@ -190,7 +191,11 @@ class MaintenancePredictionService {
     final bool historyExists = hasMaintenanceHistory ?? item.hasServiceHistory;
     final int baseKm = historyExists
         ? item.lastServiceOdometer
-        : currentOdometer;
+        : (item.lastServiceOdometer > 0
+            ? item.lastServiceOdometer
+            : (vehicleInitialOdometer != null && vehicleInitialOdometer > 0
+                ? vehicleInitialOdometer
+                : currentOdometer));
 
     final nextServiceOdometer = baseKm + intervalKm;
     final usedKm = math.max(0, currentOdometer - baseKm);
@@ -343,6 +348,7 @@ class MaintenancePredictionService {
         currentOdometer: vehicle.currentOdometer,
         priceEstimate: price,
         currentDate: now,
+        vehicleInitialOdometer: vehicle.initialOdometer,
       );
     }).toList();
 

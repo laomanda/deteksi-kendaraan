@@ -10,6 +10,10 @@ import '../../../../core/utils/haversine_calculator.dart';
 import '../../data/models/gps_point_model.dart';
 import '../../data/models/ride_session_model.dart';
 import '../../../vehicle/providers/vehicle_provider.dart';
+import '../../../maintenance/providers/maintenance_intelligence_providers.dart';
+import '../../../maintenance/providers/maintenance_prediction_providers.dart';
+import '../../../maintenance/presentation/controllers/maintenance_status_controller.dart';
+import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 
 
 
@@ -474,8 +478,14 @@ class RideTrackingNotifier extends StateNotifier<RideTrackingState> {
     );
 
     // Refresh Vehicle and Maintenance Providers
+    await _ref.read(vehicleProvider.notifier).refresh();
     _ref.read(activeVehicleProvider.notifier).refresh();
-    _ref.read(vehicleProvider.notifier).refresh();
+    _ref.read(vehicleMaintenanceProvider(vehicle.id).notifier).refresh();
+    _ref.invalidate(maintenanceHealthProvider(vehicle.id));
+    _ref.invalidate(upcomingMaintenanceProvider(vehicle.id));
+    _ref.invalidate(maintenancePredictionProvider(vehicle.id));
+    _ref.invalidate(maintenanceStatusProvider);
+    _ref.invalidate(dashboardSummaryProvider);
     _ref.invalidate(recentRideProvider);
     _ref.invalidate(rideHistoryListProvider);
 

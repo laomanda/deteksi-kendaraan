@@ -285,10 +285,28 @@ class RideCompletionSummaryDialog extends ConsumerWidget {
               ),
               error: (_, __) => const SizedBox.shrink(),
               data: (summary) {
-                // Find most urgent maintenance item (lowest remaining KM)
+                // Find the most affected / urgent component from this ride:
+                // Filter distance-based components first (since distance ride affects km-based items)
                 final items = [...summary.healthItems];
-                items.sort((a, b) => a.remainingKm.compareTo(b.remainingKm));
-                final mostUrgent = items.firstOrNull;
+                final kmItems = items.where((it) => (it.item.intervalKm ?? 0) > 0).toList();
+                final targetItems = kmItems.isNotEmpty ? kmItems : items;
+
+                // Priority sort matching health urgency:
+                // 1. Status severity: OVERDUE > DUE SOON > GOOD
+                // 2. Health percentage: lower health first (most degraded)
+                // 3. Lowest remaining KM
+                targetItems.sort((a, b) {
+                  final priorityWeight = {'OVERDUE': 0, 'DUE SOON': 1, 'GOOD': 2};
+                  final wA = priorityWeight[a.status] ?? 3;
+                  final wB = priorityWeight[b.status] ?? 3;
+                  if (wA != wB) return wA.compareTo(wB);
+
+                  if (a.healthPercentage != b.healthPercentage) {
+                    return a.healthPercentage.compareTo(b.healthPercentage);
+                  }
+                  return a.remainingKm.compareTo(b.remainingKm);
+                });
+                final mostUrgent = targetItems.firstOrNull;
 
                 if (mostUrgent == null) return const SizedBox.shrink();
 

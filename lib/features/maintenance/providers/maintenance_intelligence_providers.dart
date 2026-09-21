@@ -9,6 +9,7 @@ import '../domain/dashboard_maintenance_item.dart';
 import '../domain/health_calculation_service.dart';
 import '../domain/vehicle_maintenance_service.dart';
 import '../../vehicle/data/models/vehicle_model.dart';
+import '../../ride_tracking/presentation/controllers/ride_tracking_controller.dart';
 
 /// Provider instance singleton untuk MaintenanceRepository
 final maintenanceRepositoryProvider = Provider<MaintenanceRepository>((ref) {
@@ -214,22 +215,43 @@ final maintenanceHealthProvider =
     Provider.family<AsyncValue<VehicleHealthSummary>, String>((ref, vehicleId) {
   final vmAsync = ref.watch(vehicleMaintenanceProvider(vehicleId));
   final vehiclesAsync = ref.watch(vehicleAsyncListProvider);
+  final trackingState = ref.watch(rideTrackingProvider);
 
   return vmAsync.when(
     loading: () => const AsyncValue.loading(),
     error: (e, st) => AsyncValue.error(e, st),
     data: (vmList) {
       // Dapatkan current odometer kendaraan
-      int currentOdo = 0;
-      String vType = 'motorcycle';
+      // 1. Ambil sinkron dari Hive terlebih dahulu agar tahan reload/stale async
+      final localVehicle = ref.read(vehicleRepositoryProvider).getVehicleById(vehicleId);
+      int currentOdo = localVehicle?.currentOdometer ?? 0;
+      int initOdo = localVehicle?.initialOdometer ?? 0;
+      String vType = localVehicle?.vehicleType ?? 'motorcycle';
 
       vehiclesAsync.whenData((list) {
         final v = list.where((it) => it.id == vehicleId).firstOrNull;
         if (v != null) {
-          currentOdo = v.currentOdometer;
+          if (v.currentOdometer > currentOdo) {
+            currentOdo = v.currentOdometer;
+          }
+          if (v.initialOdometer > initOdo) {
+            initOdo = v.initialOdometer;
+          }
           vType = v.vehicleType;
         }
       });
+
+      // 2. Sinkronisasi Live Odometer saat tracker sedang berjalan (recording / paused)
+      final isTrackingThisVehicle =
+          (trackingState.status == RideTrackingStatus.recording ||
+              trackingState.status == RideTrackingStatus.paused) &&
+          (trackingState.selectedVehicleId == vehicleId ||
+              (trackingState.selectedVehicleId == null &&
+                  ref.read(activeVehicleProvider)?.id == vehicleId));
+
+      if (isTrackingThisVehicle && trackingState.totalDistanceKm > 0) {
+        currentOdo += trackingState.totalDistanceKm.round();
+      }
 
       final repo = ref.read(maintenanceRepositoryProvider);
 
@@ -245,6 +267,7 @@ final maintenanceHealthProvider =
           currentOdometer: currentOdo,
           defaultIntervalKm: intervalKm,
           priceEstimate: priceEstimate,
+          vehicleInitialOdometer: initOdo,
         );
       }).toList();
 

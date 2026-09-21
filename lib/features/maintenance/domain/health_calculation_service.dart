@@ -184,6 +184,7 @@ class HealthCalculationService {
     MaintenancePriceModel? priceEstimate,
     DateTime? currentDate,
     bool? hasMaintenanceHistory,
+    int? vehicleInitialOdometer,
   }) {
     final now = currentDate ?? DateTime.now();
     final isTimeOnly = defaultIntervalKm <= 0;
@@ -191,7 +192,11 @@ class HealthCalculationService {
     final bool historyExists = hasMaintenanceHistory ?? item.hasServiceHistory;
     final int baseKm = historyExists
         ? item.lastServiceOdometer
-        : currentOdometer;
+        : (item.lastServiceOdometer > 0
+            ? item.lastServiceOdometer
+            : (vehicleInitialOdometer != null && vehicleInitialOdometer > 0
+                ? vehicleInitialOdometer
+                : currentOdometer));
 
     final usedKm = isTimeOnly ? 0 : math.max(0, currentOdometer - baseKm);
     final nextServiceOdo = isTimeOnly ? currentOdometer : baseKm + defaultIntervalKm;

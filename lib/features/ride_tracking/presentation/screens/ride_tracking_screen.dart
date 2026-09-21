@@ -15,6 +15,7 @@ import '../../../vehicle/providers/vehicle_provider.dart';
 import '../controllers/ride_tracking_controller.dart';
 import '../widgets/ride_completion_summary_dialog.dart';
 import '../widgets/start_ride_button.dart';
+import '../../../maintenance/providers/maintenance_intelligence_providers.dart';
 
 /// RideCare Ride Tracking Screen (Personal Vehicle Companion)
 /// Single Source of Truth: DESIGN.md
@@ -154,7 +155,13 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
           children: [
             // 1. Vehicle Journey Identity Header (Section 1)
             if (selectedVehicle != null)
-              _buildVehicleJourneyHeader(context, selectedVehicle, vehiclesList, isIdle),
+              _buildVehicleJourneyHeader(
+                context,
+                selectedVehicle,
+                vehiclesList,
+                isIdle,
+                activeDistanceKm: trackingState.totalDistanceKm,
+              ),
 
             // 2. Map Section (Section 2)
             Expanded(
@@ -306,7 +313,7 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                   if (isIdle)
                     _buildIdleJourneySummary()
                   else
-                    _buildActiveJourneyTelemetry(trackingState),
+                    _buildActiveJourneyTelemetry(trackingState, selectedVehicle),
 
                   const SizedBox(height: 16),
 
@@ -335,10 +342,14 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
     BuildContext context,
     VehicleModel vehicle,
     List<VehicleModel> vehicles,
-    bool isIdle,
-  ) {
+    bool isIdle, {
+    double activeDistanceKm = 0.0,
+  }) {
     final hasMultiple = vehicles.length > 1;
     final silhouetteAsset = _getSilhouetteAsset(vehicle);
+    final effectiveKm = isIdle
+        ? vehicle.currentKilometer
+        : (vehicle.currentKilometer + activeDistanceKm);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -350,31 +361,35 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
       ),
       child: Row(
         children: [
-          // Vehicle Silhouette Thumbnail
+          // Silhouette Icon Container
           Container(
-            width: 48,
-            height: 48,
-            padding: const EdgeInsets.all(6),
+            width: 44,
+            height: 44,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: AppColors.background,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.borderSubtle),
             ),
             child: SvgPicture.asset(
               silhouetteAsset,
               fit: BoxFit.contain,
+              colorFilter: const ColorFilter.mode(
+                AppColors.primaryNavy,
+                BlendMode.srcIn,
+              ),
             ),
           ),
           const SizedBox(width: 12),
 
-          // Vehicle Info
+          // Vehicle Info Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Perjalanan dengan',
+                  vehicle.isMotorcycle ? 'Sepeda Motor' : 'Mobil Pribadi',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     color: AppColors.secondarySteel,
@@ -395,7 +410,7 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Total Odometer: ${DateFormatter.formatKm(vehicle.currentKilometer, includeUnit: false)} KM',
+                  'Total Odometer: ${DateFormatter.formatKm(effectiveKm, includeUnit: false)} KM',
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 11,
                     color: AppColors.textMuted,
@@ -556,7 +571,7 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
   }
 
   /// Active Telemetry Readout during Recording
-  Widget _buildActiveJourneyTelemetry(RideTrackingState trackingState) {
+  Widget _buildActiveJourneyTelemetry(RideTrackingState trackingState, VehicleModel? vehicle) {
     final isMoving = trackingState.currentSpeedKmh > 1.5;
 
     return Column(
@@ -646,6 +661,80 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
             ],
           ],
         ),
+        // Live affected component impact
+        if (vehicle != null) ...[
+          const SizedBox(height: 12),
+          Consumer(
+            builder: (context, ref, _) {
+              final healthAsync = ref.watch(maintenanceHealthProvider(vehicle.id));
+              return healthAsync.maybeWhen(
+                data: (summary) {
+                  final kmItems = summary.healthItems.where((it) => (it.item.intervalKm ?? 0) > 0).toList();
+                  final targetItems = kmItems.isNotEmpty ? kmItems : summary.healthItems;
+                  if (targetItems.isEmpty) return const SizedBox.shrink();
+
+                  final sorted = [...targetItems]..sort((a, b) {
+                      final weight = {'OVERDUE': 0, 'DUE SOON': 1, 'GOOD': 2};
+                      final wA = weight[a.status] ?? 3;
+                      final wB = weight[b.status] ?? 3;
+                      if (wA != wB) return wA.compareTo(wB);
+                      if (a.healthPercentage != b.healthPercentage) {
+                        return a.healthPercentage.compareTo(b.healthPercentage);
+                      }
+                      return a.remainingKm.compareTo(b.remainingKm);
+                    });
+                  final mostUrgent = sorted.firstOrNull;
+                  if (mostUrgent == null) return const SizedBox.shrink();
+
+                  final Color statusColor;
+                  if (mostUrgent.isOverdue) {
+                    statusColor = AppColors.dangerRed;
+                  } else if (mostUrgent.isDueSoon) {
+                    statusColor = AppColors.warningAmber;
+                  } else {
+                    statusColor = AppColors.safeGreen;
+                  }
+
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: statusColor.withValues(alpha: 0.25)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.build_circle_rounded, size: 14, color: statusColor),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'Servis terpengaruh: ${mostUrgent.item.itemName ?? "Komponen"}',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primaryNavy,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Text(
+                          'Sisa ${DateFormatter.formatKm(mostUrgent.remainingKm.toDouble())}',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: statusColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                orElse: () => const SizedBox.shrink(),
+              );
+            },
+          ),
+        ],
       ],
     );
   }

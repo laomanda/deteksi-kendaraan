@@ -4,12 +4,14 @@ import '../../vehicle/providers/vehicle_provider.dart' hide maintenanceRepositor
 import '../domain/maintenance_cost_forecast_service.dart';
 import '../domain/maintenance_prediction_service.dart';
 import 'maintenance_intelligence_providers.dart';
+import '../../ride_tracking/presentation/controllers/ride_tracking_controller.dart';
 
 /// Provider predicting maintenance for all items of a vehicle
 final maintenancePredictionProvider = Provider.family<
     AsyncValue<List<MaintenancePrediction>>, String>((ref, vehicleId) {
   final vmAsync = ref.watch(vehicleMaintenanceProvider(vehicleId));
   final vehiclesAsync = ref.watch(vehicleAsyncListProvider);
+  final trackingState = ref.watch(rideTrackingProvider);
 
   return vmAsync.when(
     loading: () => const AsyncValue.loading(),
@@ -30,8 +32,21 @@ final maintenancePredictionProvider = Provider.family<
         return const AsyncValue.data([]);
       }
 
+      final isTrackingThisVehicle =
+          (trackingState.status == RideTrackingStatus.recording ||
+              trackingState.status == RideTrackingStatus.paused) &&
+          (trackingState.selectedVehicleId == vehicleId ||
+              (trackingState.selectedVehicleId == null &&
+                  ref.read(activeVehicleProvider)?.id == vehicleId));
+
+      final effectiveVehicle = (isTrackingThisVehicle && trackingState.totalDistanceKm > 0)
+          ? vehicle!.copyWith(
+              currentOdometer: vehicle!.currentOdometer + trackingState.totalDistanceKm.round(),
+            )
+          : vehicle!;
+
       final predictions = MaintenancePredictionService.predictVehicleMaintenance(
-        vehicle: vehicle!,
+        vehicle: effectiveVehicle,
         items: vmList,
         prices: null, // Will use default/cached prices via getPriceForMaintenance
       );
