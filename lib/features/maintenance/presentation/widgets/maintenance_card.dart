@@ -153,7 +153,7 @@ class MaintenanceCard extends StatelessWidget {
                   children: [
                     VehiclePartIconBadge(
                       componentName: componentName,
-                      category: 'Perawatan',
+                      category: result.item.componentType,
                       status: result.isCritical
                           ? 'OVERDUE'
                           : (result.isWarning ? 'DUE SOON' : 'GOOD'),

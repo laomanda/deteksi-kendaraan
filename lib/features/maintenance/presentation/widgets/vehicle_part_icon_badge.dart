@@ -24,7 +24,7 @@ class VehiclePartVisualInfo {
     if (name.contains('oli mesin') ||
         name.contains('engine oil') ||
         name.contains('pelumas')) {
-      return 'assets/maintenance/part_engine_oil.svg';
+      return 'assets/icons/maintenance/oil.svg';
     }
 
     // 2. Gear Oil / Transmisi (Oli Gardan / CVTF / ATF)
@@ -33,7 +33,7 @@ class VehiclePartVisualInfo {
         name.contains('transmisi') ||
         name.contains('atf') ||
         name.contains('cvtf')) {
-      return 'assets/maintenance/part_gear_oil.svg';
+      return 'assets/icons/maintenance/gear_oil.svg';
     }
 
     // 3. CVT / Belt / Roller
@@ -42,7 +42,7 @@ class VehiclePartVisualInfo {
         name.contains('slider') ||
         name.contains('belt') ||
         name.contains('v-belt')) {
-      return 'assets/maintenance/part_cvt_transmission.svg';
+      return 'assets/icons/maintenance/cvt.svg';
     }
 
     // 4. Brake System (Rem / Kampas Rem / Minyak Rem)
@@ -51,19 +51,19 @@ class VehiclePartVisualInfo {
         name.contains('cakram') ||
         name.contains('kampas') ||
         name.contains('pad')) {
-      return 'assets/maintenance/part_brake_system.svg';
+      return 'assets/icons/maintenance/brake.svg';
     }
 
     // 5. Spark Plug (Busi)
     if (name.contains('busi') || name.contains('spark')) {
-      return 'assets/maintenance/part_spark_plug.svg';
+      return 'assets/icons/maintenance/spark_plug.svg';
     }
 
     // 6. Air Filter (Filter Udara)
     if (name.contains('filter udara') ||
         name.contains('air filter') ||
         name.contains('saringan udara')) {
-      return 'assets/maintenance/part_air_filter.svg';
+      return 'assets/icons/maintenance/filter.svg';
     }
 
     // 7. Battery / Accumulator (Aki / Baterai)
@@ -71,14 +71,14 @@ class VehiclePartVisualInfo {
         name.contains('battery') ||
         name.contains('accu') ||
         name.contains('baterai')) {
-      return 'assets/maintenance/part_battery_accumulator.svg';
+      return 'assets/icons/maintenance/battery.svg';
     }
 
     // 8. Radiator Coolant (Air Radiator / Pendingin)
     if (name.contains('radiator') ||
         name.contains('coolant') ||
         name.contains('air radiator')) {
-      return 'assets/maintenance/part_radiator_coolant.svg';
+      return 'assets/icons/maintenance/coolant.svg';
     }
 
     // 9. Drive Chain & Sprocket (Rantai & Gir)
@@ -86,28 +86,28 @@ class VehiclePartVisualInfo {
         name.contains('chain') ||
         name.contains('sprocket') ||
         name.contains('gir')) {
-      return 'assets/maintenance/part_drive_chain.svg';
+      return 'assets/icons/maintenance/chain.svg';
     }
 
     // 10. Tires (Ban)
     if (name.contains('ban') ||
         name.contains('tire') ||
         name.contains('roda')) {
-      return 'assets/maintenance/part_tires.svg';
+      return 'assets/icons/maintenance/tire.svg';
     }
 
     // Categorical fallbacks
     if (cat.contains('transmisi') || cat.contains('drivetrain')) {
-      return 'assets/maintenance/part_cvt_transmission.svg';
+      return 'assets/icons/maintenance/cvt.svg';
     }
     if (cat.contains('mesin')) {
-      return 'assets/maintenance/part_engine_oil.svg';
+      return 'assets/icons/maintenance/oil.svg';
     }
     if (cat.contains('kelistrikan')) {
-      return 'assets/maintenance/part_battery_accumulator.svg';
+      return 'assets/icons/maintenance/battery.svg';
     }
 
-    return 'assets/maintenance/part_engine_oil.svg';
+    return 'assets/icons/maintenance/oil.svg';
   }
 
   /// Resolves the specific visual identity for a given component name or ID

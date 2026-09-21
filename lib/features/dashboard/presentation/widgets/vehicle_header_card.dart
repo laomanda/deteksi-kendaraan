@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/constants/vehicle_asset_resolver.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../garage/data/models/vehicle_model.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
@@ -67,9 +68,7 @@ class VehicleHeaderCard extends ConsumerWidget {
                       width: 26,
                       height: 26,
                       child: SvgPicture.asset(
-                        activeVehicle.isMotorcycle
-                            ? 'assets/vehicles/vehicle_silhouette_scooter.svg'
-                            : 'assets/vehicles/vehicle_silhouette_car.svg',
+                        VehicleAssetResolver.getSilhouetteAsset(activeVehicle),
                         fit: BoxFit.contain,
                       ),
                     ),

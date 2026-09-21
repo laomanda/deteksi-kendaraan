@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -8,6 +9,7 @@ import '../../../../core/constants/component_catalog.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../../shared/providers/repository_providers.dart';
+import '../widgets/vehicle_part_icon_badge.dart';
 
 /// Screen displaying the paginated historical ledger of completed services (PRD Section 6 & DSS Section 9.3)
 class ServiceHistoryScreen extends ConsumerStatefulWidget {
@@ -76,40 +78,57 @@ class _ServiceHistoryScreenState extends ConsumerState<ServiceHistoryScreen> {
                         borderRadius: AppSpacing.cardBorderRadius,
                         border: AppSpacing.cardBorder,
                       ),
-                      child: Column(
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(name, style: AppTypography.heading3),
-                              Text(
-                                DateFormatter.formatDate(log.serviceDate),
-                                style: AppTypography.captionSubtle,
-                              ),
-                            ],
+                          VehiclePartIconBadge(
+                            componentName: name,
+                            category: log.componentType,
+                            size: 42,
+                            iconSize: 22,
                           ),
-                          const SizedBox(height: AppSpacing.space8),
-                          Row(
-                            children: [
-                              Text(
-                                'Odometer: ${DateFormatter.formatKm(log.serviceKm)}',
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.w600,
+                          const SizedBox(width: AppSpacing.space12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        name,
+                                        style: AppTypography.heading3,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Text(
+                                      DateFormatter.formatDate(log.serviceDate),
+                                      style: AppTypography.captionSubtle,
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                          if (log.notes.isNotEmpty) ...[
-                            const SizedBox(height: AppSpacing.space8),
-                            Text(
-                              log.notes,
-                              style: AppTypography.captionSubtle.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
+                                const SizedBox(height: AppSpacing.space8),
+                                Text(
+                                  'Odometer: ${DateFormatter.formatKm(log.serviceKm)}',
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (log.notes.isNotEmpty) ...[
+                                  const SizedBox(height: AppSpacing.space8),
+                                  Text(
+                                    log.notes,
+                                    style: AppTypography.captionSubtle.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
-                          ],
+                          ),
                         ],
                       ),
                     );
@@ -127,12 +146,13 @@ class _ServiceHistoryScreenState extends ConsumerState<ServiceHistoryScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.receipt_long_outlined,
-              size: 48,
-              color: AppColors.textMuted,
+            SvgPicture.asset(
+              'assets/illustrations/empty_history.svg',
+              width: 180,
+              height: 180,
+              fit: BoxFit.contain,
             ),
-            const SizedBox(height: AppSpacing.space12),
+            const SizedBox(height: AppSpacing.space16),
             Text(
               'Belum Ada Catatan Servis',
               style: AppTypography.heading2,

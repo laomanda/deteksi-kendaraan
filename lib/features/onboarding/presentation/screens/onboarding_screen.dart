@@ -32,19 +32,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   static const List<OnboardingSlide> _slides = [
     OnboardingSlide(
-      svgPath: 'assets/onboarding/onboarding_service_hero.svg',
+      svgPath: 'assets/illustrations/onboarding_service.svg',
       title: 'Pantau Jadwal Servis & Oli',
       description:
           'Ketahui waktu tepat untuk mengganti oli dan merawat komponen sebelum motor mengalami kendala.',
     ),
     OnboardingSlide(
-      svgPath: 'assets/onboarding/onboarding_telemetry_hero.svg',
+      svgPath: 'assets/illustrations/onboarding_telemetry.svg',
       title: 'Kesehatan Mesin & Komponen',
       description:
           'Pantau kondisi oli, rem, ban, dan aki secara real-time berdasarkan jarak kilometer spidometer Anda.',
     ),
     OnboardingSlide(
-      svgPath: 'assets/onboarding/onboarding_tracking_hero.svg',
+      svgPath: 'assets/illustrations/onboarding_tracking.svg',
       title: 'Catat Perjalanan & Odometer',
       description:
           'Rekam rute berkendara dengan GPS. Jarak perjalanan otomatis memperbarui angka spidometer kendaraan Anda.',

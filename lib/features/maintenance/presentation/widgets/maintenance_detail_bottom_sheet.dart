@@ -92,7 +92,7 @@ class MaintenanceDetailBottomSheet extends ConsumerWidget {
                 children: [
                   VehiclePartIconBadge(
                     componentName: prediction.componentName,
-                    category: prediction.category,
+                    category: prediction.item.itemCategory ?? prediction.category,
                     status: prediction.status,
                     healthPercentage: prediction.currentHealth,
                     size: 50,

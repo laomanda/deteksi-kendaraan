@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 56">
+  <!-- Ground Shadow -->
+  <ellipse cx="24" cy="52" rx="14" ry="4" fill="#102A43" fill-opacity="0.25"/>
+
+  <!-- Solid Safe Green Pin Body -->
+  <path d="M24 2 C13 2, 4 11, 4 22 C4 35, 24 50, 24 50 C24 50, 44 35, 44 22 C44 11, 35 2, 24 2 Z" 
+        fill="#16A34A" stroke="#102A43" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- Inner High-Contrast Ring -->
+  <circle cx="24" cy="21" r="11" fill="#FFFFFF"/>
+
+  <!-- Green Starting Node Dot / Play Arrow -->
+  <polygon points="22,16 28,21 22,26" fill="#16A34A"/>
+</svg>

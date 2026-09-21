@@ -112,13 +112,13 @@ void main() {
       expect(dto.componentName, equals('Oli Mesin'));
       expect(dto.intervalKm, equals(3000));
       expect(dto.priority, isIn(['high', 'medium', 'low']));
-      expect(dto.assetPath, contains('assets/maintenance/'));
+      expect(dto.assetPath, contains('assets/icons/maintenance/'));
 
       final json = dto.toJson();
       expect(json['component_name'], equals('Oli Mesin'));
       expect(json['interval_km'], equals(3000));
       expect(json['priority'], isIn(['high', 'medium', 'low']));
-      expect(json['asset_path'], contains('assets/maintenance/'));
+      expect(json['asset_path'], contains('assets/icons/maintenance/'));
     });
 
     test('Scenario: Contaminated raw list gets purged when processed', () {

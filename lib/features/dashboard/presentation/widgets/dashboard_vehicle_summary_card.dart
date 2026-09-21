@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/constants/vehicle_asset_resolver.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/date_formatter.dart';
@@ -14,16 +15,8 @@ import '../providers/dashboard_providers.dart';
 class DashboardVehicleSummaryCard extends ConsumerWidget {
   const DashboardVehicleSummaryCard({super.key});
 
-  String _getSilhouetteAsset(VehicleModel vehicle) {
-    if (!vehicle.isMotorcycle) {
-      return 'assets/vehicles/vehicle_silhouette_car.svg';
-    }
-    final trans = (vehicle.transmission ?? '').toLowerCase();
-    if (trans.contains('manual') || trans.contains('kopling') || trans.contains('sport')) {
-      return 'assets/vehicles/vehicle_silhouette_manual.svg';
-    }
-    return 'assets/vehicles/vehicle_silhouette_scooter.svg';
-  }
+  String _getSilhouetteAsset(VehicleModel vehicle) =>
+      VehicleAssetResolver.getSilhouetteAsset(vehicle);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="tireRubber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2D3748"/>
+      <stop offset="60%" stop-color="#1A202C"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+  </defs>
+  <g transform="scale(0.4)">
+    <ellipse cx="60" cy="106" rx="46" ry="8" fill="#102A43" fill-opacity="0.12"/>
+
+    <!-- Isometric Automotive / Motorcycle Radial Tire Ring (3/4 View) -->
+    <!-- Outer Tire Crown & Tread Surface -->
+    <ellipse cx="60" cy="54" rx="48" ry="34" fill="url(#tireRubber)" stroke="#334E68" stroke-width="2"/>
+    <!-- Tire Sidewall Inset -->
+    <ellipse cx="60" cy="54" rx="36" ry="24" fill="#102A43"/>
+    <!-- Inner Rim Hole Cavity -->
+    <ellipse cx="60" cy="54" rx="22" ry="14" fill="#0A141E" stroke="#00A6A6" stroke-width="1.5"/>
+
+    <!-- High-Grip Directional V-Groove Tread Pattern (Sipes & Rain Channels) -->
+    <!-- Center Circumferential Aquaplaning Channel -->
+    <ellipse cx="60" cy="54" rx="44" ry="30" fill="none" stroke="#00A6A6" stroke-width="2" stroke-dasharray="8 6"/>
+
+    <!-- Radial Directional Water Sipes along the Upper Tread Crown -->
+    <path d="M22 46 L30 52 L36 48" fill="none" stroke="#334E68" stroke-width="2" stroke-linecap="round"/>
+    <path d="M34 34 L42 42 L50 38" fill="none" stroke="#334E68" stroke-width="2" stroke-linecap="round"/>
+    <path d="M50 26 L58 34 L66 30" fill="none" stroke="#334E68" stroke-width="2" stroke-linecap="round"/>
+    <path d="M68 24 L76 32 L84 28" fill="none" stroke="#334E68" stroke-width="2" stroke-linecap="round"/>
+    <path d="M84 28 L92 36 L98 32" fill="none" stroke="#334E68" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- Radial Directional Water Sipes along the Lower Tread Crown -->
+    <path d="M22 62 L30 58 L36 62" fill="none" stroke="#334E68" stroke-width="2" stroke-linecap="round"/>
+    <path d="M34 74 L42 68 L50 72" fill="none" stroke="#334E68" stroke-width="2" stroke-linecap="round"/>
+    <path d="M50 82 L58 76 L66 80" fill="none" stroke="#334E68" stroke-width="2" stroke-linecap="round"/>
+    <path d="M68 84 L76 78 L84 82" fill="none" stroke="#334E68" stroke-width="2" stroke-linecap="round"/>
+    <path d="M84 80 L92 74 L98 78" fill="none" stroke="#334E68" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- TWI (Tread Wear Indicator) Triangle Marker in Safe Green -->
+    <polygon points="106,54 114,50 114,58" fill="#16A34A"/>
+
+    <!-- Sidewall Dimension Specification Branding -->
+    <text x="60" y="57" fill="#627D98" font-family="monospace" font-size="6" font-weight="700" text-anchor="middle">RADIAL TUBELESS</text>
+  </g>
+</svg>

@@ -85,13 +85,10 @@ flutter:
 
   assets:
     - assets/branding/
-    - assets/vehicles/
-    - assets/maintenance/
-    - assets/onboarding/
-    - assets/experience/
-    - assets/tracking/
-    - assets/share_card/
-    - assets/showcase/
+    - assets/icons/maintenance/
+    - assets/icons/vehicle/
+    - assets/icons/tracking/
+    - assets/illustrations/
     - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see

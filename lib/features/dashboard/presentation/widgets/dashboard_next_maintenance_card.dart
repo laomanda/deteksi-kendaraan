@@ -199,7 +199,7 @@ class DashboardNextMaintenanceCard extends ConsumerWidget {
                       children: [
                         VehiclePartIconBadge(
                           componentName: nextItem.componentName,
-                          category: nextItem.category,
+                          category: nextItem.item.itemCategory ?? nextItem.category,
                           status: nextItem.status,
                           healthPercentage: nextItem.currentHealth,
                           size: 46,

@@ -384,7 +384,7 @@ class RideShareCanvas extends StatelessWidget {
                       height: 35,
                       alignment: Alignment.topCenter,
                       child: SvgPicture.asset(
-                        'assets/tracking/marker_trip_start.svg',
+                        'assets/icons/tracking/marker_trip_start.svg',
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -397,7 +397,7 @@ class RideShareCanvas extends StatelessWidget {
                         height: 35,
                         alignment: Alignment.topCenter,
                         child: SvgPicture.asset(
-                          'assets/tracking/marker_trip_finish.svg',
+                          'assets/icons/tracking/marker_trip_finish.svg',
                           fit: BoxFit.contain,
                         ),
                       ),

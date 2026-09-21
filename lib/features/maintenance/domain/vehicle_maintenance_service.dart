@@ -9,7 +9,7 @@ import '../presentation/widgets/vehicle_part_icon_badge.dart';
 /// - component_name
 /// - interval_km
 /// - priority ("high" | "medium" | "low")
-/// - asset_path ("assets/maintenance/...")
+/// - asset_path ("assets/icons/maintenance/...")
 class VehicleMaintenanceComponentDto {
   final String componentName;
   final int intervalKm;

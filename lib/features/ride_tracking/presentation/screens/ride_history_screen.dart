@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/constants/vehicle_asset_resolver.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../garage/presentation/controllers/active_vehicle_controller.dart';
 import '../../data/models/ride_session_model.dart';
@@ -162,7 +163,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen> {
           Row(
             children: [
               SvgPicture.asset(
-                'assets/experience/badge_health_perfect.svg',
+                'assets/illustrations/badge_health.svg',
                 width: 28,
                 height: 28,
               ),
@@ -197,7 +198,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen> {
           Row(
             children: [
               SvgPicture.asset(
-                'assets/experience/badge_distance_milestone.svg',
+                'assets/illustrations/badge_distance.svg',
                 width: 28,
                 height: 28,
               ),
@@ -295,9 +296,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen> {
               Row(
                 children: [
                   SvgPicture.asset(
-                    (activeVehicle.isMotorcycle as bool)
-                        ? 'assets/vehicles/vehicle_silhouette_scooter.svg'
-                        : 'assets/vehicles/vehicle_silhouette_car.svg',
+                    VehicleAssetResolver.getSilhouetteAsset(activeVehicle),
                     width: 16,
                     height: 16,
                   ),

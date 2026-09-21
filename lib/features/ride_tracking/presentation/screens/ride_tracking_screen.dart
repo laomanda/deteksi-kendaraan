@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
+import '../../../../core/constants/vehicle_asset_resolver.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/polyline_smoother.dart';
@@ -62,16 +63,8 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
     }
   }
 
-  String _getSilhouetteAsset(VehicleModel vehicle) {
-    if (!vehicle.isMotorcycle) {
-      return 'assets/vehicles/vehicle_silhouette_car.svg';
-    }
-    final trans = (vehicle.transmission ?? '').toLowerCase();
-    if (trans.contains('manual') || trans.contains('kopling') || trans.contains('sport')) {
-      return 'assets/vehicles/vehicle_silhouette_manual.svg';
-    }
-    return 'assets/vehicles/vehicle_silhouette_scooter.svg';
-  }
+  String _getSilhouetteAsset(VehicleModel vehicle) =>
+      VehicleAssetResolver.getSilhouetteAsset(vehicle);
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +216,7 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                               height: 40,
                               alignment: Alignment.topCenter,
                               child: SvgPicture.asset(
-                                'assets/tracking/marker_trip_start.svg',
+                                'assets/icons/tracking/marker_trip_start.svg',
                                 fit: BoxFit.contain,
                               ),
                             ),
@@ -235,7 +228,7 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
                             child: Transform.rotate(
                               angle: trackingState.heading * (math.pi / 180.0),
                               child: SvgPicture.asset(
-                                'assets/tracking/marker_user_location.svg',
+                                'assets/icons/tracking/marker_user_location.svg',
                                 fit: BoxFit.contain,
                               ),
                             ),
@@ -536,7 +529,7 @@ class _RideTrackingScreenState extends ConsumerState<RideTrackingScreen> {
           width: 58,
           height: 58,
           child: SvgPicture.asset(
-            'assets/experience/empty_tracking_stage.svg',
+            'assets/illustrations/empty_tracking.svg',
             fit: BoxFit.contain,
           ),
         ),

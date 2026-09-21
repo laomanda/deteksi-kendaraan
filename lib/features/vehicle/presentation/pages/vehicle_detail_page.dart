@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/constants/vehicle_asset_resolver.dart';
 import '../../../maintenance/domain/maintenance_prediction_service.dart';
 import '../../../maintenance/presentation/pages/maintenance_page.dart';
 import '../../../maintenance/presentation/widgets/maintenance_detail_bottom_sheet.dart';
@@ -38,16 +39,8 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
     _vehicle = widget.vehicle;
   }
 
-  String _getSilhouetteAsset(VehicleModel v) {
-    if (!v.isMotorcycle) {
-      return 'assets/vehicles/vehicle_silhouette_car.svg';
-    }
-    final trans = (v.transmission ?? '').toLowerCase();
-    if (trans.contains('manual') || trans.contains('kopling') || trans.contains('sport')) {
-      return 'assets/vehicles/vehicle_silhouette_manual.svg';
-    }
-    return 'assets/vehicles/vehicle_silhouette_scooter.svg';
-  }
+  String _getSilhouetteAsset(VehicleModel v) =>
+      VehicleAssetResolver.getSilhouetteAsset(v);
 
   String _formatKm(double km) {
     final formatted = NumberFormat('#,##0', 'id_ID').format(km.round());
@@ -1210,7 +1203,7 @@ class _VehicleDetailPageState extends ConsumerState<VehicleDetailPage> {
             child: Column(
               children: [
                 SvgPicture.asset(
-                  'assets/experience/empty_tracking_stage.svg',
+                  'assets/illustrations/empty_tracking.svg',
                   height: 120,
                   fit: BoxFit.contain,
                 ),

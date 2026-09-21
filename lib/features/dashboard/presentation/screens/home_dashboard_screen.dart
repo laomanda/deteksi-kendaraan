@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -182,22 +183,13 @@ class HomeDashboardScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 76,
-              height: 76,
-              decoration: BoxDecoration(
-                color: AppColors.primaryNavy.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: HugeIcon(
-                  icon: HugeIcons.strokeRoundedMotorbike01,
-                  size: 38,
-                  color: AppColors.primaryNavy,
-                ),
-              ),
+            SvgPicture.asset(
+              'assets/illustrations/empty_garage.svg',
+              width: 200,
+              height: 140,
+              fit: BoxFit.contain,
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             Text(
               'Selamat Datang di RideCare',
               style: GoogleFonts.plusJakartaSans(
