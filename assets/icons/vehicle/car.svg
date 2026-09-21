@@ -1,102 +1,185 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
   <defs>
-    <linearGradient id="carBodyGrad" x1="0%" y1="0%" x2="100%" y2="80%">
-      <stop offset="0%" stop-color="#1E3851"/>
-      <stop offset="60%" stop-color="#102A43"/>
-      <stop offset="100%" stop-color="#0B1926"/>
+    <!-- OEM Digital Cockpit Metallic Paint Gradients -->
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="80%">
+      <stop offset="0%" stop-color="#243B53"/>
+      <stop offset="35%" stop-color="#1E3851"/>
+      <stop offset="70%" stop-color="#102A43"/>
+      <stop offset="100%" stop-color="#081420"/>
     </linearGradient>
-    <linearGradient id="carGlassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#334E68" stop-opacity="0.85"/>
-      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.95"/>
+
+    <linearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#486581" stop-opacity="0.95"/>
+      <stop offset="40%" stop-color="#243B53" stop-opacity="0.90"/>
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.98"/>
     </linearGradient>
-    <linearGradient id="carRimGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#627D98"/>
-      <stop offset="100%" stop-color="#243B53"/>
+
+    <linearGradient id="alloyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9FB3C8"/>
+      <stop offset="45%" stop-color="#627D98"/>
+      <stop offset="85%" stop-color="#334E68"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+
+    <linearGradient id="headlightGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00A6A6"/>
+      <stop offset="60%" stop-color="#00E5FF"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+
+    <linearGradient id="taillightGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#991B1B"/>
+      <stop offset="70%" stop-color="#DC2626"/>
+      <stop offset="100%" stop-color="#FFA4A4"/>
     </linearGradient>
   </defs>
 
-  <!-- Technical Ground Shadow -->
-  <ellipse cx="400" cy="380" rx="360" ry="18" fill="#102A43" fill-opacity="0.10"/>
+  <!-- ========================================== -->
+  <!-- 1. AMBIENT GROUND SHADOW -->
+  <!-- ========================================== -->
+  <ellipse cx="400" cy="378" rx="340" ry="12" fill="#081420" fill-opacity="0.22"/>
+  <ellipse cx="210" cy="374" rx="66" ry="6" fill="#081420" fill-opacity="0.40"/>
+  <ellipse cx="590" cy="374" rx="66" ry="6" fill="#081420" fill-opacity="0.40"/>
 
-  <!-- Rear Wheel & Tire Assembly (Car Profile) -->
-  <g id="carRearWheel">
-    <circle cx="210" cy="320" r="64" fill="#1A202C" stroke="#334E68" stroke-width="4"/>
-    <circle cx="210" cy="320" r="46" fill="#0F172A"/>
-    <!-- Alloy Turbine Multi-Spoke Rim -->
-    <circle cx="210" cy="320" r="38" fill="none" stroke="url(#carRimGrad)" stroke-width="6"/>
-    <line x1="210" y1="280" x2="210" y2="360" stroke="url(#carRimGrad)" stroke-width="5"/>
-    <line x1="170" y1="320" x2="250" y2="320" stroke="url(#carRimGrad)" stroke-width="5"/>
-    <line x1="182" y1="292" x2="238" y2="348" stroke="url(#carRimGrad)" stroke-width="5"/>
-    <line x1="182" y1="348" x2="238" y2="292" stroke="url(#carRimGrad)" stroke-width="5"/>
-    <!-- Center Hub Cap & Cyan Caliper Accent -->
-    <rect x="220" y="304" width="16" height="22" rx="3" fill="#00A6A6"/>
-    <circle cx="210" cy="320" r="14" fill="#334E68"/>
-    <circle cx="210" cy="320" r="5" fill="#F7F5EF"/>
+  <!-- ========================================== -->
+  <!-- 2. WHEEL WELL CAVITIES (DARK DEPTH) -->
+  <!-- ========================================== -->
+  <circle cx="210" cy="310" r="74" fill="#080E17"/>
+  <circle cx="590" cy="310" r="74" fill="#080E17"/>
+
+  <!-- Underbody Skirt & Cyan Telemetry Line -->
+  <rect x="285" y="322" width="230" height="8" fill="#080E17"/>
+  <rect x="295" y="316" width="210" height="3" rx="1.5" fill="#00A6A6" fill-opacity="0.75"/>
+
+  <!-- ========================================== -->
+  <!-- 3. REAR WHEEL (Center 210, 310 / R=64) -->
+  <!-- ========================================== -->
+  <g id="rearWheel">
+    <circle cx="210" cy="310" r="64" fill="#141923" stroke="#243B53" stroke-width="3"/>
+    <circle cx="210" cy="310" r="48" fill="#080E17"/>
+    <circle cx="210" cy="310" r="42" fill="#162638" stroke="#334E68" stroke-width="2"/>
+    <!-- Rotor & Caliper -->
+    <circle cx="210" cy="310" r="32" fill="none" stroke="#627D98" stroke-width="3" stroke-dasharray="5 3"/>
+    <rect x="222" y="290" width="14" height="20" rx="3" fill="#00A6A6"/>
+    <!-- 5-Spoke Star Rim -->
+    <circle cx="210" cy="310" r="40" fill="none" stroke="url(#alloyGrad)" stroke-width="4"/>
+    <line x1="210" y1="270" x2="210" y2="310" stroke="url(#alloyGrad)" stroke-width="4.5" stroke-linecap="round"/>
+    <line x1="248" y1="298" x2="210" y2="310" stroke="url(#alloyGrad)" stroke-width="4.5" stroke-linecap="round"/>
+    <line x1="233" y1="342" x2="210" y2="310" stroke="url(#alloyGrad)" stroke-width="4.5" stroke-linecap="round"/>
+    <line x1="187" y1="342" x2="210" y2="310" stroke="url(#alloyGrad)" stroke-width="4.5" stroke-linecap="round"/>
+    <line x1="172" y1="298" x2="210" y2="310" stroke="url(#alloyGrad)" stroke-width="4.5" stroke-linecap="round"/>
+    <!-- Center Hub -->
+    <circle cx="210" cy="310" r="12" fill="#1E293B" stroke="#486581" stroke-width="1.5"/>
+    <circle cx="210" cy="310" r="4" fill="#CBD5E1"/>
   </g>
 
-  <!-- Front Wheel & Tire Assembly (Car Profile) -->
-  <g id="carFrontWheel">
-    <circle cx="590" cy="320" r="64" fill="#1A202C" stroke="#334E68" stroke-width="4"/>
-    <circle cx="590" cy="320" r="46" fill="#0F172A"/>
-    <!-- Alloy Turbine Multi-Spoke Rim -->
-    <circle cx="590" cy="320" r="38" fill="none" stroke="url(#carRimGrad)" stroke-width="6"/>
-    <line x1="590" y1="280" x2="590" y2="360" stroke="url(#carRimGrad)" stroke-width="5"/>
-    <line x1="550" y1="320" x2="630" y2="320" stroke="url(#carRimGrad)" stroke-width="5"/>
-    <line x1="562" y1="292" x2="618" y2="348" stroke="url(#carRimGrad)" stroke-width="5"/>
-    <line x1="562" y1="348" x2="618" y2="292" stroke="url(#carRimGrad)" stroke-width="5"/>
-    <!-- Front Ventilated Rotor & Cyan Caliper -->
-    <rect x="600" y="304" width="16" height="22" rx="3" fill="#00A6A6"/>
-    <circle cx="590" cy="320" r="14" fill="#334E68"/>
-    <circle cx="590" cy="320" r="5" fill="#F7F5EF"/>
+  <!-- ========================================== -->
+  <!-- 4. FRONT WHEEL (Center 590, 310 / R=64) -->
+  <!-- ========================================== -->
+  <g id="frontWheel">
+    <circle cx="590" cy="310" r="64" fill="#141923" stroke="#243B53" stroke-width="3"/>
+    <circle cx="590" cy="310" r="48" fill="#080E17"/>
+    <circle cx="590" cy="310" r="42" fill="#162638" stroke="#334E68" stroke-width="2"/>
+    <!-- Rotor & Caliper -->
+    <circle cx="590" cy="310" r="32" fill="none" stroke="#627D98" stroke-width="3" stroke-dasharray="5 3"/>
+    <rect x="602" y="290" width="14" height="20" rx="3" fill="#00A6A6"/>
+    <!-- 5-Spoke Star Rim -->
+    <circle cx="590" cy="310" r="40" fill="none" stroke="url(#alloyGrad)" stroke-width="4"/>
+    <line x1="590" y1="270" x2="590" y2="310" stroke="url(#alloyGrad)" stroke-width="4.5" stroke-linecap="round"/>
+    <line x1="628" y1="298" x2="590" y2="310" stroke="url(#alloyGrad)" stroke-width="4.5" stroke-linecap="round"/>
+    <line x1="613" y1="342" x2="590" y2="310" stroke="url(#alloyGrad)" stroke-width="4.5" stroke-linecap="round"/>
+    <line x1="567" y1="342" x2="590" y2="310" stroke="url(#alloyGrad)" stroke-width="4.5" stroke-linecap="round"/>
+    <line x1="552" y1="298" x2="590" y2="310" stroke="url(#alloyGrad)" stroke-width="4.5" stroke-linecap="round"/>
+    <!-- Center Hub -->
+    <circle cx="590" cy="310" r="12" fill="#1E293B" stroke="#486581" stroke-width="1.5"/>
+    <circle cx="590" cy="310" r="4" fill="#CBD5E1"/>
   </g>
 
-  <!-- Aerodynamic Modern Vehicle Body Shell -->
-  <!-- Underbody Rocker Panel & Side Skirt -->
-  <path d="M280 340 L520 340 L530 326 L270 326 Z" fill="#0F172A"/>
-  <rect x="286" y="332" width="228" height="4" fill="#00A6A6"/>
+  <!-- ========================================== -->
+  <!-- 5. MAIN BODY SHELL (MATHEMATICALLY PERFECT WHEEL CUTOUT ARCS) -->
+  <!-- ========================================== -->
+  <path d="M84 282 
+           C80 256, 102 238, 145 234 
+           L150 234 
+           C190 234, 260 170, 302 144 
+           C345 136, 428 136, 468 140 
+           C508 144, 542 188, 560 215 
+           L648 235 
+           C690 242, 730 252, 734 270 
+           C738 288, 722 318, 686 324 
+           L665 324 
+           A 76 76 0 0 0 515 324 
+           L285 324 
+           A 76 76 0 0 0 135 324 
+           L96 324 
+           C86 318, 84 298, 84 282 Z" 
+        fill="url(#bodyGrad)" stroke="#334E68" stroke-width="2" stroke-linejoin="round"/>
 
-  <!-- Main Monocoque Body Profile (A-Pillar to D-Pillar Fastback / Crossover) -->
-  <path d="M70 300 C90 280, 130 260, 160 260 
-           L240 260 C260 210, 310 160, 360 150 
-           L500 150 C540 150, 580 180, 610 220 
-           L690 240 C720 250, 740 280, 730 310 
-           L710 334 L660 334 
-           C650 280, 530 280, 520 334 
-           L280 334 
-           C270 280, 150 280, 140 334 
-           L90 334 Z" 
-        fill="url(#carBodyGrad)" stroke="#334E68" stroke-width="3"/>
+  <!-- Crisp Fender Lip Highlights -->
+  <path d="M515 324 A 76 76 0 0 1 665 324" fill="none" stroke="#102A43" stroke-width="4"/>
+  <path d="M135 324 A 76 76 0 0 1 285 324" fill="none" stroke="#102A43" stroke-width="4"/>
 
-  <!-- Greenhouse Glasshouse Architecture (Tinted Windows) -->
-  <path d="M260 250 L340 170 L480 170 L580 230 L590 250 Z" 
-        fill="url(#carGlassGrad)" stroke="#334E68" stroke-width="2"/>
+  <!-- ========================================== -->
+  <!-- 6. CLEAN LUXURY GREENHOUSE & WINDOWS -->
+  <!-- ========================================== -->
+  <!-- Roof Arch Molding -->
+  <path d="M172 228 C210 228, 272 164, 305 146 C342 140, 420 140, 458 146 C492 152, 528 196, 550 220" 
+        fill="none" stroke="#627D98" stroke-width="2" stroke-linecap="round"/>
 
-  <!-- B-Pillar & C-Pillar Dividers -->
-  <line x1="410" y1="170" x2="410" y2="250" stroke="#102A43" stroke-width="8"/>
-  <line x1="490" y1="170" x2="504" y2="250" stroke="#102A43" stroke-width="8"/>
+  <!-- Glass Surround Frame -->
+  <path d="M180 224 C214 224, 274 164, 306 148 C342 144, 418 144, 454 148 C488 154, 524 198, 546 220 L554 224 Z" 
+        fill="url(#glassGrad)" stroke="#080E17" stroke-width="2"/>
 
-  <!-- Flush Aerodynamic Door Handles -->
-  <rect x="360" y="260" width="32" height="6" rx="3" fill="#334E68" stroke="#102A43" stroke-width="1"/>
-  <rect x="460" y="260" width="32" height="6" rx="3" fill="#334E68" stroke="#102A43" stroke-width="1"/>
+  <!-- Front Window -->
+  <path d="M394 150 L452 150 C480 156, 516 196, 538 218 L546 224 L394 224 Z" fill="url(#glassGrad)"/>
 
-  <!-- Front Headlamp Cluster: Electric Cyan LED Signature Lightbar -->
-  <path d="M680 248 L724 260 L710 274 L660 270 Z" fill="#00A6A6"/>
-  <line x1="680" y1="248" x2="724" y2="260" stroke="#F7F5EF" stroke-width="3" stroke-linecap="round"/>
+  <!-- Rear Window -->
+  <path d="M304 150 L386 150 L386 224 L248 224 C272 192, 292 164, 304 150 Z" fill="url(#glassGrad)"/>
 
-  <!-- Rear LED Horizon Taillight Strip (Solid Red Safety) -->
-  <path d="M80 292 L120 284 L110 302 L76 304 Z" fill="#DC2626"/>
+  <!-- Quarter Window (Hofmeister Kink) -->
+  <path d="M188 224 L240 224 C252 205, 268 182, 282 168 C246 188, 210 210, 188 224 Z" fill="url(#glassGrad)"/>
 
-  <!-- Side Mirror Winglet with Integrated Repeater Indicator -->
-  <path d="M560 234 L534 226 L530 238 Z" fill="#102A43" stroke="#334E68" stroke-width="2"/>
-  <line x1="532" y1="232" x2="546" y2="236" stroke="#00A6A6" stroke-width="2"/>
+  <!-- Gloss Black Pillars -->
+  <rect x="386" y="148" width="8" height="76" fill="#080E17"/>
+  <line x1="294" y1="156" x2="242" y2="224" stroke="#080E17" stroke-width="5" stroke-linecap="round"/>
 
-  <!-- Precise Shoulder Line / Character Crease (High Tension) -->
-  <path d="M120 284 L270 274 L520 270 L680 254" fill="none" stroke="#334E68" stroke-width="2"/>
-  <path d="M130 286 L270 276 L520 272 L680 256" fill="none" stroke="#F7F5EF" stroke-opacity="0.15" stroke-width="1"/>
+  <!-- Glass Specular Reflection -->
+  <polygon points="314,152 344,152 290,222 260,222" fill="#F7F5EF" fill-opacity="0.10"/>
+  <polygon points="418,152 448,152 408,222 378,222" fill="#F7F5EF" fill-opacity="0.08"/>
 
-  <!-- Rear Roofline Aerodynamic Spoiler -->
-  <path d="M220 178 L266 170 L260 182 Z" fill="#00A6A6"/>
+  <!-- ========================================== -->
+  <!-- 7. CRISP MINIMALIST BODY DETAILS -->
+  <!-- ========================================== -->
+  <!-- Door Shutlines -->
+  <line x1="390" y1="224" x2="388" y2="314" stroke="#080E17" stroke-width="1.8"/>
+  <path d="M248 224 C248 255, 256 285, 266 314" stroke="#080E17" stroke-width="1.8" fill="none"/>
+  <path d="M554 215 L578 242 L588 266" stroke="#080E17" stroke-width="1.8" fill="none"/>
 
-  <!-- Technical Spec Watermark in Space Grotesk -->
-  <text x="320" y="370" fill="#334E68" font-family="monospace" font-size="11" font-weight="700" letter-spacing="2">CAR PASSENGER / HYBRID</text>
+  <!-- Flush Door Handles -->
+  <rect x="332" y="236" width="26" height="4.5" rx="2.2" fill="#334E68" stroke="#080E17" stroke-width="1"/>
+  <rect x="472" y="236" width="26" height="4.5" rx="2.2" fill="#334E68" stroke="#080E17" stroke-width="1"/>
+
+  <!-- Aerodynamic Side Mirror -->
+  <polygon points="546,218 518,212 514,222" fill="#102A43" stroke="#334E68" stroke-width="1.5"/>
+  <line x1="516" y1="217" x2="532" y2="220" stroke="#00E5FF" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Crisp Shoulder Crease -->
+  <line x1="130" y1="250" x2="682" y2="240" stroke="#486581" stroke-width="2"/>
+  <line x1="140" y1="252" x2="682" y2="242" stroke="#F7F5EF" stroke-opacity="0.22" stroke-width="1"/>
+
+  <!-- ========================================== -->
+  <!-- 8. INTEGRATED LIGHTING -->
+  <!-- ========================================== -->
+  <!-- Front LED Matrix Headlamp -->
+  <path d="M662 238 L724 248 C730 254, 728 262, 718 265 L658 256 Z" fill="url(#headlightGrad)"/>
+  <line x1="662" y1="238" x2="724" y2="248" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="712" cy="254" r="2.8" fill="#FFFFFF"/>
+  <circle cx="688" cy="248" r="2.2" fill="#FFFFFF"/>
+
+  <!-- Rear Horizon LED Taillight -->
+  <path d="M86 276 L130 268 L122 284 L86 284 Z" fill="url(#taillightGrad)"/>
+  <line x1="88" y1="276" x2="128" y2="269" stroke="#FFA4A4" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- Shark Fin Roof Antenna -->
+  <polygon points="292,144 304,134 308,144" fill="#102A43" stroke="#334E68" stroke-width="1"/>
 </svg>

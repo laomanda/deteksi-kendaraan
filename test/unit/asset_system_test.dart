@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ridecare/core/constants/vehicle_asset_resolver.dart';
 import 'package:ridecare/features/maintenance/presentation/widgets/vehicle_part_icon_badge.dart';
@@ -124,6 +127,48 @@ void main() {
     test('Fallback resolves to a valid asset and never empty', () {
       final fallback = VehiclePartVisualInfo.resolveSvgAsset('Komponen Misterius');
       expect(fallback, equals('assets/icons/maintenance/oil.svg'));
+    });
+
+    testWidgets('All registered SVG assets are parseable and renderable with SvgPicture.string', (tester) async {
+      final assets = [
+        'assets/icons/vehicle/car.svg',
+        'assets/icons/vehicle/scooter_cvt.svg',
+        'assets/icons/vehicle/motorcycle_manual.svg',
+        'assets/icons/vehicle/sport_motorcycle.svg',
+        'assets/icons/maintenance/battery.svg',
+        'assets/icons/maintenance/brake.svg',
+        'assets/icons/maintenance/chain.svg',
+        'assets/icons/maintenance/coolant.svg',
+        'assets/icons/maintenance/cvt.svg',
+        'assets/icons/maintenance/filter.svg',
+        'assets/icons/maintenance/gear_oil.svg',
+        'assets/icons/maintenance/oil.svg',
+        'assets/icons/maintenance/spark_plug.svg',
+        'assets/icons/maintenance/tire.svg',
+        'assets/icons/tracking/marker_trip_start.svg',
+        'assets/icons/tracking/marker_trip_finish.svg',
+        'assets/icons/tracking/marker_user_location.svg',
+      ];
+
+      for (final path in assets) {
+        final file = File(path);
+        expect(file.existsSync(), isTrue, reason: '$path should exist on disk');
+        final content = file.readAsStringSync();
+        expect(content, isNotEmpty);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SvgPicture.string(
+                content,
+                width: 100,
+                height: 100,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
     });
   });
 }

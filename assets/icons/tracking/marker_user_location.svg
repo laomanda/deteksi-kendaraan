@@ -1,23 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <defs>
-    <radialGradient id="pulseGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#00A6A6" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="#00A6A6" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 56">
+  <!-- Ground GPS Accuracy & Telemetry Pulse Ring -->
+  <ellipse cx="24" cy="51.5" rx="14" ry="4" fill="#00A6A6" fill-opacity="0.2"/>
+  <ellipse cx="24" cy="51.5" rx="10" ry="2.8" fill="#102A43" fill-opacity="0.3"/>
 
-  <g transform="scale(0.75)">
-    <!-- Outer Pulsing Radar Wave Area -->
-    <circle cx="32" cy="32" r="28" fill="url(#pulseGlow)"/>
-    <circle cx="32" cy="32" r="24" fill="none" stroke="#00A6A6" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <!-- Navigation Pin Body Chassis (2.5D Dark Midnight Navy with Bevel Rim) -->
+  <path d="M24 3 C13.5 3 5 11.5 5 22 C5 34.5 22 49.5 23.2 50.5 C23.6 50.8 24.4 50.8 24.8 50.5 C26 49.5 43 34.5 43 22 C43 11.5 34.5 3 24 3 Z" 
+        fill="#102A43" stroke="#334E68" stroke-width="1.8" stroke-linejoin="round"/>
 
-    <!-- High-Contrast Outer White Ring -->
-    <circle cx="32" cy="32" r="16" fill="#FFFFFF" stroke="#102A43" stroke-width="2"/>
+  <!-- Electric Cyan Outer Telemetry Bezel Highlight -->
+  <path d="M7 21 C7 12.5 14.5 5 24 5" 
+        fill="none" stroke="#00A6A6" stroke-width="1.4" stroke-linecap="round"/>
+  <circle cx="24" cy="5" r="0.8" fill="#00E5FF"/>
 
-    <!-- Core Electric Cyan Vehicle Navigation Beacon -->
-    <circle cx="32" cy="32" r="12" fill="#00A6A6"/>
+  <!-- Outer Dial Bezel Ring (Steel Blue Metallic Rim) -->
+  <circle cx="24" cy="21" r="13" fill="#243B53" stroke="#334E68" stroke-width="1"/>
 
-    <!-- Directional Heading Arrow (Facing Upwards 0 deg) -->
-    <polygon points="32,24 38,36 32,33 26,36" fill="#FFFFFF"/>
-  </g>
+  <!-- Compass Dial Crystal Face (High-Contrast Recessed Chamber) -->
+  <circle cx="24" cy="21" r="10.5" fill="#0B192C"/>
+
+  <!-- Active 360° Radar Telemetry Calibration Ticks -->
+  <circle cx="24" cy="21" r="9" fill="none" stroke="#334E68" stroke-width="0.8" stroke-dasharray="1.5 1.5"/>
+  <circle cx="24" cy="21" r="7" fill="none" stroke="#00A6A6" stroke-width="0.9" stroke-opacity="0.7"/>
+
+  <!-- Translucent Headlight / Forward GPS Heading Projection Cone -->
+  <path d="M24 21 L16 11 C20 8.5 28 8.5 32 11 Z" 
+        fill="#00E5FF" fill-opacity="0.25"/>
+
+  <!-- 2.5D Faceted Navigation Cursor Arrow (Left Facet: Neon Highlight / Right Facet: Teal Shadow) -->
+  <!-- Left Wing Facet (Bright Neon Cyan) -->
+  <path d="M24 13 L18.5 24 L24 21 Z" 
+        fill="#00E5FF"/>
+  <!-- Right Wing Facet (Deep Electric Cyan) -->
+  <path d="M24 13 L24 21 L29.5 24 Z" 
+        fill="#00A6A6"/>
+
+  <!-- Central Real-Time GPS Precision Lock Bead -->
+  <circle cx="24" cy="21" r="1.8" fill="#102A43" stroke="#00E5FF" stroke-width="0.8"/>
+  <circle cx="24" cy="21" r="0.8" fill="#FFFFFF"/>
 </svg>

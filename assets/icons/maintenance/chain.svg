@@ -1,66 +1,46 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <defs>
-    <linearGradient id="sprocketSteel" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#486581"/>
-      <stop offset="100%" stop-color="#1E293B"/>
-    </linearGradient>
-  </defs>
-  <g transform="scale(0.4)">
-    <ellipse cx="60" cy="106" rx="44" ry="7" fill="#102A43" fill-opacity="0.12"/>
+  <!-- Rear Recessed Link Plate Shadow Layer (Back Side Plates) -->
+  <path d="M9 11.5 C6.5 9.5 5.5 6 7 4 C8.5 2 12 2 14.5 4 L38 23 C40.5 25 41.5 28.5 40 30.5 C38.5 32.5 35 32.5 32.5 30.5 Z" 
+        fill="#0B192C" opacity="0.6"/>
 
-    <!-- Precision Cut Drive Sprocket Wheel (Toothed) -->
-    <g transform="translate(60, 60)">
-      <!-- Outer Gear Teeth Profile -->
-      <circle cx="0" cy="0" r="42" fill="url(#sprocketSteel)" stroke="#334E68" stroke-width="2"/>
-      <circle cx="0" cy="0" r="44" fill="none" stroke="#102A43" stroke-width="4" stroke-dasharray="6 5"/>
-      
-      <!-- Lightening Cutout Windows (Weight Reduction) -->
-      <circle cx="0" cy="0" r="28" fill="#102A43"/>
-      <circle cx="0" cy="-16" r="6" fill="#F7F5EF"/>
-      <circle cx="14" cy="-8" r="6" fill="#F7F5EF"/>
-      <circle cx="14" cy="10" r="6" fill="#F7F5EF"/>
-      <circle cx="0" cy="18" r="6" fill="#F7F5EF"/>
-      <circle cx="-14" cy="10" r="6" fill="#F7F5EF"/>
-      <circle cx="-14" cy="-8" r="6" fill="#F7F5EF"/>
+  <!-- Cylindrical Roller Bushings (Neutral Mechanical Steel) -->
+  <circle cx="13" cy="15" r="5" fill="#1E293B" stroke="#334E68" stroke-width="1.2"/>
+  <circle cx="24" cy="24" r="5" fill="#1E293B" stroke="#334E68" stroke-width="1.2"/>
+  <circle cx="35" cy="33" r="5" fill="#1E293B" stroke="#334E68" stroke-width="1.2"/>
 
-      <!-- Center Mounting Hub & Drive Flange Bolts -->
-      <circle cx="0" cy="0" r="12" fill="#334E68" stroke="#00A6A6" stroke-width="1.5"/>
-      <circle cx="0" cy="0" r="4" fill="#00A6A6"/>
-    </g>
+  <!-- Incoming Chain Link Extension (Top-Left Drivetrain Run) -->
+  <path d="M6 11 C4.2 9.5 3.5 7 4.8 5.2 C6 3.5 8.8 3.5 10.8 5 L14 7.5 C12 9.5 9.5 11 6 11 Z" 
+        fill="#243B53" stroke="#334E68" stroke-width="1.2" stroke-linejoin="round"/>
 
-    <!-- Heavy Duty Roller Chain Links Wrapping the Top & Right Arc -->
-    <!-- Link 1 -->
-    <rect x="22" y="16" width="18" height="10" rx="5" fill="#102A43" stroke="#00A6A6" stroke-width="1.5"/>
-    <circle cx="27" cy="21" r="2.5" fill="#F59E0B"/>
-    <circle cx="35" cy="21" r="2.5" fill="#F59E0B"/>
+  <!-- Outgoing Chain Link Extension (Bottom-Right Drivetrain Run) -->
+  <path d="M33 31 C35 32.5 37 32 39 33.5 C41.2 35 41.8 38 40.5 40 C39 42 36 42 34 40.5 L31 38 C32 35.5 32.5 33 33 31 Z" 
+        fill="#102A43" stroke="#334E68" stroke-width="1.4" stroke-linejoin="round"/>
 
-    <!-- Link 2 -->
-    <rect x="36" y="14" width="18" height="10" rx="5" fill="#243B53" stroke="#334E68" stroke-width="1.5"/>
-    <circle cx="41" cy="19" r="2.5" fill="#F7F5EF"/>
-    <circle cx="49" cy="19" r="2.5" fill="#F7F5EF"/>
+  <!-- Secondary Inner Link Plate (Connecting Pin 2 to Pin 3 - Midground) -->
+  <path d="M19 20 C16.5 17.8 16 14.5 17.8 12.5 C19.6 10.5 23 10.8 25.5 13 C27.5 14.8 28.8 17.5 31.2 19.5 C33.6 21.5 36.3 22.2 38.3 23.8 C40.8 25.8 41.3 29.2 39.5 31.2 C37.7 33.2 34.3 32.8 31.8 30.8 C29.8 29 28.5 26.2 26.2 24.2 C23.8 22.2 21 21.8 19 20 Z" 
+        fill="#243B53" stroke="#334E68" stroke-width="1.4" stroke-linejoin="round"/>
 
-    <!-- Link 3 -->
-    <rect x="50" y="13" width="18" height="10" rx="5" fill="#102A43" stroke="#00A6A6" stroke-width="1.5"/>
-    <circle cx="55" cy="18" r="2.5" fill="#F59E0B"/>
-    <circle cx="63" cy="18" r="2.5" fill="#F59E0B"/>
+  <!-- Master Center X-Ring Seal Accent (Subtle Telemetry Arc on Pin 2) -->
+  <path d="M19.5 21.5 C18.8 22.8 18.8 25.2 19.5 26.5" fill="none" stroke="#00A6A6" stroke-width="1.2" stroke-linecap="round"/>
 
-    <!-- Link 4 -->
-    <rect x="65" y="14" width="18" height="10" rx="5" fill="#243B53" stroke="#334E68" stroke-width="1.5"/>
-    <circle cx="70" cy="19" r="2.5" fill="#F7F5EF"/>
-    <circle cx="78" cy="19" r="2.5" fill="#F7F5EF"/>
+  <!-- Primary Outer Link Plate (Connecting Pin 1 to Pin 2 - Foreground Hero Plate) -->
+  <path d="M8 11 C5.2 8.8 4.6 5 6.8 2.6 C9 -0.2 13 -0.2 15.8 2 C18.2 3.8 19.8 7 22.5 9 C25.2 11 28.5 11.8 30.8 13.5 C33.6 15.8 34.2 19.5 32 22 C29.8 24.5 26 24.5 23.2 22.5 C20.8 20.5 19.2 17.5 16.5 15.5 C13.8 13.5 10.5 12.8 8 11 Z" 
+        fill="#102A43" stroke="#334E68" stroke-width="1.5" stroke-linejoin="round"/>
 
-    <!-- Link 5 (Angled) -->
-    <g transform="rotate(25 88 28)">
-      <rect x="79" y="23" width="18" height="10" rx="5" fill="#102A43" stroke="#00A6A6" stroke-width="1.5"/>
-      <circle cx="84" cy="28" r="2.5" fill="#F59E0B"/>
-      <circle cx="92" cy="28" r="2.5" fill="#F59E0B"/>
-    </g>
+  <!-- Outer Link Plate Technical Bevel & Telemetry Accent -->
+  <path d="M13 5.5 L26 15" stroke="#00A6A6" stroke-width="1.3" stroke-linecap="round"/>
+  <circle cx="13" cy="5.5" r="0.8" fill="#00E5FF"/>
 
-    <!-- Link 6 (Side Downward Run) -->
-    <g transform="rotate(65 102 54)">
-      <rect x="93" y="49" width="18" height="10" rx="5" fill="#243B53" stroke="#334E68" stroke-width="1.5"/>
-      <circle cx="98" cy="54" r="2.5" fill="#F7F5EF"/>
-      <circle cx="106" cy="54" r="2.5" fill="#F7F5EF"/>
-    </g>
-  </g>
+  <!-- Hardened Alloy Chain Pins & Precision Rivet Heads -->
+  <!-- Pin 1 Assembly (13, 15) -->
+  <circle cx="13" cy="15" r="3.2" fill="#486581" stroke="#334E68" stroke-width="1"/>
+  <circle cx="13" cy="15" r="1.2" fill="#627D98"/>
+
+  <!-- Pin 2 Assembly (24, 24) -->
+  <circle cx="24" cy="24" r="3.2" fill="#486581" stroke="#334E68" stroke-width="1"/>
+  <circle cx="24" cy="24" r="1.2" fill="#627D98"/>
+
+  <!-- Pin 3 Assembly (35, 33) -->
+  <circle cx="35" cy="33" r="3.2" fill="#486581" stroke="#334E68" stroke-width="1"/>
+  <circle cx="35" cy="33" r="1.2" fill="#627D98"/>
 </svg>

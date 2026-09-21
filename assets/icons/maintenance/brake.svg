@@ -1,69 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <defs>
-    <linearGradient id="rotorSteel" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#627D98"/>
-      <stop offset="100%" stop-color="#334E68"/>
-    </linearGradient>
-    <linearGradient id="caliperCyan" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00A6A6"/>
-      <stop offset="100%" stop-color="#0E7490"/>
-    </linearGradient>
-  </defs>
-  <g transform="scale(0.4)">
-    <ellipse cx="60" cy="106" rx="44" ry="7" fill="#102A43" fill-opacity="0.12"/>
+  <!-- Brake Disc Rotor Outer Friction Ring -->
+  <circle cx="23.5" cy="25" r="17" fill="#102A43" stroke="#334E68" stroke-width="1.5"/>
 
-    <!-- High-Performance Drilled Brake Disc Rotor -->
-    <g transform="translate(60, 60)">
-      <!-- Outer Friction Ring -->
-      <circle cx="0" cy="0" r="44" fill="url(#rotorSteel)" stroke="#243B53" stroke-width="2"/>
-      <circle cx="0" cy="0" r="30" fill="#102A43"/>
+  <!-- Rotor Friction Track (Inner Recessed Band) -->
+  <circle cx="23.5" cy="25" r="12.5" fill="#0B192C" stroke="#243B53" stroke-width="1"/>
 
-      <!-- Cross-Drilled Ventilation Holes (Radial Patterns) -->
-      <circle cx="0" cy="-37" r="1.5" fill="#102A43"/>
-      <circle cx="14" cy="-34" r="1.5" fill="#102A43"/>
-      <circle cx="26" cy="-26" r="1.5" fill="#102A43"/>
-      <circle cx="34" cy="-14" r="1.5" fill="#102A43"/>
-      <circle cx="37" cy="0" r="1.5" fill="#102A43"/>
-      <circle cx="34" cy="14" r="1.5" fill="#102A43"/>
-      <circle cx="26" cy="26" r="1.5" fill="#102A43"/>
-      <circle cx="14" cy="34" r="1.5" fill="#102A43"/>
-      <circle cx="0" cy="37" r="1.5" fill="#102A43"/>
-      <circle cx="-14" cy="34" r="1.5" fill="#102A43"/>
-      <circle cx="-26" cy="26" r="1.5" fill="#102A43"/>
-      <circle cx="-34" cy="14" r="1.5" fill="#102A43"/>
-      <circle cx="-37" cy="0" r="1.5" fill="#102A43"/>
-      <circle cx="-34" cy="-14" r="1.5" fill="#102A43"/>
-      <circle cx="-26" cy="-26" r="1.5" fill="#102A43"/>
-      <circle cx="-14" cy="-34" r="1.5" fill="#102A43"/>
+  <!-- Minimal Rotor Ventilation Holes (Clean & Crisp at 32px / 48px) -->
+  <circle cx="11.5" cy="18" r="1" fill="#334E68"/>
+  <circle cx="9.5" cy="25" r="1" fill="#334E68"/>
+  <circle cx="12" cy="32" r="1" fill="#334E68"/>
+  <circle cx="18" cy="37.5" r="1" fill="#334E68"/>
+  <circle cx="26" cy="38.5" r="1" fill="#334E68"/>
 
-      <!-- Inner Floating Rotor Carrier -->
-      <circle cx="0" cy="0" r="22" fill="#243B53" stroke="#486581" stroke-width="1.5"/>
-      <circle cx="0" cy="0" r="10" fill="#102A43"/>
-      <!-- 5 Wheel Hub Stud Holes -->
-      <circle cx="0" cy="-15" r="2.5" fill="#F7F5EF"/>
-      <circle cx="14" cy="-5" r="2.5" fill="#F7F5EF"/>
-      <circle cx="9" cy="12" r="2.5" fill="#F7F5EF"/>
-      <circle cx="-9" cy="12" r="2.5" fill="#F7F5EF"/>
-      <circle cx="-14" cy="-5" r="2.5" fill="#F7F5EF"/>
-    </g>
+  <!-- Mechanical Center Hub Hat -->
+  <circle cx="23.5" cy="25" r="7.5" fill="#243B53" stroke="#334E68" stroke-width="1.2"/>
 
-    <!-- Heavy-Duty Hydraulic Twin-Piston Brake Caliper (Top-Right Angle) -->
-    <g transform="translate(68, 20)">
-      <!-- Caliper Body Shell in Electric Cyan -->
-      <path d="M0 8 L32 0 L42 34 L10 42 Z" fill="url(#caliperCyan)" stroke="#102A43" stroke-width="2" stroke-linejoin="round"/>
-      <!-- Caliper Mounting Bolts -->
-      <circle cx="8" cy="14" r="3" fill="#102A43" stroke="#F7F5EF" stroke-width="1"/>
-      <circle cx="34" cy="8" r="3" fill="#102A43" stroke="#F7F5EF" stroke-width="1"/>
+  <!-- Concentric Mechanical Step Ring Detail -->
+  <circle cx="23.5" cy="25" r="5.2" fill="none" stroke="#486581" stroke-width="0.8"/>
 
-      <!-- Twin Piston Cylinders Detail -->
-      <rect x="12" y="18" width="10" height="18" rx="2" fill="#102A43"/>
-      <rect x="24" y="16" width="10" height="18" rx="2" fill="#102A43"/>
+  <!-- Center Axle Bore & Pivot -->
+  <circle cx="23.5" cy="25" r="3" fill="#102A43" stroke="#334E68" stroke-width="0.8"/>
+  <circle cx="23.5" cy="25" r="1.2" fill="#627D98"/>
 
-      <!-- Hydraulic Brake Bleeder Valve -->
-      <rect x="36" y="2" width="5" height="8" rx="1" fill="#F59E0B"/>
+  <!-- Wheel Stud Mounting Points (Clean 4-Bolt Pattern) -->
+  <circle cx="23.5" cy="20.5" r="0.8" fill="#627D98"/>
+  <circle cx="28" cy="25" r="0.8" fill="#627D98"/>
+  <circle cx="23.5" cy="29.5" r="0.8" fill="#627D98"/>
+  <circle cx="19" cy="25" r="0.8" fill="#627D98"/>
 
-      <!-- High-Friction Brake Pad Indicator Lip -->
-      <path d="M-4 22 L8 20 L6 36 L-6 38 Z" fill="#DC2626"/>
-    </g>
-  </g>
+  <!-- Compact Hydraulic Brake Caliper (Proportional 15% Reduction) -->
+  <path d="M26.5 8 C32.5 8, 38 12.5, 40.5 18 C41 19.2, 40.2 20.6, 38.8 21.2 L35.5 22.5 C34.2 19.8, 31.5 16.8, 28 15.5 L26 15 C25 14.7, 24.5 13.6, 24.8 12.5 L25.5 9.5 C25.8 8.6, 26.1 8, 26.5 8 Z" 
+        fill="#243B53" stroke="#334E68" stroke-width="1.4" stroke-linejoin="round"/>
+
+  <!-- Caliper Twin Piston Ports -->
+  <rect x="30" y="12" width="3" height="2" rx="0.5" fill="#102A43"/>
+  <rect x="34" y="15" width="3" height="2" rx="0.5" fill="#102A43"/>
+
+  <!-- Fluid Bleeder Valve -->
+  <rect x="25.5" y="6.5" width="1.8" height="2" rx="0.5" fill="#486581"/>
+
+  <!-- Electric Cyan Telemetry Accent Line -->
+  <path d="M29 11 C33 12, 36.5 14.5, 38.2 17.8" fill="none" stroke="#00A6A6" stroke-width="1.3" stroke-linecap="round"/>
+  <circle cx="28.5" cy="11" r="0.75" fill="#00E5FF"/>
 </svg>
