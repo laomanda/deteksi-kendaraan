@@ -20,7 +20,14 @@ class VehiclePartVisualInfo {
     final name = rawName.toLowerCase();
     final cat = (category ?? '').toLowerCase();
 
-    // 1. Engine Oil (Oli Mesin)
+    // 1A. Engine Oil Filter (Filter Oli Mesin)
+    if (name.contains('filter oli') ||
+        name.contains('oil filter') ||
+        name.contains('saringan oli')) {
+      return 'assets/icons/maintenance/oil_filter.svg';
+    }
+
+    // 1B. Engine Oil (Oli Mesin)
     if (name.contains('oli mesin') ||
         name.contains('engine oil') ||
         name.contains('pelumas')) {
@@ -36,13 +43,20 @@ class VehiclePartVisualInfo {
       return 'assets/icons/maintenance/gear_oil.svg';
     }
 
-    // 3. CVT / Belt / Roller
+    // 3A. CVT / Belt / Roller
     if (name.contains('cvt') ||
         name.contains('roller') ||
         name.contains('slider') ||
         name.contains('belt') ||
         name.contains('v-belt')) {
       return 'assets/icons/maintenance/cvt.svg';
+    }
+
+    // 3B. Manual Clutch (Kampas & Plat Kopling Manual)
+    if (name.contains('kopling') ||
+        name.contains('clutch') ||
+        name.contains('plat kopling')) {
+      return 'assets/icons/maintenance/clutch.svg';
     }
 
     // 4. Brake System (Rem / Kampas Rem / Minyak Rem)
@@ -59,7 +73,24 @@ class VehiclePartVisualInfo {
       return 'assets/icons/maintenance/spark_plug.svg';
     }
 
-    // 6. Air Filter (Filter Udara)
+    // 6A. Cabin Air Filter (Filter Kabin / AC)
+    if (name.contains('filter kabin') ||
+        name.contains('cabin filter') ||
+        name.contains('filter ac') ||
+        name.contains('saringan ac')) {
+      return 'assets/icons/maintenance/cabin_filter.svg';
+    }
+
+    // 6B. Fuel Filter (Filter Bensin / Solar / Bahan Bakar)
+    if (name.contains('filter bensin') ||
+        name.contains('fuel filter') ||
+        name.contains('filter solar') ||
+        name.contains('saringan bensin') ||
+        name.contains('filter bahan bakar')) {
+      return 'assets/icons/maintenance/fuel_filter.svg';
+    }
+
+    // 6C. Air Filter (Filter Udara)
     if (name.contains('filter udara') ||
         name.contains('air filter') ||
         name.contains('saringan udara')) {
@@ -94,6 +125,13 @@ class VehiclePartVisualInfo {
         name.contains('tire') ||
         name.contains('roda')) {
       return 'assets/icons/maintenance/tire.svg';
+    }
+
+    // 11. Wiper Blades (Karet Wiper)
+    if (name.contains('wiper') ||
+        name.contains('karet wiper') ||
+        name.contains('bilah')) {
+      return 'assets/icons/maintenance/wiper.svg';
     }
 
     // Categorical fallbacks

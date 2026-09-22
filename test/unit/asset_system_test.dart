@@ -113,8 +113,10 @@ void main() {
   group('Maintenance Icon Centralized Resolver Tests', () {
     test('Resolves all 10 core components to standardized assets/icons/maintenance/ paths', () {
       expect(VehiclePartVisualInfo.resolveSvgAsset('Oli Mesin Matic'), equals('assets/icons/maintenance/oil.svg'));
+      expect(VehiclePartVisualInfo.resolveSvgAsset('Filter Oli Mesin'), equals('assets/icons/maintenance/oil_filter.svg'));
       expect(VehiclePartVisualInfo.resolveSvgAsset('Oli Gardan / CVTF'), equals('assets/icons/maintenance/gear_oil.svg'));
       expect(VehiclePartVisualInfo.resolveSvgAsset('Sabuk CVT & Roller'), equals('assets/icons/maintenance/cvt.svg'));
+      expect(VehiclePartVisualInfo.resolveSvgAsset('Kampas Kopling Manual'), equals('assets/icons/maintenance/clutch.svg'));
       expect(VehiclePartVisualInfo.resolveSvgAsset('Kampas Rem Depan'), equals('assets/icons/maintenance/brake.svg'));
       expect(VehiclePartVisualInfo.resolveSvgAsset('Busi Iridium'), equals('assets/icons/maintenance/spark_plug.svg'));
       expect(VehiclePartVisualInfo.resolveSvgAsset('Filter Udara'), equals('assets/icons/maintenance/filter.svg'));
@@ -122,6 +124,9 @@ void main() {
       expect(VehiclePartVisualInfo.resolveSvgAsset('Air Radiator Coolant'), equals('assets/icons/maintenance/coolant.svg'));
       expect(VehiclePartVisualInfo.resolveSvgAsset('Rantai Roda & Gir'), equals('assets/icons/maintenance/chain.svg'));
       expect(VehiclePartVisualInfo.resolveSvgAsset('Ban Tubeless'), equals('assets/icons/maintenance/tire.svg'));
+      expect(VehiclePartVisualInfo.resolveSvgAsset('Karet Wiper'), equals('assets/icons/maintenance/wiper.svg'));
+      expect(VehiclePartVisualInfo.resolveSvgAsset('Filter Kabin AC'), equals('assets/icons/maintenance/cabin_filter.svg'));
+      expect(VehiclePartVisualInfo.resolveSvgAsset('Filter Bensin Injeksi'), equals('assets/icons/maintenance/fuel_filter.svg'));
     });
 
     test('Fallback resolves to a valid asset and never empty', () {
@@ -137,20 +142,28 @@ void main() {
         'assets/icons/vehicle/sport_motorcycle.svg',
         'assets/icons/maintenance/battery.svg',
         'assets/icons/maintenance/brake.svg',
+        'assets/icons/maintenance/cabin_filter.svg',
         'assets/icons/maintenance/chain.svg',
+        'assets/icons/maintenance/clutch.svg',
         'assets/icons/maintenance/coolant.svg',
         'assets/icons/maintenance/cvt.svg',
         'assets/icons/maintenance/filter.svg',
+        'assets/icons/maintenance/fuel_filter.svg',
         'assets/icons/maintenance/gear_oil.svg',
         'assets/icons/maintenance/oil.svg',
+        'assets/icons/maintenance/oil_filter.svg',
         'assets/icons/maintenance/spark_plug.svg',
         'assets/icons/maintenance/tire.svg',
+        'assets/icons/maintenance/wiper.svg',
         'assets/icons/tracking/marker_trip_start.svg',
         'assets/icons/tracking/marker_trip_finish.svg',
         'assets/icons/tracking/marker_user_location.svg',
+        'assets/branding/app_launcher_icon.svg',
+        'assets/branding/app_logo_emblem.svg',
         'assets/illustrations/badge_distance.svg',
         'assets/illustrations/badge_health.svg',
         'assets/illustrations/empty_garage.svg',
+        'assets/illustrations/empty_history.svg',
         'assets/illustrations/empty_tracking.svg',
         'assets/illustrations/onboarding_service.svg',
         'assets/illustrations/onboarding_telemetry.svg',
