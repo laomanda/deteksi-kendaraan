@@ -1,37 +1,107 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="shieldGreen" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#16A34A"/>
-      <stop offset="100%" stop-color="#15803D"/>
+    <!-- 1. Mechanical Gear Alloy Gradient -->
+    <linearGradient id="gearAlloyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#BAC7D5"/>
+      <stop offset="40%"  stop-color="#829AB1"/>
+      <stop offset="80%"  stop-color="#486581"/>
+      <stop offset="100%" stop-color="#243B53"/>
+    </linearGradient>
+
+    <!-- 2. Automotive Shield Gradients -->
+    <linearGradient id="shieldBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#243E5B"/>
+      <stop offset="50%"  stop-color="#142B42"/>
+      <stop offset="100%" stop-color="#0B1A28"/>
+    </linearGradient>
+
+    <!-- 3. Vibrant Healthy Status Gradient -->
+    <linearGradient id="healthyGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#22C55E"/>
+      <stop offset="100%" stop-color="#16A34A"/>
+    </linearGradient>
+
+    <!-- 4. Electric Cyan Subtle Edge Accent -->
+    <linearGradient id="cyanEdgeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#00E5FF"/>
+      <stop offset="100%" stop-color="#00A6A6"/>
     </linearGradient>
   </defs>
 
-  <g transform="scale(3.2)">
-    <!-- Technical Ambient Shadow -->
-    <circle cx="80" cy="84" r="64" fill="#102A43" fill-opacity="0.12"/>
+  <!-- ============================================================== -->
+  <!-- 1. AMBIENT GROUND SHADOW                                       -->
+  <!-- ============================================================== -->
+  <ellipse cx="256" cy="428" rx="136" ry="14" fill="#102A43" fill-opacity="0.14"/>
+  <ellipse cx="256" cy="426" rx="80"  ry="7"  fill="#102A43" fill-opacity="0.20"/>
 
-    <!-- Outer Shield Crest in Midnight Navy -->
-    <path d="M80 16 L134 38 C134 94 112 134 80 148 C48 134 26 94 26 38 Z" 
-          fill="#102A43" stroke="#334E68" stroke-width="3" stroke-linejoin="round"/>
+  <!-- ============================================================== -->
+  <!-- 2. MECHANICAL GEAR (Universal Automotive Engineering Core)     -->
+  <!-- ============================================================== -->
+  <g id="automotiveMechanicalGear">
+    <!-- Precision 8-Tooth Beveled Gear Wheel -->
+    <path d="
+      M 240 70  L 272 70  L 276 96  L 300 106 L 320 88  L 344 112 L 326 132 L 336 156 
+      L 362 160 L 362 192 L 336 196 L 326 220 L 344 240 L 320 264 L 300 246 L 276 256 
+      L 272 282 L 240 282 L 236 256 L 212 246 L 192 264 L 168 240 L 186 220 L 176 196 
+      L 150 192 L 150 160 L 176 156 L 186 132 L 168 112 L 192 88  L 212 106 L 236 96 Z"
+      fill="url(#gearAlloyGrad)"
+      stroke="#BAC7D5" stroke-width="2.5" stroke-linejoin="round"/>
 
-    <!-- Inner Safe Green Shield -->
-    <path d="M80 26 L124 44 C124 90 106 124 80 136 C54 124 36 90 36 44 Z" 
-          fill="url(#shieldGreen)" stroke="#16A34A" stroke-width="1.5"/>
+    <!-- Gear Pitch Circle Light Ridge -->
+    <circle cx="256" cy="176" r="74" fill="none" stroke="#D9E2EC" stroke-width="2" stroke-opacity="0.85"/>
+    <!-- Gear Inner Recess Ring -->
+    <circle cx="256" cy="176" r="62" fill="#102A43" stroke="#334E68" stroke-width="2.5"/>
 
-    <!-- Dynamic Flanking Wings / Laurel Accents in Electric Cyan -->
-    <path d="M42 66 C42 66 22 74 16 88 C26 90 40 82 40 82" fill="#00A6A6" opacity="0.9"/>
-    <path d="M118 66 C118 66 138 74 144 88 C134 90 120 82 120 82" fill="#00A6A6" opacity="0.9"/>
-
-    <!-- Center Pure White Checkmark of Verified Health -->
-    <circle cx="80" cy="74" r="28" fill="#102A43" stroke="#F7F5EF" stroke-width="2"/>
-    <path d="M68 74 L76 82 L92 66" fill="none" stroke="#16A34A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-
-    <!-- Space Grotesk "100% PRIMA" Banner -->
-    <g transform="translate(80, 116)">
-      <rect x="-42" y="-10" width="84" height="20" rx="10" fill="#102A43" stroke="#00A6A6" stroke-width="1.5"/>
-      <text x="0" y="4" fill="#F7F5EF" font-family="monospace" font-size="8.5" font-weight="800" text-anchor="middle" letter-spacing="1">
-        100% PRIMA
-      </text>
-    </g>
+    <!-- 4 Weight-Reduction Web Apertures -->
+    <circle cx="256" cy="140" r="10" fill="#0A1826" stroke="#486581" stroke-width="1.2"/>
+    <circle cx="292" cy="176" r="10" fill="#0A1826" stroke="#486581" stroke-width="1.2"/>
+    <circle cx="256" cy="212" r="10" fill="#0A1826" stroke="#486581" stroke-width="1.2"/>
+    <circle cx="220" cy="176" r="10" fill="#0A1826" stroke="#486581" stroke-width="1.2"/>
   </g>
+
+  <!-- ============================================================== -->
+  <!-- 3. AUTOMOTIVE HEALTH SHIELD (Vehicle Protection & Status)      -->
+  <!-- ============================================================== -->
+  <!-- Outer Shield Shell -->
+  <path d="M 256 112
+           L 364 150
+           C 364 266, 328 344, 256 394
+           C 184 344, 148 266, 148 150 Z"
+        fill="url(#shieldBodyGrad)"
+        stroke="#334E68" stroke-width="4.5" stroke-linejoin="round"/>
+
+  <!-- Inner Recessed Shield Panel -->
+  <path d="M 256 130
+           L 348 162
+           C 348 258, 318 326, 256 372
+           C 194 326, 164 258, 164 162 Z"
+        fill="#0B1A28"
+        stroke="#1E3851" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Left & Right Dynamic Accent Trims (Green Status & Cyan Telemetry) -->
+  <path d="M 256 130 L 164 162 C 164 258, 194 326, 256 372"
+        fill="none" stroke="#16A34A" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 256 130 L 348 162 C 348 258, 318 326, 256 372"
+        fill="none" stroke="url(#cyanEdgeGrad)" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- ============================================================== -->
+  <!-- 4. CENTER HEALTHY CONDITION INDICATOR (Optimal Green Check)    -->
+  <!-- ============================================================== -->
+  <!-- Outer Halo Ring -->
+  <circle cx="256" cy="248" r="54" fill="#102A43" stroke="#243E5B" stroke-width="3.5"/>
+  <circle cx="256" cy="248" r="45" fill="#071420" stroke="#16A34A" stroke-width="2.5"/>
+
+  <!-- Solid Green Health Core Badge -->
+  <circle cx="256" cy="248" r="36" fill="url(#healthyGreenGrad)" stroke="#15803D" stroke-width="2"/>
+
+  <!-- Precision Pure White Health Checkmark -->
+  <path d="M 238 248 L 251 261 L 277 235"
+        fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- ============================================================== -->
+  <!-- 5. SUBTLE TOP CONDITION BEACON                                 -->
+  <!-- ============================================================== -->
+  <circle cx="256" cy="100" r="14" fill="none" stroke="#16A34A" stroke-width="2" stroke-dasharray="3 3" stroke-opacity="0.5"/>
+  <circle cx="256" cy="100" r="9"  fill="#16A34A" stroke="#102A43" stroke-width="2"/>
+  <circle cx="256" cy="100" r="3.5" fill="#FFFFFF"/>
 </svg>

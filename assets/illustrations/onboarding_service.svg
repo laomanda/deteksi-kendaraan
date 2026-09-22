@@ -1,85 +1,191 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#193654"/>
-      <stop offset="100%" stop-color="#102A43"/>
+    <!-- 1. Staging Card Gradients -->
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#1E3851"/>
+      <stop offset="60%"  stop-color="#102A43"/>
+      <stop offset="100%" stop-color="#0B1A28"/>
+    </linearGradient>
+
+    <!-- 2. Mechanical Alloy Gear Gradient -->
+    <linearGradient id="alloyGearGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#E4E7EB"/>
+      <stop offset="35%"  stop-color="#BAC7D5"/>
+      <stop offset="70%"  stop-color="#829AB1"/>
+      <stop offset="100%" stop-color="#334E68"/>
+    </linearGradient>
+
+    <!-- 3. Beacon Inner Gradient -->
+    <linearGradient id="beaconInnerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#1E3851"/>
+      <stop offset="100%" stop-color="#081826"/>
     </linearGradient>
   </defs>
 
-  <g transform="translate(0, 51.2) scale(1.28)">
-    <!-- Technical Horizon Arc -->
-    <ellipse cx="200" cy="270" rx="160" ry="14" fill="#102A43" fill-opacity="0.10"/>
+  <!-- ============================================================== -->
+  <!-- 1. AMBIENT BASE GROUND SHADOW                                  -->
+  <!-- ============================================================== -->
+  <ellipse cx="256" cy="420" rx="160" ry="14" fill="#102A43" fill-opacity="0.14"/>
 
-    <!-- Center Stage: Intelligent Service Schedule Tablet Card -->
-    <g transform="translate(110, 60)">
-      <rect x="0" y="0" width="180" height="200" rx="16" fill="url(#cardGrad)" stroke="#334E68" stroke-width="2.5"/>
-      
-      <!-- Header: Space Grotesk Mileage Counter -->
-      <rect x="14" y="14" width="152" height="42" rx="8" fill="#0B1C2D" stroke="#00A6A6" stroke-width="1.5"/>
-      <text x="24" y="32" fill="#627D98" font-family="sans-serif" font-size="8" font-weight="700">ODOMETER SERVIS</text>
-      <text x="24" y="48" fill="#F7F5EF" font-family="monospace" font-size="14" font-weight="700">14.250 KM</text>
-      
-      <!-- Status Chip Warning Amber (Near Service) -->
-      <rect x="110" y="26" width="48" height="18" rx="9" fill="#F59E0B" fill-opacity="0.2" stroke="#F59E0B" stroke-width="1"/>
-      <text x="134" y="38" fill="#F59E0B" font-family="sans-serif" font-size="7.5" font-weight="700" text-anchor="middle">SEGERA</text>
+  <!-- ============================================================== -->
+  <!-- 2. DIGITAL MAINTENANCE SCHEDULE CARD                           -->
+  <!-- ============================================================== -->
+  <!-- Background Stacked Slot Deck -->
+  <rect x="110" y="132" width="292" height="252" rx="28"
+        fill="#0E1C2B" stroke="#334E68" stroke-width="2" stroke-dasharray="6 6" opacity="0.65"/>
 
-      <!-- Component Schedule Checklist Rows -->
-      <!-- Row 1: Engine Oil -->
-      <g transform="translate(14, 68)">
-        <rect x="0" y="0" width="152" height="34" rx="6" fill="#102A43" stroke="#334E68" stroke-width="1"/>
-        <circle cx="16" cy="17" r="8" fill="#F59E0B" fill-opacity="0.2"/>
-        <circle cx="16" cy="17" r="4" fill="#F59E0B"/>
-        <text x="32" y="15" fill="#F7F5EF" font-family="sans-serif" font-size="9" font-weight="700">Oli Mesin Matic</text>
-        <text x="32" y="26" fill="#00A6A6" font-family="monospace" font-size="7.5" font-weight="600">Sisa 350 KM (2 Minggu)</text>
-      </g>
+  <!-- Main Maintenance Tablet Chassis -->
+  <rect x="96" y="148" width="320" height="252" rx="28"
+        fill="url(#cardGrad)" stroke="#334E68" stroke-width="3.5"/>
 
-      <!-- Row 2: CVT Belt & Roller -->
-      <g transform="translate(14, 110)">
-        <rect x="0" y="0" width="152" height="34" rx="6" fill="#102A43" stroke="#334E68" stroke-width="1"/>
-        <circle cx="16" cy="17" r="8" fill="#16A34A" fill-opacity="0.2"/>
-        <circle cx="16" cy="17" r="4" fill="#16A34A"/>
-        <text x="32" y="15" fill="#F7F5EF" font-family="sans-serif" font-size="9" font-weight="700">Sabuk CVT &amp; Roller</text>
-        <text x="32" y="26" fill="#627D98" font-family="monospace" font-size="7.5" font-weight="600">Sisa 4.750 KM (Optimal)</text>
-      </g>
+  <!-- Recessed Inner Surface -->
+  <rect x="108" y="160" width="296" height="228" rx="22"
+        fill="#071420" stroke="#1A2E44" stroke-width="1.5"/>
 
-      <!-- Bottom Action Pill: Jadwalkan Perawatan -->
-      <g transform="translate(14, 154)">
-        <rect x="0" y="0" width="152" height="30" rx="15" fill="#00A6A6"/>
-        <text x="76" y="19" fill="#102A43" font-family="sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">
-          CATAT SERVIS SEKARANG
-        </text>
-      </g>
-    </g>
+  <!-- 4 Corner Alignment Brackets -->
+  <path d="M 132 182 L 122 182 L 122 192" fill="none" stroke="#00A6A6" stroke-width="2" stroke-linecap="round"/>
+  <path d="M 380 182 L 390 182 L 390 192" fill="none" stroke="#00A6A6" stroke-width="2" stroke-linecap="round"/>
+  <path d="M 122 364 L 122 374 L 132 374" fill="none" stroke="#00A6A6" stroke-width="2" stroke-linecap="round"/>
+  <path d="M 390 364 L 390 374 L 380 374" fill="none" stroke="#00A6A6" stroke-width="2" stroke-linecap="round"/>
 
-    <!-- Floating 2.5D Satellites (Modular Parts Around the Tablet) -->
-    <!-- Floating Oil Bottle (Top Left) -->
-    <g transform="translate(48, 50) scale(0.65)">
-      <circle cx="40" cy="40" r="32" fill="#102A43" stroke="#00A6A6" stroke-width="2"/>
-      <rect x="28" y="24" width="24" height="32" rx="4" fill="#F59E0B"/>
-      <rect x="34" y="18" width="12" height="8" rx="2" fill="#F7F5EF"/>
-    </g>
+  <!-- ============================================================== -->
+  <!-- 3. TOP SERVICE REMINDER & TIMELINE HEADER CAPSULE              -->
+  <!-- ============================================================== -->
+  <rect x="124" y="174" width="264" height="36" rx="10"
+        fill="#0D2034" stroke="#243B53" stroke-width="1.5"/>
+  
+  <!-- Mini Calendar/Timeline Grid Icon on Left -->
+  <rect x="138" y="184" width="16" height="16" rx="4" fill="#102A43" stroke="#00A6A6" stroke-width="1.5"/>
+  <line x1="142" y1="182" x2="142" y2="185" stroke="#00A6A6" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="150" y1="182" x2="150" y2="185" stroke="#00A6A6" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="143" cy="191" r="1.5" fill="#16A34A"/>
+  <circle cx="149" cy="191" r="1.5" fill="#F59E0B"/>
+  <circle cx="146" cy="195" r="1.5" fill="#00A6A6"/>
 
-    <!-- Floating Brake Rotor (Top Right) -->
-    <g transform="translate(304, 44) scale(0.65)">
-      <circle cx="40" cy="40" r="34" fill="#102A43" stroke="#334E68" stroke-width="2"/>
-      <circle cx="40" cy="40" r="26" fill="none" stroke="#627D98" stroke-width="6" stroke-dasharray="8 4"/>
-      <rect x="44" y="22" width="16" height="22" rx="4" fill="#00A6A6"/>
-    </g>
+  <!-- Timeline Interval Indicator Bars -->
+  <line x1="168" y1="192" x2="290" y2="192" stroke="#243B53" stroke-width="4" stroke-linecap="round"/>
+  <line x1="168" y1="192" x2="236" y2="192" stroke="#00A6A6" stroke-width="4" stroke-linecap="round"/>
 
-    <!-- Floating Battery (Bottom Right) -->
-    <g transform="translate(300, 180) scale(0.65)">
-      <circle cx="40" cy="40" r="32" fill="#102A43" stroke="#16A34A" stroke-width="2"/>
-      <rect x="24" y="26" width="32" height="28" rx="3" fill="#243B53" stroke="#16A34A" stroke-width="1.5"/>
-      <rect x="28" y="20" width="6" height="6" fill="#334E68"/>
-      <rect x="46" y="20" width="6" height="6" fill="#DC2626"/>
-    </g>
+  <!-- Top Status Badge (Green Active) -->
+  <rect x="306" y="181" width="70" height="22" rx="11"
+        fill="#16A34A" fill-opacity="0.16" stroke="#16A34A" stroke-width="1.2"/>
+  <circle cx="318" cy="192" r="3.5" fill="#16A34A"/>
+  <line x1="328" y1="192" x2="364" y2="192" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round"/>
 
-    <!-- Floating Spark Plug (Bottom Left) -->
-    <g transform="translate(44, 180) scale(0.65)">
-      <circle cx="40" cy="40" r="32" fill="#102A43" stroke="#334E68" stroke-width="2"/>
-      <rect x="36" y="16" width="8" height="48" rx="2" fill="#F7F5EF"/>
-      <rect x="33" y="32" width="14" height="12" rx="2" fill="#486581"/>
-      <circle cx="40" cy="62" r="2" fill="#00A6A6"/>
-    </g>
+  <!-- ============================================================== -->
+  <!-- 4. MAINTENANCE SERVICE CHECKLIST ROWS                          -->
+  <!-- ============================================================== -->
+  <!-- Timeline Connecting Rail -->
+  <line x1="146" y1="230" x2="146" y2="350" stroke="#182E44" stroke-width="2" stroke-dasharray="4 4"/>
+
+  <!-- --- ROW 1: COMPLETED MAINTENANCE (Success Green) --- -->
+  <g id="serviceRow1">
+    <rect x="124" y="218" width="264" height="42" rx="12"
+          fill="#102A43" stroke="#243B53" stroke-width="1.2"/>
+    
+    <!-- Status Check Node -->
+    <circle cx="146" cy="239" r="12" fill="#16A34A" stroke="#081826" stroke-width="2"/>
+    <path d="M 142 239 L 145 242 L 151 236" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Component Telemetry Data Bars -->
+    <line x1="172" y1="234" x2="246" y2="234" stroke="#BAC7D5" stroke-width="4" stroke-linecap="round"/>
+    <line x1="172" y1="245" x2="220" y2="245" stroke="#486581" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Progress Indicator / Interval Bar -->
+    <rect x="274" y="233" width="100" height="12" rx="6" fill="#0A1826"/>
+    <rect x="274" y="233" width="100" height="12" rx="6" fill="#16A34A" fill-opacity="0.85"/>
   </g>
+
+  <!-- --- ROW 2: UPCOMING SERVICE REMINDER (Amber Warning) --- -->
+  <g id="serviceRow2">
+    <rect x="124" y="268" width="264" height="42" rx="12"
+          fill="#102A43" stroke="#F59E0B" stroke-opacity="0.6" stroke-width="1.2"/>
+    
+    <!-- Reminder Alert Node -->
+    <circle cx="146" cy="289" r="12" fill="#F59E0B" stroke="#081826" stroke-width="2"/>
+    <!-- Exclamation / Bell Indicator -->
+    <line x1="146" y1="284" x2="146" y2="289" stroke="#102A43" stroke-width="2.2" stroke-linecap="round"/>
+    <circle cx="146" cy="293" r="1.2" fill="#102A43"/>
+
+    <!-- Component Telemetry Data Bars -->
+    <line x1="172" y1="284" x2="258" y2="284" stroke="#BAC7D5" stroke-width="4" stroke-linecap="round"/>
+    <line x1="172" y1="295" x2="210" y2="295" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Progress Indicator / Interval Bar (80% Reached) -->
+    <rect x="274" y="283" width="100" height="12" rx="6" fill="#0A1826"/>
+    <rect x="274" y="283" width="82" height="12" rx="6" fill="#F59E0B" fill-opacity="0.85"/>
+  </g>
+
+  <!-- --- ROW 3: SCHEDULED TIMELINE ENTRY (Cyan Active) --- -->
+  <g id="serviceRow3">
+    <rect x="124" y="318" width="264" height="42" rx="12"
+          fill="#102A43" stroke="#243B53" stroke-width="1.2"/>
+    
+    <!-- Scheduled Node -->
+    <circle cx="146" cy="339" r="12" fill="#1E3851" stroke="#00A6A6" stroke-width="2"/>
+    <circle cx="146" cy="339" r="4" fill="#00A6A6"/>
+
+    <!-- Component Telemetry Data Bars -->
+    <line x1="172" y1="334" x2="236" y2="334" stroke="#BAC7D5" stroke-width="4" stroke-linecap="round"/>
+    <line x1="172" y1="345" x2="200" y2="345" stroke="#486581" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Progress Indicator / Interval Bar (30% Reached) -->
+    <rect x="274" y="333" width="100" height="12" rx="6" fill="#0A1826"/>
+    <rect x="274" y="333" width="34" height="12" rx="6" fill="#00A6A6" fill-opacity="0.85"/>
+  </g>
+
+  <!-- ============================================================== -->
+  <!-- 5. FLOATING ALLOY GEAR COMPONENT (Automotive Engineering Cue)  -->
+  <!-- ============================================================== -->
+  <g transform="translate(350, 96) scale(0.65)">
+    <!-- Gear Outer Aura -->
+    <circle cx="70" cy="70" r="66" fill="#00A6A6" fill-opacity="0.12"/>
+    
+    <!-- 8-Tooth Precision Automotive Gear -->
+    <path d="
+      M 58 16 L 82 16 L 86 38 L 106 46 L 122 30 L 138 46 L 122 66 L 130 86 
+      L 152 90 L 152 114 L 130 118 L 122 138 L 138 154 L 122 170 L 106 154 L 86 162 
+      L 82 184 L 58 184 L 54 162 L 34 154 L 18 170 L 2 154 L 18 138 L 10 118 
+      L -12 114 L -12 90 L 10 86 L 18 66 L 2 46 L 18 30 L 34 46 L 54 38 Z"
+      transform="translate(45, 10)"
+      fill="url(#alloyGearGrad)" stroke="#102A43" stroke-width="2.5" stroke-linejoin="round"/>
+    
+    <!-- Recessed Hub Ring -->
+    <circle cx="115" cy="110" r="32" fill="#102A43" stroke="#334E68" stroke-width="2"/>
+    <circle cx="115" cy="110" r="20" fill="#081826" stroke="#00A6A6" stroke-width="2.5"/>
+    <circle cx="115" cy="110" r="8" fill="#BAC7D5"/>
+  </g>
+
+  <!-- ============================================================== -->
+  <!-- 6. FLOATING TOP SERVICE HUD BEACON                              -->
+  <!-- ============================================================== -->
+  <!-- Outer Orbit Pulse Ring -->
+  <circle cx="216" cy="120" r="40" fill="none" stroke="#00A6A6" stroke-width="1.8" stroke-dasharray="6 5" stroke-opacity="0.45"/>
+
+  <!-- Circular HUD Base Capsule -->
+  <circle cx="216" cy="120" r="32" fill="#102A43" stroke="#334E68" stroke-width="2.8"/>
+  <circle cx="216" cy="120" r="26" fill="url(#beaconInnerGrad)" stroke="#00A6A6" stroke-width="2"/>
+
+  <!-- Precision Automotive Wrench Symbol -->
+  <path d="M 226 108
+           C 223 105, 219 105, 216 107
+           C 214 109, 213 111, 214 113
+           L 204 123
+           C 202 125, 202 128, 204 130
+           C 206 132, 209 132, 211 130
+           L 221 120
+           C 223 121, 225 120, 227 118
+           C 229 115, 229 111, 226 108 Z"
+        fill="#F7F5EF" stroke="#102A43" stroke-width="1" stroke-linejoin="round"/>
+  <circle cx="206" cy="128" r="1.5" fill="#00A6A6"/>
+
+  <!-- ============================================================== -->
+  <!-- 7. DIGITAL STATUS PILL (Subtle Bottom Ready Cue)               -->
+  <!-- ============================================================== -->
+  <rect x="186" y="412" width="140" height="18" rx="9"
+        fill="#102A43" stroke="#243B53" stroke-width="1.5"/>
+  <circle cx="202" cy="421" r="3.5" fill="#16A34A"/>
+  <line x1="214" y1="421" x2="254" y2="421" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="264" cy="421" r="3" fill="#F59E0B"/>
+  <line x1="274" y1="421" x2="302" y2="421" stroke="#00A6A6" stroke-width="2" stroke-linecap="round"/>
 </svg>

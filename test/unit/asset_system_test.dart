@@ -148,6 +148,13 @@ void main() {
         'assets/icons/tracking/marker_trip_start.svg',
         'assets/icons/tracking/marker_trip_finish.svg',
         'assets/icons/tracking/marker_user_location.svg',
+        'assets/illustrations/badge_distance.svg',
+        'assets/illustrations/badge_health.svg',
+        'assets/illustrations/empty_garage.svg',
+        'assets/illustrations/empty_tracking.svg',
+        'assets/illustrations/onboarding_service.svg',
+        'assets/illustrations/onboarding_telemetry.svg',
+        'assets/illustrations/onboarding_tracking.svg',
       ];
 
       for (final path in assets) {

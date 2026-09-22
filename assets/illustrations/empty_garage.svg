@@ -1,49 +1,124 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <radialGradient id="parkingBayGlow" cx="50%" cy="60%" r="50%">
-      <stop offset="0%" stop-color="#00A6A6" stop-opacity="0.16"/>
-      <stop offset="100%" stop-color="#102A43" stop-opacity="0"/>
-    </radialGradient>
+    <!-- 1. Digital Slot Card Gradients -->
+    <linearGradient id="slotCardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#1E3851"/>
+      <stop offset="60%"  stop-color="#102A43"/>
+      <stop offset="100%" stop-color="#0B1A28"/>
+    </linearGradient>
+
+    <!-- 2. Add Vehicle HUD Beacon Gradients -->
+    <linearGradient id="beaconInnerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#1E3851"/>
+      <stop offset="50%"  stop-color="#102A43"/>
+      <stop offset="100%" stop-color="#081826"/>
+    </linearGradient>
+
+    <linearGradient id="cyanGlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#00E5FF"/>
+      <stop offset="100%" stop-color="#00A6A6"/>
+    </linearGradient>
   </defs>
 
-  <g transform="translate(0, 76.8) scale(1.28)">
-    <!-- Ambient Parking Bay Ground Spotlight -->
-    <ellipse cx="200" cy="180" rx="160" ry="60" fill="url(#parkingBayGlow)"/>
+  <!-- ============================================================== -->
+  <!-- 1. AMBIENT BASE SHADOW                                         -->
+  <!-- ============================================================== -->
+  <ellipse cx="256" cy="414" rx="160" ry="14" fill="#102A43" fill-opacity="0.14"/>
 
-    <!-- Perspective 3D Digital Garage Floor Bay Lines (Cyan & Steel Blue) -->
-    <g stroke="#334E68" stroke-width="2" stroke-linecap="round" fill="none">
-      <!-- Outer Bay Perspective Angled Bounds -->
-      <path d="M70 230 L130 140 L270 140 L330 230" stroke="#00A6A6" stroke-width="2.5"/>
-      <!-- Yellow/Amber Wheel Stop Bumpers -->
-      <rect x="150" y="146" width="100" height="8" rx="4" fill="#F59E0B" stroke="#102A43" stroke-width="1"/>
-      
-      <!-- Floor Marker Alignment Lines -->
-      <line x1="120" y1="200" x2="160" y2="155" stroke-dasharray="6 6"/>
-      <line x1="280" y1="200" x2="240" y2="155" stroke-dasharray="6 6"/>
-      <line x1="200" y1="220" x2="200" y2="165" stroke-dasharray="4 8" stroke="#00A6A6"/>
-    </g>
+  <!-- ============================================================== -->
+  <!-- 2. DIGITAL VEHICLE FLEET COLLECTION STACK (Garage Cards)       -->
+  <!-- ============================================================== -->
+  <!-- Background Collection Slot 2 (Offset Depth) -->
+  <rect x="126" y="120" width="280" height="236" rx="28"
+        fill="#0A1624" stroke="#243B53" stroke-width="2" stroke-dasharray="6 6" opacity="0.45"/>
 
-    <!-- Empty Vehicle Pedestal Beacon Stand (Central Platform) -->
-    <ellipse cx="200" cy="185" rx="70" ry="24" fill="#102A43" stroke="#00A6A6" stroke-width="2"/>
-    <ellipse cx="200" cy="180" rx="60" ry="20" fill="#1E3851" stroke="#334E68" stroke-width="1.5"/>
+  <!-- Background Collection Slot 1 (Stacked Deck) -->
+  <rect x="110" y="136" width="292" height="236" rx="28"
+        fill="#0E1C2B" stroke="#334E68" stroke-width="2" stroke-dasharray="6 6" opacity="0.65"/>
 
-    <!-- Holographic Plus / Add Vehicle Indicator Icon Hovering -->
-    <g transform="translate(200, 110)">
-      <!-- Floating Circular HUD Badge -->
-      <circle cx="0" cy="0" r="36" fill="#102A43" stroke="#00A6A6" stroke-width="2"/>
-      <circle cx="0" cy="0" r="44" fill="none" stroke="#334E68" stroke-width="1.5" stroke-dasharray="4 6"/>
-      <!-- Center Plus / Garage Sign Symbol -->
-      <path d="M-14 0 L14 0 M0 -14 L0 14" stroke="#F7F5EF" stroke-width="4" stroke-linecap="round"/>
-      <circle cx="0" cy="0" r="3" fill="#00A6A6"/>
-    </g>
+  <!-- ============================================================== -->
+  <!-- 3. MAIN DIGITAL VEHICLE STAGING SLOT (Foreground Card)         -->
+  <!-- ============================================================== -->
+  <!-- Outer Slot Card Chassis -->
+  <rect x="96" y="152" width="320" height="238" rx="28"
+        fill="url(#slotCardGrad)" stroke="#334E68" stroke-width="3.5"/>
 
-    <!-- Ground Vehicle Wheel Stop Chocks -->
-    <ellipse cx="140" cy="210" rx="14" ry="4" fill="#102A43" fill-opacity="0.3"/>
-    <ellipse cx="260" cy="210" rx="14" ry="4" fill="#102A43" fill-opacity="0.3"/>
+  <!-- Recessed Digital Canvas Surface -->
+  <rect x="108" y="164" width="296" height="214" rx="22"
+        fill="#071420" stroke="#1A2E44" stroke-width="1.5"/>
 
-    <!-- Minimalist Digital Label -->
-    <text x="200" y="248" fill="#627D98" font-family="monospace" font-size="10" font-weight="700" text-anchor="middle" letter-spacing="2">
-      SLOT GARASI BERSIH
-    </text>
-  </g>
+  <!-- Digital Slot Coordinate Rails -->
+  <line x1="124" y1="235" x2="388" y2="235" stroke="#102234" stroke-width="1.5" stroke-dasharray="6 6"/>
+  <line x1="124" y1="295" x2="388" y2="295" stroke="#102234" stroke-width="1.5" stroke-dasharray="6 6"/>
+
+  <!-- 4 Corner Digital Staging Alignment Brackets -->
+  <!-- Top-Left Bracket -->
+  <path d="M 132 186 L 122 186 L 122 196" fill="none" stroke="#00A6A6" stroke-width="2" stroke-linecap="round"/>
+  <!-- Top-Right Bracket -->
+  <path d="M 380 186 L 390 186 L 390 196" fill="none" stroke="#00A6A6" stroke-width="2" stroke-linecap="round"/>
+  <!-- Bottom-Left Bracket -->
+  <path d="M 122 346 L 122 356 L 132 356" fill="none" stroke="#00A6A6" stroke-width="2" stroke-linecap="round"/>
+  <!-- Bottom-Right Bracket -->
+  <path d="M 390 346 L 390 356 L 380 356" fill="none" stroke="#00A6A6" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- ============================================================== -->
+  <!-- 4. HOLOGRAPHIC UNIVERSAL VEHICLE PLACEHOLDER (Car & Motorcycle)-->
+  <!-- ============================================================== -->
+  <!-- Aerodynamic Universal Wireframe Outline -->
+  <path d="M 148 308
+           C 142 284, 158 266, 184 260
+           L 198 256
+           L 236 218
+           C 252 212, 294 212, 310 218
+           L 338 246
+           L 358 256
+           C 374 262, 380 272, 376 286
+           C 374 298, 364 306, 344 308
+           L 332 308
+           C 326 284, 286 284, 280 308
+           L 204 308
+           C 198 284, 158 284, 152 308 Z"
+        fill="none"
+        stroke="#829AB1" stroke-width="2.5" stroke-dasharray="7 5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Wireframe Glass Canopy / Cockpit Silhouette -->
+  <path d="M 202 256
+           L 238 220
+           L 308 220
+           L 332 248
+           L 306 252
+           L 238 252 Z"
+        fill="none" stroke="#627D98" stroke-width="1.8" stroke-dasharray="5 4" stroke-linecap="round"/>
+
+  <!-- Universal Wheel Track Indicators (Cyan Dashed Rings) -->
+  <ellipse cx="178" cy="308" rx="15" ry="6" fill="none" stroke="#00A6A6" stroke-width="1.5" stroke-dasharray="4 3" stroke-opacity="0.8"/>
+  <ellipse cx="306" cy="308" rx="15" ry="6" fill="none" stroke="#00A6A6" stroke-width="1.5" stroke-dasharray="4 3" stroke-opacity="0.8"/>
+  <circle cx="178" cy="308" r="2" fill="#00E5FF"/>
+  <circle cx="306" cy="308" r="2" fill="#00E5FF"/>
+
+  <!-- ============================================================== -->
+  <!-- 5. FLOATING "ADD VEHICLE" TELEMETRY HUD BEACON (+)             -->
+  <!-- ============================================================== -->
+  <!-- Outer Orbit Pulse Ring -->
+  <circle cx="256" cy="150" r="44" fill="none" stroke="#00A6A6" stroke-width="2" stroke-dasharray="6 5" stroke-opacity="0.4"/>
+
+  <!-- Circular HUD Base Capsule -->
+  <circle cx="256" cy="150" r="34" fill="#102A43" stroke="#334E68" stroke-width="3"/>
+  <circle cx="256" cy="150" r="28" fill="url(#beaconInnerGrad)" stroke="url(#cyanGlowGrad)" stroke-width="2.2"/>
+
+  <!-- Precision Pure White Plus (+) Icon (Add First Vehicle Action) -->
+  <path d="M 256 136 L 256 164 M 242 150 L 270 150"
+        fill="none" stroke="#F7F5EF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Central Cyan Micro Pinpoint -->
+  <circle cx="256" cy="150" r="2.5" fill="#00E5FF"/>
+
+  <!-- ============================================================== -->
+  <!-- 6. DIGITAL FLEET READY STATUS PILL (Subtle Bottom Indicator)   -->
+  <!-- ============================================================== -->
+  <rect x="186" y="388" width="140" height="18" rx="9"
+        fill="#102A43" stroke="#243B53" stroke-width="1.5"/>
+  <circle cx="202" cy="397" r="3.5" fill="#00A6A6"/>
+  <line x1="214" y1="397" x2="254" y2="397" stroke="#334E68" stroke-width="2" stroke-linecap="round"/>
+  <line x1="262" y1="397" x2="298" y2="397" stroke="#243B53" stroke-width="2" stroke-linecap="round"/>
 </svg>
